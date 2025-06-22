@@ -79,6 +79,11 @@ class MenuHelper
             "to" => "admin.medical.index",
         ]);
         
+        $menuData->push([
+            "icon" => "fa fa-suitcase",
+            "name" => "Lowongan Kerja",
+            "to" => "admin.lowongan.index",
+        ]);
         // $menuData->push([
         //     "icon" => "fa fa-plane-departure",
         //     "name" => "Medical Checkup",

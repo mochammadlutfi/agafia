@@ -226,5 +226,16 @@ Route::prefix('admin')->namespace('Admin')->name('admin.')->group(function(){
             Route::post('/{id}/update','DepartureController@update')->name('update');
             Route::delete('/{id}/hapus','DepartureController@destroy')->name('delete');
         });
+
+        Route::prefix('/lowongan')->name('lowongan.')->group(function () {
+            Route::get('/', 'LowonganController@index')->name('index');
+            Route::get('/create', 'LowonganController@create')->name('create');
+            Route::post('/store', 'LowonganController@store')->name('store');
+            Route::get('/data', 'LowonganController@data')->name('data');
+            Route::get('/{id}', 'LowonganController@show')->name('show');
+            Route::get('/{id}/edit','LowonganController@edit')->name('edit');
+            Route::post('/{id}/update','LowonganController@update')->name('update');
+            Route::delete('/{id}/hapus','LowonganController@destroy')->name('delete');
+        });
     });
 });
