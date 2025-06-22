@@ -1,0 +1,54 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class KategoriDokumen extends Model
+{
+    use HasFactory;
+
+    protected $table = 'kategori_dokumen';
+
+    protected $fillable = [
+        'nama_kategori',
+        'deskripsi',
+        'wajib',
+        'jenis_dokumen',
+    ];
+
+    protected $casts = [
+        'wajib' => 'boolean',
+    ];
+
+    // Relationships
+    public function dokumenTalent()
+    {
+        return $this->hasMany(DokumenTalent::class, 'kategori_id');
+    }
+
+    // Scopes
+    public function scopeWajib($query)
+    {
+        return $query->where('wajib', true);
+    }
+
+    public function scopeByJenis($query, $jenis)
+    {
+        return $query->where('jenis_dokumen', $jenis);
+    }
+
+    // Mutators & Accessors
+    public function getJenisLabelAttribute()
+    {
+        $labels = [
+            'medical' => 'Medical Check Up',
+            'keberangkatan' => 'Keberangkatan',
+            'umum' => 'Umum'
+        ];
+        
+        return $labels[$this->jenis_dokumen] ?? $this->jenis_dokumen;
+    }
+
+}
