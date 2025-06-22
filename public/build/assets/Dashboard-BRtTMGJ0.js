@@ -1,1 +1,0 @@
-import{A as o,U as s,p as t,o as a,v as n,B as r}from"./id-CJBCPnZN.js";const c={},_=r("h1",null,"Dashboard",-1);function l(u,d){const e=s("user-layout");return a(),t(e,null,{default:n(()=>[_]),_:1})}const p=o(c,[["render",l]]);export{p as default};

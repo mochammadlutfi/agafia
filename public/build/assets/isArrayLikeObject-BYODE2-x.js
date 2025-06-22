@@ -1,0 +1,1 @@
+import{cs as s,ct as i,cr as e,aN as a}from"./id-CLEzi5j9.js";import{q as o}from"./_initCloneObject-BDHqS5U3.js";function b(r,t){return s(i(r,t,e),r+"")}function m(r){return a(r)&&o(r)}export{b,m as i};
