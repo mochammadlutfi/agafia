@@ -36,7 +36,7 @@ class DashboardController extends Controller
     public function index()
     {
         $total_talent = User::latest()->get()->count();
-        $total_pending = User::where('status', 'pending')->whereHas('detail')->latest()->get()->count();
+        $total_pending = User::where('status', 'pending')->latest()->get()->count();
         $jadwal_interview = JadwalInterview::where('status', 'dijadwalkan')->latest()->get()->count();
         $training = Training::where('status', 'sedang_pelatihan')->get()->count();
         $siap = User::where('status', 'siap')->latest()->get()->count();

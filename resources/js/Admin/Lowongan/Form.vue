@@ -10,37 +10,48 @@
                     <div class="block-content p-4" v-loading="loading">
                         <el-row :gutter="20">
                             <el-col :span="8">
-                                <el-form-item label="Perusahaan" :error="errors.nama">
-                                    <el-input v-model="form.nama" />
+                                <el-form-item label="Perusahaan" :error="errors.perusahaan">
+                                    <el-input v-model="form.perusahaan" />
                                 </el-form-item>
                             </el-col>
                             <el-col :span="8">
-                                <el-form-item label="Posisi" :error="errors.nama">
-                                    <el-input v-model="form.nama" />
+                                <el-form-item label="Posisi" :error="errors.posisi">
+                                    <el-input v-model="form.posisi" />
                                 </el-form-item>
                             </el-col>
                             <el-col :span="8">
-                                <el-form-item label="Kuota" :error="errors.nama">
-                                    <el-input v-model="form.nama" />
+                                <el-form-item label="Kuota" :error="errors.kuota">
+                                    <el-input-number v-model="form.kuota" :min="1" />
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row :gutter="20">
+                            <el-col :span="12">
+                                <el-form-item label="Lokasi" :error="errors.lokasi">
+                                    <el-input v-model="form.lokasi" />
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="Skill" :error="errors.skill">
+                                    <el-input v-model="form.skill" />
                                 </el-form-item>
                             </el-col>
                         </el-row>
                         <el-row :gutter="20">
                             <el-col :md="16">
-                                <el-form-item label="Deskripsi" :error="errors.nama">
-                                    <el-input v-model="form.nama" type="textarea" :rows="6"/>
+                                <el-form-item label="Deskripsi" :error="errors.deskripsi">
+                                    <el-input v-model="form.deskripsi" type="textarea" :rows="6"/>
                                 </el-form-item>
                             </el-col>
                             <el-col :md="8">
-                                <el-form-item label="Foto" :error="errors.foto">
-                                    <single-file-upload v-model="form.ktp"/>
-                                </el-form-item>
                                 <el-form-item label="Status" :error="errors.status">
-                                    <el-switch
-                                        v-model="form.status"
-                                        active-text="Aktif"
-                                        inactive-text="Tidak Aktif"
-                                    />
+                                    <el-select v-model="form.status" placeholder="Pilih Status">
+                                        <el-option label="Buka" value="buka"/>
+                                        <el-option label="Tutup" value="tutup"/>
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item label="URL Foto (Opsional)" :error="errors.foto">
+                                    <SingleFileUpload v-model="form.foto" />
                                 </el-form-item>
                             </el-col>
                         </el-row>
@@ -77,13 +88,14 @@ export default {
             title : "Tambah Lowongan Baru",
             disableKota : false,
             form : {
-                nama: null,
+                perusahaan: null,
+                posisi: null, 
+                skill: null,
                 deskripsi: null,
+                kuota: null,
                 lokasi: null,
-                durasi: null,
-                kapasitas: null,
-                instruktur: null,
-                aktif: true,
+                status: 'buka',
+                foto: null,
             },
             loading : false,
         }
@@ -96,18 +108,19 @@ export default {
     },
     methods : {
         setValue(){
-            this.form.nama = this.value.nama;
+            this.form.perusahaan = this.value.perusahaan;
+            this.form.posisi = this.value.posisi;
+            this.form.skill = this.value.skill;
             this.form.deskripsi = this.value.deskripsi;
+            this.form.kuota = this.value.kuota;
             this.form.lokasi = this.value.lokasi;
-            this.form.durasi = this.value.durasi;
-            this.form.kapasitas = this.value.kapasitas;
-            this.form.instruktur = this.value.instruktur;
-            this.form.aktif = this.value.aktif;
+            this.form.status = this.value.status;
+            this.form.foto = this.value.foto;
         },  
         submit() {
             this.loading = true;
             let form = this.$inertia.form(this.form);
-            let url = this.editMode === true ? this.route('admin.training.program.update', {id : this.value.id}) : this.route('admin.training.program.store');
+            let url = this.editMode === true ? this.route('admin.lowongan.update', {id : this.value.id}) : this.route('admin.lowongan.store');
             form.post(url, {
                 preserveScroll: true,
                 onFinish:() => {
@@ -117,7 +130,7 @@ export default {
                     return this.$swal.fire({
                         icon: 'success',
                         title: 'Berhasil',
-                        text: `Pendukung Baru Berhasil Ditambahkan!`,
+                        text: `Lowongan Berhasil Disimpan!`,
                         showCancelButton: true,
                         confirmButtonText: 'Tambah Lainnya',
                         cancelButtonText: 'Kembali',

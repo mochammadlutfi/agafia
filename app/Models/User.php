@@ -22,7 +22,7 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var string[]
      */
     protected $fillable = [ 
-        'nama', 'email', 'password', 'status'
+        'nama', 'email', 'password', 'status', 'aktif'
     ];
 
     /**
@@ -88,6 +88,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'medical' => 'Medical Check Up',
             'pelatihan' => 'Pelatihan',
             'siap' => 'Siap Berangkat',
+            'selesai' => 'Selesai',
             'ditolak' => 'Ditolak',
         ];
         

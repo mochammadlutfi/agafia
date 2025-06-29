@@ -10,8 +10,16 @@ Route::namespace('Frontend')->group(function(){
     
     Route::middleware('guest')->group(function () {
         Route::get('/','HomeController@index')->name('home');
-        Route::get('/profil','HomeController@profil')->name('profil');
-        Route::get('/sitemap.xml','HomeController@sitemap')->name('sitemap');
+        
+        Route::get('/tentang-kami', function (Request $request) {
+            return Inertia::render('Tentang');
+        });
+        Route::get('/layanan', function (Request $request) {
+            return Inertia::render('Layanan');
+        });
+        
+        Route::get('/lowongan','HomeController@lowongan')->name('lowongan');
+        Route::get('/lowongan/{id}','HomeController@lowonganDetail')->name('lowongan.detail');
         
         // Route::prefix('/video')->name('video.')->group(function () {
         //     Route::get('/', 'VideoController@index')->name('index');
@@ -235,7 +243,7 @@ Route::prefix('admin')->namespace('Admin')->name('admin.')->group(function(){
             Route::get('/{id}', 'LowonganController@show')->name('show');
             Route::get('/{id}/edit','LowonganController@edit')->name('edit');
             Route::post('/{id}/update','LowonganController@update')->name('update');
-            Route::delete('/{id}/hapus','LowonganController@destroy')->name('delete');
+            Route::delete('/{id}/delete','LowonganController@destroy')->name('delete');
         });
     });
 });

@@ -13,9 +13,9 @@ class HasilInterview extends Model
 
     protected $fillable = [
         'jadwal_id',
-        'talent_id',
+        'user_id',
         'skor_interview',
-        'skor_psikologi',
+        'skor_psikotes',
         'kemampuan_komunikasi',
         'kemampuan_teknis',
         'penilaian_kepribadian',
@@ -50,7 +50,7 @@ class HasilInterview extends Model
 
     public function penyetuju()
     {
-        return $this->belongsTo(User::class, 'disetujui_oleh');
+        return $this->belongsTo(Admin::class, 'disetujui_oleh');
     }
 
     // Scopes
@@ -85,12 +85,12 @@ class HasilInterview extends Model
     public function getSkorTotalAttribute()
     {
         $interview = $this->skor_interview ?? 0;
-        $psikologi = $this->skor_psikologi ?? 0;
+        $psikotes = $this->skor_psikotes ?? 0;
         
-        if ($interview > 0 && $psikologi > 0) {
-            return ($interview + $psikologi) / 2;
+        if ($interview > 0 && $psikotes > 0) {
+            return ($interview + $psikotes) / 2;
         }
         
-        return $interview > 0 ? $interview : $psikologi;
+        return $interview > 0 ? $interview : $psikotes;
     }
 }

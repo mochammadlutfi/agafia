@@ -16,22 +16,19 @@ class JadwalInterview extends Model
         'user_id',
         'tanggal',
         'waktu',
-        'jenis_interview',
         'lokasi',
-        'pewawancara',
+        'pewawancara_id',
         'catatan',
         'status',
         'dibuat_oleh',
     ];
 
     protected $casts = [
-        'tanggal' => 'date',
-        'waktu' => 'datetime',
+        'tanggal' => 'datetime',
     ];
 
     protected $appends = [
         'status_label',
-        'jenis_label',
     ];
 
     // Relationships
@@ -87,14 +84,5 @@ class JadwalInterview extends Model
         return $labels[$this->status] ?? $this->status;
     }
 
-    public function getJenisLabelAttribute()
-    {
-        $labels = [
-            'interview' => 'Interview',
-            'test_psikologi' => 'Test Psikologi',
-            'keduanya' => 'Interview & Test Psikologi'
-        ];
-        
-        return $labels[$this->jenis_interview] ?? $this->jenis_interview;
-    }
+    
 }

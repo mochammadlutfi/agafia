@@ -56,15 +56,15 @@ class JadwalInterviewController extends Controller
             'tanggal' => 'required',
             'waktu' => 'required',
             'lokasi' => 'required',
-            'pewawancara' => 'required',
+            'pewawancara_id' => 'required',
         ];
 
         $pesan = [
-            'user_id.required' => 'Nama Interview Wajib Diisi!',
+            'user_id.required' => 'Nama Talent Wajib Diisi!',
             'tanggal.required' => 'Tanggal Interview Wajib Diisi!',
             'waktu.required' => 'Waktu Interview Wajib Diisi!',
             'lokasi.required' => 'Lokasi Interview Wajib Diisi!',
-            'pewawancara.required' => 'Pewawancara Interview Wajib Diisi!',
+            'pewawancara_id.required' => 'Pewawancara Wajib Diisi!',
         ];
 
         $validator =  Validator::make($request->all(), $rules, $pesan);
@@ -79,7 +79,7 @@ class JadwalInterviewController extends Controller
                 $data->lokasi = $request->lokasi;
                 $data->tanggal = $request->tanggal;
                 $data->waktu = $request->waktu;
-                $data->pewawancara_id = $request->pewawancara;
+                $data->pewawancara_id = $request->pewawancara_id;
                 $data->catatan = $request->catatan;
                 $data->dibuat_oleh = auth()->guard('admin')->user()->id;
                 $data->status = 'dijadwalkan';
@@ -108,7 +108,7 @@ class JadwalInterviewController extends Controller
      */
     public function show($id)
     {
-        $data = JadwalInterview::with(['talent', 'pewawancara', 'pembuat'])->where('id', $id)->first();
+        $data = JadwalInterview::with(['user', 'pewawancara', 'pembuat'])->where('id', $id)->first();
 
         return Inertia::render('JadwalInterview/Show', [
             'data' => $data,
@@ -122,7 +122,7 @@ class JadwalInterviewController extends Controller
      */
     public function edit($id)
     {
-        $data = JadwalInterview::with(['talent', 'pewawancara', 'pembuat'])->where('id', $id)->first();
+        $data = JadwalInterview::with(['user', 'pewawancara', 'pembuat'])->where('id', $id)->first();
 
 
         return Inertia::render('JadwalInterview/Form',[
@@ -144,15 +144,15 @@ class JadwalInterviewController extends Controller
             'tanggal' => 'required',
             'waktu' => 'required',
             'lokasi' => 'required',
-            'pewawancara' => 'required',
+            'pewawancara_id' => 'required',
         ];
 
         $pesan = [
-            'user_id.required' => 'Nama Interview Wajib Diisi!',
+            'user_id.required' => 'Nama Talent Wajib Diisi!',
             'tanggal.required' => 'Tanggal Interview Wajib Diisi!',
             'waktu.required' => 'Waktu Interview Wajib Diisi!',
             'lokasi.required' => 'Lokasi Interview Wajib Diisi!',
-            'pewawancara.required' => 'Pewawancara Interview Wajib Diisi!',
+            'pewawancara_id.required' => 'Pewawancara Wajib Diisi!',
         ];
 
         $validator =  Validator::make($request->all(), $rules, $pesan);
@@ -167,7 +167,7 @@ class JadwalInterviewController extends Controller
                 $data->lokasi = $request->lokasi;
                 $data->tanggal = $request->tanggal;
                 $data->waktu = $request->waktu;
-                $data->pewawancara_id = $request->pewawancara;
+                $data->pewawancara_id = $request->pewawancara_id;
                 $data->catatan = $request->catatan;
                 $data->dibuat_oleh = auth()->guard('admin')->user()->id;
                 $data->status = 'dijadwalkan';
@@ -230,7 +230,7 @@ class JadwalInterviewController extends Controller
         $sort = !empty($request->sort) ? $request->sort : 'id';
         $sortDir = !empty($request->sortDir) ? $request->sortDir : 'desc';
         
-        $elq = JadwalInterview::with(['talent', 'pewawancara', 'pembuat', 'hasil'])
+        $elq = JadwalInterview::with(['user', 'pewawancara', 'pembuat', 'hasil'])
         ->when($request->q, function($query, $search){
             $query->where('nama', 'LIKE', '%' . $search . '%');
         })

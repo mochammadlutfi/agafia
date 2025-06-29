@@ -12,6 +12,7 @@ class Medical extends Model
     protected $table = 'medical_checkups';
 
     protected $fillable = [
+        'user_id',
         'nama',
         'tanggal',
         'hasil',
@@ -29,7 +30,7 @@ class Medical extends Model
     ];
 
     // Relationships
-    public function talent()
+    public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
     }

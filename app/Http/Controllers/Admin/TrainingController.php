@@ -49,13 +49,18 @@ class TrainingController extends Controller
         $rules = [
             'user_id' => 'required',
             'program_id' => 'required',
-            'tanggal' => 'required',
+            'tanggal_mulai' => 'required|date',
+            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
         ];
 
         $pesan = [
             'user_id.required' => 'Talent Wajib Diisi!',
             'program_id.required' => 'Program Training Wajib Diisi!',
-            'tanggal.required' => 'Tanggal Training Wajib Diisi!',
+            'tanggal_mulai.required' => 'Tanggal Mulai Wajib Diisi!',
+            'tanggal_mulai.date' => 'Format Tanggal Mulai Tidak Valid!',
+            'tanggal_selesai.required' => 'Tanggal Selesai Wajib Diisi!',
+            'tanggal_selesai.date' => 'Format Tanggal Selesai Tidak Valid!',
+            'tanggal_selesai.after_or_equal' => 'Tanggal Selesai Harus Setelah atau Sama Dengan Tanggal Mulai!',
         ];
 
         $validator = Validator::make($request->all(), $rules, $pesan);
@@ -69,9 +74,9 @@ class TrainingController extends Controller
                 $data = new Training();
                 $data->user_id = $request->user_id;
                 $data->program_id = $request->program_id;
-                $data->tanggal_mulai = Carbon::parse($request->tanggal[0]);
-                $data->tanggal_selesai = Carbon::parse($request->tanggal[1]);
                 $data->tanggal_daftar = Carbon::today();
+                $data->tanggal_mulai = $request->tanggal_mulai;
+                $data->tanggal_selesai = $request->tanggal_selesai;
                 $data->status = 'terdaftar';
                 $data->didaftarkan_oleh = $user->id;
                 $data->save();
@@ -94,7 +99,7 @@ class TrainingController extends Controller
     public function show($id)
     {
         
-        $data = Training::with(['talent', 'program', 'staff' ])->where('id', $id)->first();
+        $data = Training::with(['user', 'program', 'staff' ])->where('id', $id)->first();
         
         return Inertia::render('Training/Show', [
             'data' => $data
@@ -130,13 +135,18 @@ class TrainingController extends Controller
         $rules = [
             'user_id' => 'required',
             'program_id' => 'required',
-            'tanggal' => 'required',
+            'tanggal_mulai' => 'required|date',
+            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
         ];
 
         $pesan = [
             'user_id.required' => 'Talent Wajib Diisi!',
             'program_id.required' => 'Program Training Wajib Diisi!',
-            'tanggal.required' => 'Tanggal Training Wajib Diisi!',
+            'tanggal_mulai.required' => 'Tanggal Mulai Wajib Diisi!',
+            'tanggal_mulai.date' => 'Format Tanggal Mulai Tidak Valid!',
+            'tanggal_selesai.required' => 'Tanggal Selesai Wajib Diisi!',
+            'tanggal_selesai.date' => 'Format Tanggal Selesai Tidak Valid!',
+            'tanggal_selesai.after_or_equal' => 'Tanggal Selesai Harus Setelah atau Sama Dengan Tanggal Mulai!',
         ];
 
         $validator = Validator::make($request->all(), $rules, $pesan);
@@ -145,12 +155,12 @@ class TrainingController extends Controller
         }else{
             DB::beginTransaction();
             try{
-                $data = Paket::where('id', $id)->first();
-                $data->nama = $request->nama;
-                $data->usia = $request->usia;
-                $data->pembangunan = $request->pembangunan;
-                $data->pendaftaran = $request->pendaftaran;
-                $data->spp = $request->spp;
+                $data = Training::where('id', $id)->first();
+                $data->user_id = $request->user_id;
+                $data->program_id = $request->program_id;
+                $data->tanggal_mulai = $request->tanggal_mulai;
+                $data->tanggal_selesai = $request->tanggal_selesai;
+                $data->status = $request->status;
                 $data->save();
 
             }catch(\QueryException $e){
@@ -158,7 +168,7 @@ class TrainingController extends Controller
                 return back();
             }
             DB::commit();
-            return redirect()->route('admin.paket.index');
+            return redirect()->route('admin.training.show', $id);
         }
     }
 
@@ -172,14 +182,14 @@ class TrainingController extends Controller
     {
         DB::beginTransaction();
         try{
-            $hapus_db = Paket::destroy($id);
+            $hapus_db = Training::destroy($id);
         }catch(\QueryException $e){
             DB::rollback();
             return back();
         }
 
         DB::commit();
-        return redirect()->route('admin.paket.index');
+        return redirect()->route('admin.training.index');
     }
 
     public function data(Request $request)
@@ -190,10 +200,11 @@ class TrainingController extends Controller
         $paging = !empty($request->page) ? true : false;
 
         $elq = Training::when($request->q, function($query, $search){
-            $query->where('nama', 'LIKE', '%' . $search . '%')
-            ->orWhere('usia', 'LIKE', '%' . $search . '%');
+            $query->whereHas('user', function($q) use ($search) {
+                $q->where('nama', 'LIKE', '%' . $search . '%');
+            });
         })
-        ->with(['program', 'talent'])
+        ->with(['program', 'user'])
         ->orderBy($sort, $sortDir);
         
         if($paging){

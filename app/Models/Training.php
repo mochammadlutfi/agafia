@@ -17,7 +17,7 @@ class Training extends Model
         'tanggal_daftar',
         'tanggal_mulai',
         'tanggal_selesai',
-        'status_pelatihan',
+        'status',
         'nilai_akhir',
         'sertifikat_diterbitkan',
         'nomor_sertifikat',
@@ -37,7 +37,7 @@ class Training extends Model
     ];
 
     // Relationships
-    public function talent()
+    public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
@@ -55,22 +55,22 @@ class Training extends Model
     // Scopes
     public function scopeByStatus($query, $status)
     {
-        return $query->where('status_pelatihan', $status);
+        return $query->where('status', $status);
     }
 
     public function scopeSelesai($query)
     {
-        return $query->where('status_pelatihan', 'selesai');
+        return $query->where('status', 'selesai');
     }
 
     public function scopeBerlangsung($query)
     {
-        return $query->whereIn('status_pelatihan', ['terdaftar', 'sedang_pelatihan']);
+        return $query->whereIn('status', ['terdaftar', 'sedang_pelatihan']);
     }
 
     public function scopeBerhasil($query)
     {
-        return $query->where('status_pelatihan', 'selesai')
+        return $query->where('status', 'selesai')
                     ->where('nilai_akhir', '>=', 75);
     }
 

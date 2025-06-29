@@ -4,7 +4,7 @@
             <div class="content-heading d-flex justify-content-between align-items-center">
                 <span>Detail Lowongan</span>
                 <div class="space-x-1">
-                    <a :href="route('admin.staff.edit', {id : data.id})" class="ep-button">
+                    <a :href="route('admin.lowongan.edit', {id : data.id})" class="ep-button">
                         <i class="si si-note me-1"></i>
                         Ubah
                     </a>
@@ -17,18 +17,19 @@
             <div class="block block-rounded block-bordered">
                 <div class="block-content p-3">
                     <el-descriptions :column="1">
-                        <el-descriptions-item label="Nama Program">{{ data.nama }}</el-descriptions-item>
-                        <el-descriptions-item label="Jenis Kelamin">{{ data.jk }}</el-descriptions-item>
-                        <el-descriptions-item label="Tempat / Tanggal Lahir">{{ data.tmp_lahir }} / {{  format_date(data.tgl_lahir) }}</el-descriptions-item>
-                        <el-descriptions-item label="No Handphone">{{ data.phone }}</el-descriptions-item>
-                        <el-descriptions-item label="Email">{{ data.email }}</el-descriptions-item>
-                        <el-descriptions-item label="Alamat Lengkap">
-                            {{ data.alamat }}
+                        <el-descriptions-item label="Perusahaan">{{ data.perusahaan }}</el-descriptions-item>
+                        <el-descriptions-item label="Posisi">{{ data.posisi }}</el-descriptions-item>
+                        <el-descriptions-item label="Lokasi">{{ data.lokasi }}</el-descriptions-item>
+                        <el-descriptions-item label="Skill">{{ data.skill }}</el-descriptions-item>
+                        <el-descriptions-item label="Kuota">{{ data.kuota }}</el-descriptions-item>
+                        <el-descriptions-item label="Status">
+                            <el-tag :type="data.status === 'buka' ? 'success' : 'danger'">{{ data.status === 'buka' ? 'Buka' : 'Tutup' }}</el-tag>
                         </el-descriptions-item>
-                        <el-descriptions-item label="Agama">{{ data.agama }}</el-descriptions-item>
-                        <el-descriptions-item label="Pendidikan Terakhir">{{ data.pendidikan_terakhir }}</el-descriptions-item>
-                        <el-descriptions-item label="Mulai Bekerja">{{ data.tgl_mulai }}</el-descriptions-item>
-                        <el-descriptions-item label="Tanggal Masuk">{{ format_date(data.tgl_masuk) }}</el-descriptions-item>
+                        <el-descriptions-item label="Deskripsi">{{ data.deskripsi }}</el-descriptions-item>
+                        <el-descriptions-item label="Foto">
+                            <img v-if="data.foto" :src="data.foto" alt="Foto Lowongan" style="max-width: 200px;"/>
+                            <span v-else>Tidak ada foto</span>
+                        </el-descriptions-item>
                     </el-descriptions>
                 </div>
             </div>

@@ -379,7 +379,7 @@ const setValue = () => {
 
 
 onMounted(() => {
-    if(props.data){
+    if(props.data.detail){
         setValue();
     }
 });

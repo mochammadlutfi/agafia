@@ -34,7 +34,7 @@ class MedicalController extends Controller
     public function show($id)
     {
         
-        $data = Medical::with(['talent'])->where('id', $id)->first();
+        $data = Medical::with(['user'])->where('id', $id)->first();
         
         return Inertia::render('Medical/Show', [
             'data' => $data
@@ -50,21 +50,19 @@ class MedicalController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // dd($request->all());
         $rules = [
             'nama' => 'required',
-            'usia' => 'required',
-            'pembangunan' => 'required',
-            'pendaftaran' => 'required',
-            'spp' => 'required',
+            'tanggal' => 'required|date',
+            'hasil' => 'required',
+            'status' => 'required',
         ];
 
         $pesan = [
-            'nama.required' => 'Nama Paket Wajib Diisi!',
-            'usia.required' => 'Usia Wajib Diisi!',
-            'pembangunan.required' => 'Biaya Pembangunan Wajib Diisi!',
-            'pendaftaran.required' => 'Biaya Pendaftaran Wajib Diisi!',
-            'spp.required' => 'Biaya SPP Bulanan Wajib Diisi!',
+            'nama.required' => 'Nama Pemeriksaan Wajib Diisi!',
+            'tanggal.required' => 'Tanggal Wajib Diisi!',
+            'tanggal.date' => 'Format Tanggal Salah!',
+            'hasil.required' => 'Hasil Wajib Diisi!',
+            'status.required' => 'Status Wajib Diisi!',
         ];
 
         $validator = Validator::make($request->all(), $rules, $pesan);
@@ -73,12 +71,12 @@ class MedicalController extends Controller
         }else{
             DB::beginTransaction();
             try{
-                $data = Paket::where('id', $id)->first();
+                $data = Medical::where('id', $id)->first();
                 $data->nama = $request->nama;
-                $data->usia = $request->usia;
-                $data->pembangunan = $request->pembangunan;
-                $data->pendaftaran = $request->pendaftaran;
-                $data->spp = $request->spp;
+                $data->tanggal = $request->tanggal;
+                $data->hasil = $request->hasil;
+                $data->status = $request->status;
+                $data->catatan = $request->catatan;
                 $data->save();
 
             }catch(\QueryException $e){
@@ -86,7 +84,7 @@ class MedicalController extends Controller
                 return back();
             }
             DB::commit();
-            return redirect()->route('admin.paket.index');
+            return redirect()->route('admin.medical.show', $id);
         }
     }
 
@@ -100,20 +98,20 @@ class MedicalController extends Controller
     {
         DB::beginTransaction();
         try{
-            $hapus_db = Paket::destroy($id);
+            $hapus_db = Medical::destroy($id);
         }catch(\QueryException $e){
             DB::rollback();
             return back();
         }
 
         DB::commit();
-        return redirect()->route('admin.paket.index');
+        return redirect()->route('admin.medical.index');
     }
 
     public function state($id, Request $request)
     {
 
-        $data = Medical::with(['talent'])->where('id', $id)->first();
+        $data = Medical::with(['user'])->where('id', $id)->first();
 
         if($request->state == 'valid'){
             $data->status = 'valid';
@@ -137,9 +135,11 @@ class MedicalController extends Controller
         $paging = !empty($request->page) ? true : false;
 
         $elq = Medical::when($request->q, function($query, $search){
-            $query->where('nama', 'LIKE', '%' . $search . '%');
+            $query->whereHas('user', function($q) use ($search) {
+                $q->where('nama', 'LIKE', '%' . $search . '%');
+            });
         })
-        ->with(['talent'])
+        ->with(['user'])
         ->orderBy($sort, $sortDir);
         
         if($paging){

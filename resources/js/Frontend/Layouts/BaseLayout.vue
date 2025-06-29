@@ -25,14 +25,19 @@
                                 </Link>
                             </li>
                             <li class="nav-main-item">
-                                <Link class="nav-main-link" href="#harga">
+                                <Link class="nav-main-link" href="/tentang-kami">
                                     <span class="nav-main-link-name">Tentang Kami</span>
                                 </Link>
                             </li>
                             <li class="nav-main-item">
-                                <a class="nav-main-link" href="#lokasi">
+                                <Link class="nav-main-link" href="/layanan">
                                     <span class="nav-main-link-name">Layanan Kami</span>
-                                </a>
+                                </Link>
+                            </li>
+                            <li class="nav-main-item">
+                                <Link class="nav-main-link" :href="route('lowongan')">
+                                    <span class="nav-main-link-name">Lowongan</span>
+                                </Link>
                             </li>
                         </ul>
 

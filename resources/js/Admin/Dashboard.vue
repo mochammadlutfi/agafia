@@ -25,14 +25,14 @@
                     </el-col>
                 </el-row>
                 <div class="training-grid">
-                    <div class="training-card" v-for="program in trainingPrograms" :key="program.id">
-                        <div class="training-title">{{ program.name }}</div>
+                    <div class="training-card" v-for="program in props.program" :key="program.id">
+                        <div class="training-title">{{ program.nama }}</div>
                         <div class="training-info">
-                            <span>{{ program.participants }}/{{ program.capacity }} peserta</span>
-                            <span>{{ program.progress }}%</span>
+                            <span>{{ program.jumlah_peserta_aktif }}/{{ program.kapasitas }} peserta</span>
+                            <span>{{ program.jumlah_peserta_aktif / program.kapasitas * 100 }}%</span>
                         </div>
-                        <el-progress :percentage="program.progress"
-                            :color="program.progress >= 80 ? '#67c23a' : program.progress >= 60 ? '#e6a23c' : '#f56c6c'"
+                        <el-progress :percentage="program.jumlah_peserta_aktif / program.kapasitas * 100"
+                            :color="program.jumlah_peserta_aktif / program.kapasitas * 100 >= 80 ? '#67c23a' : program.jumlah_peserta_aktif / program.kapasitas * 100 >= 60 ? '#e6a23c' : '#f56c6c'"
                             :stroke-width="6" />
                     </div>
                 </div>
@@ -42,13 +42,15 @@
 </template>
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
-import { Link } from '@inertiajs/vue3'
+import { Link } from '@inertiajs/vue3';
+
 // import { echarts } from 'echarts/core';
 // Refs for charts
 const statusChart = ref(null);
 const monthlyChart = ref(null);
 const props = defineProps({
-    stats : Array
+    stats : Array,
+    program : Array
 });
 
 const activities = ref([
@@ -89,43 +91,7 @@ const activities = ref([
     }
 ]);
 
-const trainingPrograms = ref([
-    {
-        id: 1,
-        name: 'Bahasa Arab Dasar',
-        participants: 25,
-        capacity: 25,
-        progress: 100
-    },
-    {
-        id: 2,
-        name: 'Bahasa Inggris Dasar',
-        participants: 18,
-        capacity: 25,
-        progress: 72
-    },
-    {
-        id: 3,
-        name: 'Keterampilan Housekeeping',
-        participants: 22,
-        capacity: 30,
-        progress: 73
-    },
-    {
-        id: 4,
-        name: 'Perawatan Lansia',
-        participants: 15,
-        capacity: 20,
-        progress: 75
-    },
-    {
-        id: 5,
-        name: 'Keterampilan Dapur',
-        participants: 12,
-        capacity: 20,
-        progress: 60
-    }
-]);
+
 
 const quickActions = ref([
     {

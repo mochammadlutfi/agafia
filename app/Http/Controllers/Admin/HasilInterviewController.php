@@ -53,7 +53,7 @@ class HasilInterviewController extends Controller
             'user_id' => 'required',
             'kemampuan_komunikasi' => 'required',
             'kemampuan_teknis' => 'required',
-            'kepribadian' => 'required',
+            'penilaian_kepribadian' => 'required',
             'rekomendasi' => 'required',
             'skor_interview' => 'required',
             'skor_psikotes' => 'required',
@@ -63,9 +63,9 @@ class HasilInterviewController extends Controller
             'user_id.required' => 'Nama Talent Wajib Diisi!',
             'kemampuan_komunikasi.required' => 'Kemampuan Komunikasi Wajib Diisi!',
             'kemampuan_teknis.required' => 'Kemampuan Teknis Wajib Diisi!',
-            'kepribadian.required' => 'Kepribadian Wajib Diisi!',
-            'skor_interview.required' => 'Nilai Interview Interview Wajib Diisi!',
-            'skor_psikotes.required' => 'Nilai Psikotes Interview Wajib Diisi!',
+            'penilaian_kepribadian.required' => 'Kepribadian Wajib Diisi!',
+            'skor_interview.required' => 'Nilai Interview Wajib Diisi!',
+            'skor_psikotes.required' => 'Nilai Psikotes Wajib Diisi!',
         ];
 
         $validator =  Validator::make($request->all(), $rules, $pesan);
@@ -90,13 +90,11 @@ class HasilInterviewController extends Controller
                 $data->skor_psikotes = $request->skor_psikotes;
                 $data->kemampuan_komunikasi = $request->kemampuan_komunikasi;
                 $data->kemampuan_teknis = $request->kemampuan_teknis;
-                $data->kemampuan_komunikasi = $request->kemampuan_komunikasi;
-                $data->penilaian_kepribadian = $request->kepribadian;
+                $data->penilaian_kepribadian = $request->penilaian_kepribadian;
                 $data->rekomendasi = $request->rekomendasi;
                 $data->catatan = $request->catatan;
                 $data->dinilai_oleh = auth()->guard('admin')->user()->id;
                 $data->tanggal_penilaian = Carbon::now();
-                // $data->save();
                 $jadwal->hasil()->save($data);
                 
                 $jadwal->status = 'selesai';
@@ -117,7 +115,7 @@ class HasilInterviewController extends Controller
      */
     public function show($id)
     {
-        $data = HasilInterview::with(['talent', 'jadwal', 'penilai'])->where('id', $id)->first();
+        $data = HasilInterview::with(['user', 'jadwal', 'penilai'])->where('id', $id)->first();
 
         return Inertia::render('HasilInterview/Show', [
             'data' => $data,
@@ -131,7 +129,7 @@ class HasilInterviewController extends Controller
      */
     public function edit($id)
     {
-        $data = HasilInterview::with(['talent', 'jadwal', 'penilai'])->where('id', $id)->first();
+        $data = HasilInterview::with(['user', 'jadwal', 'penilai'])->where('id', $id)->first();
 
 
         return Inertia::render('HasilInterview/Form',[
@@ -150,18 +148,21 @@ class HasilInterviewController extends Controller
     {
         $rules = [
             'user_id' => 'required',
-            'tanggal' => 'required',
-            'waktu' => 'required',
-            'lokasi' => 'required',
-            'pewawancara' => 'required',
+            'kemampuan_komunikasi' => 'required',
+            'kemampuan_teknis' => 'required',
+            'penilaian_kepribadian' => 'required',
+            'rekomendasi' => 'required',
+            'skor_interview' => 'required',
+            'skor_psikotes' => 'required',
         ];
 
         $pesan = [
-            'user_id.required' => 'Nama Interview Wajib Diisi!',
-            'tanggal.required' => 'Tanggal Interview Wajib Diisi!',
-            'waktu.required' => 'Waktu Interview Wajib Diisi!',
-            'lokasi.required' => 'Lokasi Interview Wajib Diisi!',
-            'pewawancara.required' => 'Pewawancara Interview Wajib Diisi!',
+            'user_id.required' => 'Nama Talent Wajib Diisi!',
+            'kemampuan_komunikasi.required' => 'Kemampuan Komunikasi Wajib Diisi!',
+            'kemampuan_teknis.required' => 'Kemampuan Teknis Wajib Diisi!',
+            'penilaian_kepribadian.required' => 'Kepribadian Wajib Diisi!',
+            'skor_interview.required' => 'Nilai Interview Wajib Diisi!',
+            'skor_psikotes.required' => 'Nilai Psikotes Wajib Diisi!',
         ];
 
         $validator =  Validator::make($request->all(), $rules, $pesan);
@@ -173,13 +174,13 @@ class HasilInterviewController extends Controller
                 
                 $data = HasilInterview::where('id', $id)->first();
                 $data->user_id = $request->user_id;
-                $data->lokasi = $request->lokasi;
-                $data->tanggal = $request->tanggal;
-                $data->waktu = $request->waktu;
-                $data->pewawancara_id = $request->pewawancara;
+                $data->skor_interview = $request->skor_interview;
+                $data->skor_psikotes = $request->skor_psikotes;
+                $data->kemampuan_komunikasi = $request->kemampuan_komunikasi;
+                $data->kemampuan_teknis = $request->kemampuan_teknis;
+                $data->penilaian_kepribadian = $request->penilaian_kepribadian;
+                $data->rekomendasi = $request->rekomendasi;
                 $data->catatan = $request->catatan;
-                $data->dibuat_oleh = auth()->guard('admin')->user()->id;
-                $data->status = 'dijadwalkan';
                 $data->save();
 
             }catch(\QueryException $e){
@@ -188,7 +189,7 @@ class HasilInterviewController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('admin.interview.jadwal.show', $id);
+            return redirect()->route('admin.interview.hasil.show', $id);
         }
     }
 
@@ -232,7 +233,7 @@ class HasilInterviewController extends Controller
         $sort = !empty($request->sort) ? $request->sort : 'id';
         $sortDir = !empty($request->sortDir) ? $request->sortDir : 'desc';
         
-        $elq = HasilInterview::with(['talent', 'jadwal', 'penilai', 'penyetuju'])
+        $elq = HasilInterview::with(['user', 'jadwal', 'penilai', 'penyetuju'])
         ->when($request->q, function($query, $search){
             $query->where('nama', 'LIKE', '%' . $search . '%');
         })

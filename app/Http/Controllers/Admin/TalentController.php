@@ -49,7 +49,6 @@ class TalentController extends Controller
         $data = User::with(['detail'])
         ->where('id', $id)->first();
         
-        // dd($data);
         return Inertia::render('Talent/Show', [
             'data' => $data,
         ]);
@@ -68,7 +67,7 @@ class TalentController extends Controller
 
         return Inertia::render('Talent/Form',[
             'editMode' => true,
-            'value' => $value
+            'data' => $data
         ]);
     }
 
@@ -82,24 +81,29 @@ class TalentController extends Controller
     {
         $rules = [
             'nama' => 'required',
-            'username' => 'required',
-            'jk' => 'required',
-            'tmp_lahir' => 'required',
-            'tgl_lahir' => 'required',
+            'nik' => 'required',
+            'tempat_lahir' => 'required',
+            'tanggal_lahir' => 'required|date',
+            'jenis_kelamin' => 'required',
             'alamat' => 'required',
-            'jarak' => 'required',
-            'sosialisasi_dengan_lingkungan' => 'required',
+            'phone' => 'required',
+            'nama_izin' => 'required',
+            'status_izin' => 'required',
+            'nama_ayah' => 'required',
         ];
 
         $pesan = [
             'nama.required' => 'Nama Lengkap Wajib Diisi!',
-            'username.required' => 'Nama Panggilan Wajib Diisi!',
-            'jk.required' => 'Jenis Kelamin Wajib Diisi!',
-            'tmp_lahir.required' => 'Tempat Lahir Wajib Diisi!',
-            'tgl_lahir.required' => 'Tanggal Lahir Wajib Diisi!',
-            'alamat.required' => 'Alamat Lengkap Wajib Diisi!',
-            'jarak.required' => 'Jarak Rumah Wajib Diisi!',
-            'sosialisasi_dengan_lingkungan.required' => 'Sosialisasi dengan lingkungan Ke Wajib Diisi!',
+            'nik.required' => 'NIK Wajib Diisi!',
+            'tempat_lahir.required' => 'Tempat Lahir Wajib Diisi!',
+            'tanggal_lahir.required' => 'Tanggal Lahir Wajib Diisi!',
+            'tanggal_lahir.date' => 'Format Tanggal Lahir Tidak Valid!',
+            'jenis_kelamin.required' => 'Jenis Kelamin Wajib Diisi!',
+            'alamat.required' => 'Alamat Wajib Diisi!',
+            'phone.required' => 'Nomor Telepon Wajib Diisi!',
+            'nama_izin.required' => 'Nama Pemberi Izin Wajib Diisi!',
+            'status_izin.required' => 'Status Izin Wajib Diisi!',
+            'nama_ayah.required' => 'Nama Ayah Wajib Diisi!',
         ];
 
         $validator =  Validator::make($request->all(), $rules, $pesan);
@@ -109,24 +113,17 @@ class TalentController extends Controller
             DB::beginTransaction();
             try{
                 
-                $data = Anak::where('id', $id)->first();
-                $data->username = $request->username;
-                $data->nama = $request->nama;
-                $data->jk = $request->jk;
-                $data->tgl_lahir = Carbon::parse($request->tgl_lahir)->format('Y-m-d');
-                $data->tmp_lahir = $request->tmp_lahir;
-                $data->alamat = $request->alamat;
-                $data->anak_ke = $request->anak_ke;
-                $data->jarak = $request->jarak;
-                $data->sosialisasi_dengan_lingkungan = $request->sosialisasi_dengan_lingkungan;
-                $data->sakit_yang_pernah_diderita = $request->sakit_yang_pernah_diderita;
-                $data->makanan_yang_disukai = $request->makanan_yang_disukai;
-                $data->makanan_yang_tidak_disukai = $request->makanan_yang_tidak_disukai;
-                $data->alergi = $request->alergi;
-                $data->scan_akte = $request->scan_akte;
-                $data->isAntarJemput = $request->isAntarJemput;
-                $data->isLaundry = $request->isLaundry;
-                $data->save();
+                $user = User::where('id', $id)->first();
+                $user->nama = $request->nama;
+                $user->save();
+
+                $detail = $user->detail;
+                if (!$detail) {
+                    $detail = new UserDetail();
+                    $detail->user_id = $user->id;
+                }
+                $detail->fill($request->all());
+                $detail->save();
 
             }catch(\QueryException $e){
                 DB::rollback();
@@ -148,15 +145,15 @@ class TalentController extends Controller
         DB::beginTransaction();
         try{
             
-            $pdk = Pendukung::find($id);
-            $pdk->delete();
+            $user = User::find($id);
+            $user->delete();
 
         }catch(\QueryException $e){
             DB::rollback();
             return response()->json([
                 'fail' => true,
                 'errors' => $e,
-                'pesan' => 'Error Menhapus Data Pendukung',
+                'pesan' => 'Error Menghapus Data',
             ]);
         }
 

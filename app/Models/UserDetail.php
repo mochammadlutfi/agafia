@@ -10,24 +10,41 @@ class UserDetail extends Model
     use HasFactory;
 
     protected $table = 'user_details';
+    
     protected $fillable = [
         'user_id',
         'nik',
-        'nama_lengkap',
+        'nama',
         'tempat_lahir',
         'tanggal_lahir',
         'jenis_kelamin',
-        'status_pernikahan',
         'alamat',
-        'nomor_telepon',
-        'nama_kontak_darurat',
-        'telepon_kontak_darurat',
-        'tingkat_pendidikan',
-        'keahlian',
-        'pengalaman_kerja',
-        'kemampuan_bahasa',
+        'phone',
+        'nama_izin',
+        'status_izin',
+        'nama_ayah',
+        'nama_ibu',
+        'phone_ortu',
+        'alamat_ortu',
+        'pendidikan',
+        'pengalaman',
+        'skill_bahasa',
+        'skill_teknis',
+        'pekerjaan',
+        'negara_tujuan',
+        'ktp',
+        'kk',
+        'akte_lahir',
+        'buku_nikah',
+        'surat_keterangan_sehat',
+        'surat_izin_keluarga',
+        'kompetensi',
+        'ijazah',
+        'paspor',
+        'surat_pengalaman_kerja',
+        'skck',
         'foto',
-        'status_pendaftaran',
+        'status',
         'catatan',
         'divalidasi_tanggal',
         'divalidasi_oleh',
@@ -35,9 +52,10 @@ class UserDetail extends Model
 
     protected $casts = [
         'tanggal_lahir' => 'date',
-        // 'pendidikan' => 'array',
-        // 'pengalaman' => 'array',
-        'kemampuan_bahasa' => 'array',
+        'pendidikan' => 'array',
+        'pengalaman' => 'array',
+        'skill_bahasa' => 'array',
+        'skill_teknis' => 'array',
         'divalidasi_tanggal' => 'datetime',
     ];
 
@@ -52,66 +70,13 @@ class UserDetail extends Model
         return $this->belongsTo(User::class, 'divalidasi_oleh');
     }
 
-    public function jadwalInterview()
-    {
-        return $this->hasMany(JadwalInterview::class);
-    }
-
-    public function hasilInterview()
-    {
-        return $this->hasMany(HasilInterview::class);
-    }
-
-    public function dokumen()
-    {
-        return $this->hasMany(DokumenTalent::class);
-    }
-
-    public function pendaftaranPelatihan()
-    {
-        return $this->hasMany(PendaftaranPelatihan::class);
-    }
-
-    // Scopes
-    public function scopeByStatus($query, $status)
-    {
-        return $query->where('status_pendaftaran', $status);
-    }
-
-    public function scopeByJenisKelamin($query, $jenisKelamin)
-    {
-        return $query->where('jenis_kelamin', $jenisKelamin);
-    }
-
-    public function scopeTervalidasi($query)
-    {
-        return $query->whereIn('status_pendaftaran', ['tervalidasi', 'sudah_interview', 'medical', 'pelatihan', 'siap']);
-    }
-
     public function getJenisKelaminLabelAttribute()
     {
-        return $this->jenis_kelamin === 'laki_laki' ? 'Laki-laki' : 'Perempuan';
+        return $this->jenis_kelamin === 'Laki-Laki' ? 'Laki-laki' : 'Perempuan';
     }
 
     public function getUmurAttribute()
     {
         return $this->tanggal_lahir->age ?? 0;
     }
-
-    public function getPendidikanAttribute($value)
-    {
-        return json_decode($value, true);
-    }
-    public function getPengalamanAttribute($value)
-    {
-        return json_decode($value, true);
-    }
-    // public function getPendidikanAttribute()
-    // {
-    //     return $this->pendidikan ? json_decode($this->pendidikan) : [];
-    // }
-    // public function getPengalamanAttribute()
-    // {
-    //     return json_decode($this->pengalaman) ?? [];
-    // }
 }

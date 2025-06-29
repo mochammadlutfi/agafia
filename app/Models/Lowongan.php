@@ -12,14 +12,14 @@ class Lowongan extends Model
     protected $table = 'lowongan';
 
     protected $fillable = [
-        'nama',
+        'perusahaan',
+        'posisi',
+        'skill',
         'deskripsi',
         'kuota',
         'lokasi',
-        'kapasitas',
-        'instruktur',
-        'persyaratan',
-        'aktif',
+        'status',
+        'foto',
     ];
 
     protected $casts = [
@@ -27,50 +27,23 @@ class Lowongan extends Model
     ];
 
     protected $appends = [
-        'jumlah_peserta_aktif',
-        'sisa_kapasitas',
-        'penuh',
+        'status_label',
     ];
 
-    // Relationships
-    public function training()
-    {
-        return $this->hasMany(Training::class, 'program_id');
-    }
-
-    public function trainingActive()
-    {
-        return $this->hasMany(Training::class, 'program_id')
-                    ->whereIn('status', ['terdaftar', 'sedang_pelatihan']);
-    }
-
     // Scopes
-    public function scopeAktif($query)
+    public function scopeBuka($query)
     {
-        return $query->where('aktif', true);
-    }
-
-    public function scopeTersedia($query)
-    {
-        return $query->where('aktif', true)
-                    ->whereHas('trainingActive', function($q) {
-                        $q->havingRaw('COUNT(*) < kapasitas');
-                    });
+        return $query->where('status', 'buka');
     }
 
     // Mutators & Accessors
-    public function getJumlahPesertaAktifAttribute()
+    public function getStatusLabelAttribute()
     {
-        return $this->trainingActive()->count();
-    }
-
-    public function getSisaKapasitasAttribute()
-    {
-        return $this->kapasitas - $this->jumlah_peserta_aktif;
-    }
-
-    public function getPenuhAttribute()
-    {
-        return $this->jumlah_peserta_aktif >= $this->kapasitas;
+        $labels = [
+            'buka' => 'Buka',
+            'tutup' => 'Tutup',
+        ];
+        
+        return $labels[$this->status] ?? $this->status;
     }
 }

@@ -7,11 +7,12 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Inertia\Inertia;
 use Auth;
+use Illuminate\Support\Str;
+use Storage;
 
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use Storage;
 
 use App\Models\Lowongan;
 
@@ -49,21 +50,22 @@ class LowonganController extends Controller
     public function store(Request $request)
     {
         $rules = [
-            'nama' => 'required',
+            'perusahaan' => 'required',
+            'posisi' => 'required',
+            'skill' => 'required',
             'deskripsi' => 'required',
+            'kuota' => 'required|numeric',
             'lokasi' => 'required',
-            'durasi' => 'required',
-            'kapasitas' => 'required',
-            'instruktur' => 'required',
         ];
 
         $pesan = [
-            'nama.required' => 'Nama Program Wajib Diisi!',
-            'deskripsi.required' => 'Deskripsi Program Wajib Diisi!',
-            'lokasi.required' => 'Lokasi Training Wajib Diisi!',
-            'durasi.required' => 'Durasi Program Wajib Diisi!',
-            'kapasitas.required' => 'Kapasitas Wajib Diisi!',
-            'instruktur.required' => 'Instruktur Wajib Diisi!',
+            'perusahaan.required' => 'Nama Perusahaan Wajib Diisi!',
+            'posisi.required' => 'Posisi Wajib Diisi!',
+            'skill.required' => 'Skill Wajib Diisi!',
+            'deskripsi.required' => 'Deskripsi Wajib Diisi!',
+            'kuota.required' => 'Kuota Wajib Diisi!',
+            'kuota.numeric' => 'Kuota Harus Angka!',
+            'lokasi.required' => 'Lokasi Wajib Diisi!',
         ];
 
         $validator =  Validator::make($request->all(), $rules, $pesan);
@@ -74,13 +76,19 @@ class LowonganController extends Controller
             try{
                 
                 $data = new Lowongan();
-                $data->nama = $request->nama;
-                $data->lokasi = $request->lokasi;
+                $data->perusahaan = $request->perusahaan;
+                $data->posisi = $request->posisi;
+                $data->skill = $request->skill;
                 $data->deskripsi = $request->deskripsi;
-                $data->durasi = $request->durasi;
-                $data->kapasitas = $request->kapasitas;
-                $data->instruktur = $request->instruktur;
-                $data->aktif = $request->aktif;
+                $data->kuota = $request->kuota;
+                $data->lokasi = $request->lokasi;
+                $data->status = $request->status;
+
+                if (is_file($request->foto)) {
+                    $fotoDir = 'lowongan/'. Str::random(32) . '.' . $request->file('foto')->getClientOriginalExtension();
+                    $directory = Storage::disk('public')->put($fotoDir, fopen($request->file('foto'), 'r+'));
+                    $data->foto = $fotoDir;
+                }
                 $data->save();
 
             }catch(\QueryException $e){
@@ -89,7 +97,7 @@ class LowonganController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('admin.training.program.show', $data->id);
+            return redirect()->route('admin.lowongan.show', $data->id);
         }
     }
     /**
@@ -114,12 +122,11 @@ class LowonganController extends Controller
     public function edit($id)
     {
 
-        $data = Lowongan::with(['detail'])
-        ->where('id', $id)->first();
+        $data = Lowongan::where('id', $id)->first();
 
         return Inertia::render('Lowongan/Form',[
             'editMode' => true,
-            'value' => $value
+            'value' => $data
         ]);
     }
 
@@ -132,21 +139,22 @@ class LowonganController extends Controller
     public function update(Request $request, $id)
     {
         $rules = [
-            'nama' => 'required',
+            'perusahaan' => 'required',
+            'posisi' => 'required',
+            'skill' => 'required',
             'deskripsi' => 'required',
+            'kuota' => 'required|numeric',
             'lokasi' => 'required',
-            'durasi' => 'required',
-            'kapasitas' => 'required',
-            'instruktur' => 'required',
         ];
 
         $pesan = [
-            'nama.required' => 'Nama Program Wajib Diisi!',
-            'deskripsi.required' => 'Deskripsi Program Wajib Diisi!',
-            'lokasi.required' => 'Lokasi Training Wajib Diisi!',
-            'durasi.required' => 'Durasi Program Wajib Diisi!',
-            'kapasitas.required' => 'Kapasitas Wajib Diisi!',
-            'instruktur.required' => 'Instruktur Wajib Diisi!',
+            'perusahaan.required' => 'Nama Perusahaan Wajib Diisi!',
+            'posisi.required' => 'Posisi Wajib Diisi!',
+            'skill.required' => 'Skill Wajib Diisi!',
+            'deskripsi.required' => 'Deskripsi Wajib Diisi!',
+            'kuota.required' => 'Kuota Wajib Diisi!',
+            'kuota.numeric' => 'Kuota Harus Angka!',
+            'lokasi.required' => 'Lokasi Wajib Diisi!',
         ];
 
         $validator =  Validator::make($request->all(), $rules, $pesan);
@@ -157,13 +165,20 @@ class LowonganController extends Controller
             try{
                 
                 $data = Lowongan::where('id', $id)->first();
-                $data->nama = $request->nama;
-                $data->lokasi = $request->lokasi;
+                $data->perusahaan = $request->perusahaan;
+                $data->posisi = $request->posisi;
+                $data->skill = $request->skill;
                 $data->deskripsi = $request->deskripsi;
-                $data->durasi = $request->durasi;
-                $data->kapasitas = $request->kapasitas;
-                $data->instruktur = $request->instruktur;
-                $data->aktif = $request->aktif;
+                $data->kuota = $request->kuota;
+                $data->lokasi = $request->lokasi;
+                $data->status = $request->status;
+
+                if (is_file($request->foto)) {
+                    $fotoDir = 'lowongan/'. Str::random(32) . '.' . $request->file('foto')->getClientOriginalExtension();
+                    $directory = Storage::disk('public')->put($fotoDir, fopen($request->file('foto'), 'r+'));
+                    $data->foto = '/uploads/'.$fotoDir;
+                }
+
                 $data->save();
 
             }catch(\QueryException $e){
@@ -172,7 +187,7 @@ class LowonganController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('admin.training.program.show', $id);
+            return redirect()->route('admin.lowongan.show', $id);
         }
     }
 
@@ -186,7 +201,7 @@ class LowonganController extends Controller
         DB::beginTransaction();
         try{
             
-            $pdk = Pendukung::find($id);
+            $pdk = Lowongan::find($id);
             $pdk->delete();
 
         }catch(\QueryException $e){
@@ -194,31 +209,23 @@ class LowonganController extends Controller
             return response()->json([
                 'fail' => true,
                 'errors' => $e,
-                'pesan' => 'Error Menhapus Data Pendukung',
+                'pesan' => 'Error Menhapus Data Lowongan',
             ]);
         }
 
         DB::commit();
-        return redirect()->route('admin.talent.index');
+        return redirect()->route('admin.lowongan.index');
 
-    }
-
-    public function report(Request $request)
-    {
-        $kelompok = $request->kelompok;
-        $paket = $request->paket;
-
-        return Excel::download(new AnakExport($kelompok, $paket), 'Data Anak.xlsx');
     }
 
     public function data(Request $request)
-    {
+    { 
         $sort = !empty($request->sort) ? $request->sort : 'id';
         $sortDir = !empty($request->sortDir) ? $request->sortDir : 'desc';
         
-        $elq = Lowongan::withCount('training')
-        ->when($request->q, function($query, $search){
-            $query->where('nama', 'LIKE', '%' . $search . '%');
+        $elq = Lowongan::when($request->q, function($query, $search){
+            $query->where('posisi', 'LIKE', '%' . $search . '%')
+                ->orWhere('perusahaan', 'LIKE', '%' . $search . '%');
         })
         ->orderBy($sort, $sortDir);
 

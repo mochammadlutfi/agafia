@@ -10,8 +10,8 @@ use App\Helpers\Collection;
 use Illuminate\Support\Facades\Validator;
 
 use Carbon\Carbon;
-use App\Models\Paket;
-use App\Models\Landing\Video;
+use App\Models\Lowongan;
+
 class HomeController extends Controller
 {
     /**
@@ -39,6 +39,33 @@ class HomeController extends Controller
 
         return Inertia::render('Home',[
             'banner' => $banner
+        ]);
+    }
+
+    
+    public function lowongan()
+    {
+
+        $data = Lowongan::where('status', 'buka')->latest()->get();
+
+        return Inertia::render('Lowongan',[
+            'data' => $data
+        ]);
+    }
+
+    
+    public function lowonganDetail($id)
+    {
+        $data = Lowongan::findOrFail($id);
+        $relatedJobs = Lowongan::where('status', 'buka')
+            ->where('id', '!=', $id)
+            ->limit(3)
+            ->latest()
+            ->get();
+
+        return Inertia::render('LowonganDetail',[
+            'job' => $data,
+            'relatedJobs' => $relatedJobs
         ]);
     }
 }

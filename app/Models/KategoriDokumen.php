@@ -22,11 +22,9 @@ class KategoriDokumen extends Model
         'wajib' => 'boolean',
     ];
 
-    // Relationships
-    public function dokumenTalent()
-    {
-        return $this->hasMany(DokumenTalent::class, 'kategori_id');
-    }
+    protected $appends = [
+        'jenis_dokumen_label',
+    ];
 
     // Scopes
     public function scopeWajib($query)
@@ -39,16 +37,30 @@ class KategoriDokumen extends Model
         return $query->where('jenis_dokumen', $jenis);
     }
 
+    public function scopeMedical($query)
+    {
+        return $query->where('jenis_dokumen', 'medical');
+    }
+
+    public function scopeKeberangkatan($query)
+    {
+        return $query->where('jenis_dokumen', 'keberangkatan');
+    }
+
+    public function scopeUmum($query)
+    {
+        return $query->where('jenis_dokumen', 'umum');
+    }
+
     // Mutators & Accessors
-    public function getJenisLabelAttribute()
+    public function getJenisDokumenLabelAttribute()
     {
         $labels = [
-            'medical' => 'Medical Check Up',
+            'medical' => 'Medical',
             'keberangkatan' => 'Keberangkatan',
-            'umum' => 'Umum'
+            'umum' => 'Umum',
         ];
         
         return $labels[$this->jenis_dokumen] ?? $this->jenis_dokumen;
     }
-
 }

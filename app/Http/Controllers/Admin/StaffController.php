@@ -124,9 +124,11 @@ class StaffController extends Controller
                 
                 $data = Admin::where('id', $id)->first();
                 $data->nama = $request->nama;
-                $data->jk = $request->jk;
                 $data->email = $request->email;
                 $data->phone = $request->phone;
+                if ($request->password) {
+                    $data->password = Hash::make($request->password);
+                }
                 $data->save();
 
             }catch(\QueryException $e){
@@ -194,38 +196,26 @@ class StaffController extends Controller
         
         $rules = [
             'nama' => 'required',
-            'jk' => 'required',
-            'tmpLahir' => 'required',
-            'tglLahir' => 'required',
-            'alamat' => 'required',
-            'agama' => 'required',
-            'pendidikan_terakhir' => 'required',
-            'tglMulai' => 'required',
-            'tglMasuk' => 'required',
-            'email' => 'required|unique:admins,email,'.$id,
+            'email' => 'required|email|unique:admins,email,'.$id,
+            'level' => 'required',
         ];
 
         $pesan = [
             'nama.required' => 'Nama Lengkap Wajib Diisi!',
-            'jk.required' => 'Jenis Kelamin Wajib Diisi!',
-            'tmpLahir.required' => 'Tempat Lahir Wajib Diisi!',
-            'tglLahir.required' => 'Tanggal Lahir Wajib Diisi!',
-            'alamat.required' => 'Alamat Lengkap Wajib Diisi!',
-            'agama.required' => 'Agama Wajib Diisi!',
-            'pendidikan_terakhir.required' => 'Pendidikan Terakhir Wajib Diisi!',
-            'tglMulai.required' => 'Mulai Bekerja Wajib Diisi!',
-            'tglMasuk.required' => 'Tanggal Masuk Wajib Diisi!',
             'email.required' => 'Alamat Email Wajib Diisi!',
+            'email.email' => 'Format Email Tidak Valid!',
             'email.unique' => 'Alamat Email Sudah Digunakan!',
+            'level.required' => 'Level Wajib Diisi!',
         ];
         
         if(!$editMode){
-            $rules['username'] = 'required|unique:admins,username,'.$id;
-            $rules['password'] = 'required';
+            $rules['username'] = 'required|unique:admins,username';
+            $rules['password'] = 'required|min:6';
 
             $pesan['username.required'] = 'Username Wajib Diisi!';
             $pesan['username.unique'] = 'Username Sudah Digunakan!';
             $pesan['password.required'] = 'Password Wajib Diisi!';
+            $pesan['password.min'] = 'Password Minimal 6 Karakter!';
         }
 
         return Validator::make($data, $rules, $pesan);

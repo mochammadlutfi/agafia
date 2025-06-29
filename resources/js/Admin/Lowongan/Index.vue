@@ -37,16 +37,16 @@
                 <div class="block-content p-0">
                     <el-table :data="data" class="w-100" @sort-change="sortChange" header-cell-class-name="bg-body text-dark">
                         <el-table-column type="index" width="50" />
-                        <el-table-column prop="nama" label="Nama" width="250" sortable/>
-                        <el-table-column prop="lokasi" label="Lokasi" width="250" sortable/>
-                        <el-table-column prop="durasi" label="Durasi" width="100" sortable>
+                        <el-table-column prop="perusahaan" label="Perusahaan" width="180" sortable show-overflow-tooltip/>
+                        <el-table-column prop="posisi" label="Posisi" width="180" sortable show-overflow-tooltip/>
+                        <el-table-column prop="lokasi" label="Lokasi" width="150" sortable show-overflow-tooltip/>
+                        <el-table-column prop="skill" label="Skill" width="180" sortable show-overflow-tooltip/>
+                        <el-table-column prop="kuota" label="Kuota" width="100" sortable align="center"/>
+                        <el-table-column prop="status" label="Status" width="120" sortable align="center">
                           <template #default="scope">
-                            <span>{{ scope.row.durasi }} Hari</span>
+                            <el-tag :type="scope.row.status === 'buka' ? 'success' : 'danger'">{{ scope.row.status === 'buka' ? 'Buka' : 'Tutup' }}</el-tag>
                           </template>
                         </el-table-column>
-                        <el-table-column prop="lokasi" label="Lokasi" width="200" sortable/>
-                        <el-table-column prop="kapasitas" label="Kapasitas" sortable/>
-                        <el-table-column prop="jumlah_peserta_aktif" label="Peserta Aktif" sortable/>
                         <el-table-column label="Aksi" align="center" width="150">
                             <template #default="scope">
                                 <el-dropdown popper-class="dropdown-action" trigger="click">
@@ -56,13 +56,13 @@
                                     <template #dropdown>
                                         <el-dropdown-menu>
                                             <el-dropdown-item>
-                                              <Link :href="route('admin.training.program.show', {id: scope.row.id})" class="w-100 d-flex align-items-center justify-content-between space-x-1">
+                                              <Link :href="route('admin.lowongan.show', {id: scope.row.id})" class="w-100 d-flex align-items-center justify-content-between space-x-1">
                                                 Detail
                                                 <i class="si fa-fw si-eye"></i>
                                               </Link>
                                             </el-dropdown-item>
                                             <el-dropdown-item>
-                                              <Link :href="route('admin.training.program.edit', {id: scope.row.id})" class="w-100 d-flex align-items-center justify-content-between space-x-1">
+                                              <Link :href="route('admin.lowongan.edit', {id: scope.row.id})" class="w-100 d-flex align-items-center justify-content-between space-x-1">
                                                 Ubah
                                                 <i class="si fa-fw si-note"></i>
                                               </Link>
@@ -118,7 +118,7 @@ const doSearch = _.debounce(() => {
 const fetchData = async (pg) => {
   try {
     isLoading.value = true;
-    const response = await axios.get('/admin/training/program/data', {
+    const response = await axios.get('/admin/lowongan/data', {
       params: {
         page: pg || 1,
         limit,
@@ -176,7 +176,7 @@ const hapus = (id) => {
     cancelButtonText: 'Tidak!',
     type: 'warning',
   }).then(() => {
-    router.delete(`/admin/training/program/${id}/delete`, {
+    router.delete(`/admin/lowongan/${id}/delete`, {
       preserveScroll: true,
       onSuccess: () => {
         fetchData();

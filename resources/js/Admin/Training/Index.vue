@@ -37,7 +37,7 @@
                 <div class="block-content p-0">
                     <el-table :data="data" class="w-100" @sort-change="sortChange" header-cell-class-name="bg-body text-dark">
                         <el-table-column type="index" width="50" />
-                        <el-table-column prop="talent.nama" label="Nama" width="200px" sortable/>
+                        <el-table-column prop="user.nama" label="Nama" width="200px" sortable/>
                         <el-table-column prop="program.nama" label="Program" width="200px" sortable/>
                         <el-table-column prop="tanggal_daftar" label="Tgl Daftar" sortable>
                           <template #default="scope">

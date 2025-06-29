@@ -26,7 +26,7 @@ class Admin extends Authenticatable implements MustVerifyEmail
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'level'
+        'nama', 'username', 'email', 'password', 'level'
     ];
 
     /**
@@ -63,13 +63,13 @@ class Admin extends Authenticatable implements MustVerifyEmail
     public function getLevelLabelAttribute()
     {
         $labels = [
-            'manajer_operasional' => 'Manajer Operasional',
-            'manajer_talent' => 'Manajer Talent',
+            'operational_manager' => 'Manajer Operasional',
+            'talent_manager' => 'Manajer Talent',
             'admin' => 'Admin',
             'owner' => 'Owner'
         ];
         
-        return $labels[$this->peran] ?? $this->peran;
+        return $labels[$this->level] ?? $this->level;
     }
 
 }

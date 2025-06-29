@@ -30,7 +30,7 @@
                     
                     <el-descriptions :column="2" label-width="240px" :border="true">
                         <el-descriptions-item label="Talent">
-                            {{ data.talent.nama }}
+                            {{ data.user.nama }}
                         </el-descriptions-item>
                         <el-descriptions-item label="Nama Fasilitas Kesehatan">
                             {{ data.nama }}
