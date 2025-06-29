@@ -2,7 +2,7 @@
     "private": true,
     "scripts": {
         "dev": "vite",
-        "build": "vite build && vite build --ssr"
+        "build": "vite build"
     },
     "devDependencies": {
         "@iconify/vue": "^4.1.1",

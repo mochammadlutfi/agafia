@@ -46,12 +46,155 @@ class TalentController extends Controller
      */
     public function show($id)
     {
-        $data = User::with(['detail'])
-        ->where('id', $id)->first();
+        $talent = User::with([
+            'detail', 
+            'medical' => function($query) {
+                $query->latest();
+            }
+        ])->findOrFail($id);
+
+        // Get related data for better UX
+        $jadwalInterview = DB::table('jadwal_interview')
+            ->leftJoin('admins as pewawancara', 'jadwal_interview.pewawancara_id', '=', 'pewawancara.id')
+            ->leftJoin('admins as pembuat', 'jadwal_interview.dibuat_oleh', '=', 'pembuat.id')
+            ->leftJoin('hasil_interview', 'jadwal_interview.id', '=', 'hasil_interview.jadwal_id')
+            ->where('jadwal_interview.user_id', $id)
+            ->select(
+                'jadwal_interview.*',
+                'pewawancara.nama as pewawancara_nama',
+                'pembuat.nama as pembuat_nama',
+                'hasil_interview.skor_interview',
+                'hasil_interview.skor_psikotes',
+                'hasil_interview.rekomendasi',
+                'hasil_interview.catatan as hasil_catatan',
+                'hasil_interview.tanggal_penilaian'
+            )
+            ->orderBy('jadwal_interview.tanggal', 'desc')
+            ->get();
+
+        $training = DB::table('training')
+            ->leftJoin('training_program', 'training.program_id', '=', 'training_program.id')
+            ->leftJoin('admins', 'training.didaftarkan_oleh', '=', 'admins.id')
+            ->where('training.user_id', $id)
+            ->select(
+                'training.*',
+                'training_program.nama as program_nama',
+                'training_program.deskripsi as program_deskripsi',
+                'training_program.durasi',
+                'training_program.lokasi as program_lokasi',
+                'training_program.instruktur',
+                'admins.nama as pendaftar_nama'
+            )
+            ->orderBy('training.tanggal_daftar', 'desc')
+            ->get();
+
+        // Calculate progress and statistics
+        $statusProgress = $this->calculateStatusProgress($talent->status);
+        $completionStats = $this->calculateCompletionStats($talent);
         
         return Inertia::render('Talent/Show', [
-            'data' => $data,
+            'talent' => $talent,
+            'jadwalInterview' => $jadwalInterview,
+            'training' => $training,
+            'statusProgress' => $statusProgress,
+            'completionStats' => $completionStats,
+            'statusOptions' => $this->getStatusOptions(),
         ]);
+    }
+
+    /**
+     * Calculate status progress for progress bar
+     */
+    private function calculateStatusProgress($currentStatus)
+    {
+        $statuses = [
+            'pending' => ['step' => 1, 'label' => 'Pendaftaran', 'color' => 'warning'],
+            'diterima' => ['step' => 2, 'label' => 'Diterima', 'color' => 'success'],
+            'interview' => ['step' => 3, 'label' => 'Interview', 'color' => 'info'],
+            'medical' => ['step' => 4, 'label' => 'Medical Check', 'color' => 'primary'],
+            'pelatihan' => ['step' => 5, 'label' => 'Pelatihan', 'color' => 'purple'],
+            'siap' => ['step' => 6, 'label' => 'Siap Berangkat', 'color' => 'success'],
+            'selesai' => ['step' => 7, 'label' => 'Selesai', 'color' => 'success'],
+            'ditolak' => ['step' => 0, 'label' => 'Ditolak', 'color' => 'danger'],
+        ];
+
+        $current = $statuses[$currentStatus] ?? $statuses['pending'];
+        $totalSteps = 7;
+        $progressPercentage = $current['step'] > 0 ? ($current['step'] / $totalSteps) * 100 : 0;
+
+        return [
+            'current' => $current,
+            'all' => $statuses,
+            'percentage' => $progressPercentage,
+            'totalSteps' => $totalSteps
+        ];
+    }
+
+    /**
+     * Calculate completion statistics
+     */
+    private function calculateCompletionStats($talent)
+    {
+        $requiredFields = [
+            'nik', 'nama', 'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin',
+            'alamat', 'phone', 'nama_ayah', 'nama_ibu'
+        ];
+
+        $documentFields = [
+            'ktp', 'kk', 'akte_lahir', 'ijazah', 'foto', 'paspor', 'skck'
+        ];
+
+        $completed = 0;
+        $total = count($requiredFields);
+        
+        if ($talent->detail) {
+            foreach ($requiredFields as $field) {
+                if (!empty($talent->detail->$field)) {
+                    $completed++;
+                }
+            }
+        }
+
+        $documentsCompleted = 0;
+        $documentsTotal = count($documentFields);
+        
+        if ($talent->detail) {
+            foreach ($documentFields as $field) {
+                if (!empty($talent->detail->$field)) {
+                    $documentsCompleted++;
+                }
+            }
+        }
+
+        return [
+            'profile' => [
+                'completed' => $completed,
+                'total' => $total,
+                'percentage' => $total > 0 ? ($completed / $total) * 100 : 0
+            ],
+            'documents' => [
+                'completed' => $documentsCompleted,
+                'total' => $documentsTotal,
+                'percentage' => $documentsTotal > 0 ? ($documentsCompleted / $documentsTotal) * 100 : 0
+            ]
+        ];
+    }
+
+    /**
+     * Get available status options for status change
+     */
+    private function getStatusOptions()
+    {
+        return [
+            'pending' => 'Pending',
+            'diterima' => 'Diterima',
+            'interview' => 'Interview',
+            'medical' => 'Medical Check Up',
+            'pelatihan' => 'Pelatihan',
+            'siap' => 'Siap Berangkat',
+            'selesai' => 'Selesai',
+            'ditolak' => 'Ditolak',
+        ];
     }
 
     /**
