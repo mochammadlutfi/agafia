@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jun 29, 2025 at 10:55 PM
+-- Generation Time: Jun 30, 2025 at 11:05 PM
 -- Server version: 8.0.30
 -- PHP Version: 8.3.16
 
@@ -113,6 +113,41 @@ CREATE TABLE `hasil_interview` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `interviews`
+--
+
+CREATE TABLE `interviews` (
+  `id` bigint UNSIGNED NOT NULL,
+  `lamaran_id` bigint UNSIGNED NOT NULL,
+  `user_id` bigint UNSIGNED NOT NULL,
+  `tanggal` date NOT NULL,
+  `waktu` time NOT NULL,
+  `lokasi` varchar(255) NOT NULL,
+  `pewawancara_id` bigint UNSIGNED NOT NULL,
+  `status` enum('dijadwalkan','selesai','dibatalkan','dijadwal_ulang') DEFAULT 'dijadwalkan',
+  `skor_interview` int DEFAULT NULL,
+  `skor_psikotes` int DEFAULT NULL,
+  `kemampuan_komunikasi` enum('kurang','cukup','baik','sangat_baik') DEFAULT NULL,
+  `kemampuan_teknis` enum('kurang','cukup','baik','sangat_baik') DEFAULT NULL,
+  `kepribadian` text,
+  `catatan` text,
+  `rekomendasi` enum('tidak_direkomendasikan','bersyarat','direkomendasikan','sangat_direkomendasikan') DEFAULT NULL,
+  `catatan_jadwal` text,
+  `catatan_hasil` text,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `interviews`
+--
+
+INSERT INTO `interviews` (`id`, `lamaran_id`, `user_id`, `tanggal`, `waktu`, `lokasi`, `pewawancara_id`, `status`, `skor_interview`, `skor_psikotes`, `kemampuan_komunikasi`, `kemampuan_teknis`, `kepribadian`, `catatan`, `rekomendasi`, `catatan_jadwal`, `catatan_hasil`, `created_at`, `updated_at`) VALUES
+(2, 1, 54, '2025-06-23', '16:23:30', 'ewew', 1, 'dijadwalkan', NULL, NULL, NULL, NULL, NULL, 'ewew', NULL, NULL, NULL, '2025-06-30 02:26:35', '2025-06-30 02:26:35');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `jadwal_interview`
 --
 
@@ -130,6 +165,16 @@ CREATE TABLE `jadwal_interview` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `jadwal_interview`
+--
+
+INSERT INTO `jadwal_interview` (`id`, `user_id`, `lamaran_id`, `tanggal`, `waktu`, `lokasi`, `pewawancara_id`, `catatan`, `status`, `dibuat_oleh`, `created_at`, `updated_at`) VALUES
+(13, 54, 1, '2025-06-06 00:00:00', '12:05:10', 'a', 1, 'sa', 'dijadwalkan', 1, '2025-06-29 22:08:12', '2025-06-29 22:08:12'),
+(14, 54, 1, '2025-06-12 00:00:00', '12:09:44', 'asd', 1, 'asd', 'dijadwalkan', 1, '2025-06-29 22:11:32', '2025-06-29 22:11:32'),
+(15, 54, 1, '2025-06-12 00:00:00', '12:09:44', 'asd', 1, 'asd', 'dijadwalkan', 1, '2025-06-29 22:11:50', '2025-06-29 22:11:50'),
+(16, 54, 1, '2025-06-12 00:00:00', '12:09:44', 'asd', 1, 'asd', 'dijadwalkan', 1, '2025-06-29 22:12:26', '2025-06-29 22:12:26');
 
 -- --------------------------------------------------------
 
@@ -187,6 +232,13 @@ CREATE TABLE `lamaran` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `lamaran`
+--
+
+INSERT INTO `lamaran` (`id`, `user_id`, `lowongan_id`, `tanggal_lamaran`, `status`, `cv_file`, `catatan`, `created_at`, `updated_at`) VALUES
+(1, 54, 2, '2025-06-30', 'interview', NULL, NULL, '2025-06-29 17:42:40', '2025-06-29 22:08:12');
 
 -- --------------------------------------------------------
 
@@ -521,7 +573,8 @@ CREATE TABLE `user_details` (
 --
 
 INSERT INTO `user_details` (`id`, `user_id`, `nik`, `nama`, `tempat_lahir`, `tanggal_lahir`, `jenis_kelamin`, `alamat`, `alamat_domisili`, `kode_pos`, `kecamatan`, `kabupaten_kota`, `provinsi`, `phone`, `kontak_darurat_nama`, `kontak_darurat_phone`, `kontak_darurat_hubungan`, `kontak_darurat_alamat`, `pendidikan`, `pengalaman`, `pengalaman_luar_negeri`, `skill_bahasa`, `bahasa_asing_skor`, `visa_history`, `skill_teknis`, `keahlian_khusus`, `objektif_karir`, `ringkasan_profil`, `hobi`, `motto_hidup`, `sertifikat`, `prestasi`, `achievement_highlights`, `organisasi`, `referensi`, `pekerjaan`, `negara_tujuan`, `foto`, `agama`, `status_perkawinan`, `tinggi_badan`, `berat_badan`, `golongan_darah`, `kondisi_kesehatan`, `medical_checkup_terakhir`, `email_alternatif`, `media_sosial`, `catatan`, `created_at`, `updated_at`) VALUES
-(1, 52, '32021021312', 'Udin Bro', 'Bandung', '2020-06-16', 'Laki-Laki', 'Bandung Aja', NULL, NULL, NULL, NULL, NULL, '9882611818', NULL, NULL, NULL, NULL, '[{\"jurusan\": \"wqwq\", \"tingkat\": \"SD\", \"tahun_lulus\": \"2024-12-31T17:00:00.000Z\", \"nama_sekolah\": \"3121\"}, {\"jurusan\": \"21\", \"tingkat\": \"SD\", \"tahun_lulus\": \"2024-12-31T17:00:00.000Z\", \"nama_sekolah\": \"21\"}]', '[{\"nama\": \"121\", \"posisi\": \"wq\", \"tahun_masuk\": \"2024-12-31T17:00:00.000Z\", \"tahun_keluar\": \"2024-12-31T17:00:00.000Z\"}]', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sad', 'asdasd', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Ditolak', '2025-06-14 01:27:39', '2025-06-16 04:01:13');
+(1, 52, '32021021312', 'Udin Bro', 'Bandung', '2020-06-16', 'Laki-Laki', 'Bandung Aja', NULL, NULL, NULL, NULL, NULL, '9882611818', NULL, NULL, NULL, NULL, '[{\"jurusan\": \"wqwq\", \"tingkat\": \"SD\", \"tahun_lulus\": \"2024-12-31T17:00:00.000Z\", \"nama_sekolah\": \"3121\"}, {\"jurusan\": \"21\", \"tingkat\": \"SD\", \"tahun_lulus\": \"2024-12-31T17:00:00.000Z\", \"nama_sekolah\": \"21\"}]', '[{\"nama\": \"121\", \"posisi\": \"wq\", \"tahun_masuk\": \"2024-12-31T17:00:00.000Z\", \"tahun_keluar\": \"2024-12-31T17:00:00.000Z\"}]', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sad', 'asdasd', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Ditolak', '2025-06-14 01:27:39', '2025-06-16 04:01:13'),
+(3, 54, '321214', 'Udin Slebew', 'Bandung', '1997-05-05', 'Laki-Laki', 'Entahlah', 'sadas', '41231', '2garut', 'Bandugn', 'sadas', '21321412', 'wqe', 'wqe', '21412', 'wqesadsa', '[{\"jurusan\": \"21\", \"tingkat\": \"SMP\", \"tahun_lulus\": \"2026\", \"nama_sekolah\": \"qw\"}]', '[{\"nama\": \"21\", \"posisi\": \"21\", \"tahun_masuk\": \"2021\", \"tahun_keluar\": \"2029\"}]', NULL, NULL, NULL, NULL, NULL, 'sasa', 'wq', 'assa', 'sa', 'sa', NULL, NULL, NULL, NULL, NULL, 'wq', 'wq', '/uploads/document/54/YYKBbd6GglV5vXW6dqEgdDhYIj6vjdF0.jpeg', 'Islam', 'lajang', 120, 40, 'A', 'sasasasasa', '2025-06-25', NULL, NULL, NULL, '2025-06-29 17:16:31', '2025-06-29 20:07:01');
 
 --
 -- Indexes for dumped tables
@@ -560,6 +613,12 @@ ALTER TABLE `hasil_interview`
   ADD KEY `hasil_interview_ibfk_3` (`dinilai_oleh`),
   ADD KEY `hasil_interview_ibfk_4` (`disetujui_oleh`),
   ADD KEY `hasil_interview_lamaran_id` (`lamaran_id`);
+
+--
+-- Indexes for table `interviews`
+--
+ALTER TABLE `interviews`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `jadwal_interview`
@@ -723,10 +782,16 @@ ALTER TABLE `hasil_interview`
   MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
+-- AUTO_INCREMENT for table `interviews`
+--
+ALTER TABLE `interviews`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
 -- AUTO_INCREMENT for table `jadwal_interview`
 --
 ALTER TABLE `jadwal_interview`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `kategori_dokumen`
@@ -738,7 +803,7 @@ ALTER TABLE `kategori_dokumen`
 -- AUTO_INCREMENT for table `lamaran`
 --
 ALTER TABLE `lamaran`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `lowongan`
@@ -804,7 +869,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `user_details`
 --
 ALTER TABLE `user_details`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Constraints for dumped tables
