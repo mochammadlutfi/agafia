@@ -1,40 +1,179 @@
 <template>
     <base-layout>
         <div class="content">
-            <el-row :gutter="24">
-                <el-col :span="8" v-for="(d,i) in stats">
-                    <el-card class="mb-2 rounded-lg">
+            <!-- Main Statistics Cards -->
+            <el-row :gutter="24" class="mb-4">
+                <el-col :span="8" v-for="(d,i) in stats" :key="i">
+                    <el-card class="mb-2 rounded-lg stat-card" shadow="hover">
                         <el-statistic :value="d.value" :value-style="{ color: d.color, 'font-weight': 700 }">
                         <template #title>
-                            <div class="fs-5 fw-semibold">
-                            {{ d.label }}
+                            <div class="fs-5 fw-semibold d-flex align-items-center">
+                                <el-icon class="me-2" :color="d.color" size="20">
+                                    <component :is="d.icon" />
+                                </el-icon>
+                                {{ d.label }}
                             </div>
                         </template>
                         </el-statistic>
                     </el-card>
                 </el-col>
             </el-row>
+
+            <el-row :gutter="24" class="mb-4">
+                <!-- Recent Applications -->
+                <el-col :span="12">
+                    <el-card class="rounded" shadow="hover">
+                        <template #header>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-semibold">Lamaran Terbaru</span>
+                                <el-button :tag="Link" :href="route('admin.lamaran.index')" type="primary" size="small">Lihat Semua</el-button>
+                            </div>
+                        </template>
+                        <div v-if="recentApplications && recentApplications.length > 0">
+                            <div v-for="application in recentApplications" :key="application.id" class="application-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="fw-medium">{{ application.user?.detail?.nama || application.user?.nama }}</div>
+                                        <div class="text-muted small">{{ application.lowongan?.posisi }}</div>
+                                        <div class="text-muted small">{{ formatDate(application.tanggal_lamaran) }}</div>
+                                    </div>
+                                    <el-tag :type="getStatusType(application.status)" size="small">
+                                        {{ getStatusLabel(application.status) }}
+                                    </el-tag>
+                                </div>
+                            </div>
+                        </div>
+                        <el-empty v-else description="Belum ada lamaran" :image-size="60" />
+                    </el-card>
+                </el-col>
+
+                <!-- Status Distribution Chart -->
+                <el-col :span="12">
+                    <el-card class="rounded" shadow="hover">
+                        <template #header>
+                            <span class="fw-semibold">Distribusi Status Lamaran</span>
+                        </template>
+                        <div class="status-distribution">
+                            <div v-for="(value, key) in statusDistribution" :key="key" class="status-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-capitalize">{{ getStatusLabel(key) }}</span>
+                                    <span class="fw-medium">{{ value }}</span>
+                                </div>
+                                <el-progress 
+                                    :percentage="getPercentage(value, getTotalApplications())" 
+                                    :color="getStatusColor(key)"
+                                    :stroke-width="8"
+                                    :show-text="false"
+                                    class="mt-1" />
+                            </div>
+                        </div>
+                    </el-card>
+                </el-col>
+            </el-row>
+
+            <el-row :gutter="24" class="mb-4">
+                <!-- Monthly Stats Chart -->
+                <el-col :span="12">
+                    <el-card class="rounded" shadow="hover">
+                        <template #header>
+                            <span class="fw-semibold">Statistik Bulanan</span>
+                        </template>
+                        <div ref="monthlyChart" style="height: 300px;"></div>
+                    </el-card>
+                </el-col>
+
+                <!-- Additional Statistics -->
+                <el-col :span="12">
+                    <el-card class="rounded" shadow="hover">
+                        <template #header>
+                            <span class="fw-semibold">Statistik Lainnya</span>
+                        </template>
+                        <div class="additional-stats">
+                            <div class="stat-group">
+                                <div class="stat-title">Pengguna</div>
+                                <div class="stat-row">
+                                    <span>Total: {{ additionalStats?.users?.total || 0 }}</span>
+                                    <span>Verified: {{ additionalStats?.users?.verified || 0 }}</span>
+                                </div>
+                                <el-progress 
+                                    :percentage="additionalStats?.users?.completion_rate || 0" 
+                                    color="#409eff" 
+                                    :stroke-width="6" />
+                            </div>
+                            
+                            <div class="stat-group">
+                                <div class="stat-title">Lowongan</div>
+                                <div class="stat-row">
+                                    <span>Total: {{ additionalStats?.lowongan?.total || 0 }}</span>
+                                    <span>Aktif: {{ additionalStats?.lowongan?.aktif || 0 }}</span>
+                                </div>
+                                <el-progress 
+                                    :percentage="100 - (additionalStats?.lowongan?.closure_rate || 0)" 
+                                    color="#67c23a" 
+                                    :stroke-width="6" />
+                            </div>
+                            
+                            <div class="stat-group">
+                                <div class="stat-title">Dokumen</div>
+                                <div class="stat-row">
+                                    <span>Total: {{ additionalStats?.documents?.total || 0 }}</span>
+                                    <span>Approved: {{ additionalStats?.documents?.approved || 0 }}</span>
+                                </div>
+                                <el-progress 
+                                    :percentage="additionalStats?.documents?.approval_rate || 0" 
+                                    color="#e6a23c" 
+                                    :stroke-width="6" />
+                            </div>
+                        </div>
+                    </el-card>
+                </el-col>
+            </el-row>
             
-            <el-card class="mb-4 rounded">
-                <el-row justify="space-between" align="middle" class="mb-4">
-                    <el-col :span="12">
-                        <div class="fs-base fw-semibold">Program Pelatihan</div>
-                    </el-col>
-                    <el-col :span="12" class="text-end">
-                        <el-button class="my-auto" :tag="Link" :href="route('admin.training.program.index')" type="primary">Kelola Program</el-button>
-                    </el-col>
-                </el-row>
+            <!-- Training Programs -->
+            <el-card class="mb-4 rounded" shadow="hover">
+                <template #header>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-semibold">Program Pelatihan</span>
+                        <el-button :tag="Link" :href="route('admin.training.program.index')" type="primary">Kelola Program</el-button>
+                    </div>
+                </template>
                 <div class="training-grid">
                     <div class="training-card" v-for="program in props.program" :key="program.id">
                         <div class="training-title">{{ program.nama }}</div>
                         <div class="training-info">
-                            <span>{{ program.jumlah_peserta_aktif }}/{{ program.kapasitas }} peserta</span>
-                            <span>{{ program.jumlah_peserta_aktif / program.kapasitas * 100 }}%</span>
+                            <span>{{ program.training_count || 0 }} peserta</span>
+                            <span>{{ program.durasi }} hari</span>
                         </div>
-                        <el-progress :percentage="program.jumlah_peserta_aktif / program.kapasitas * 100"
-                            :color="program.jumlah_peserta_aktif / program.kapasitas * 100 >= 80 ? '#67c23a' : program.jumlah_peserta_aktif / program.kapasitas * 100 >= 60 ? '#e6a23c' : '#f56c6c'"
-                            :stroke-width="6" />
+                        <div class="training-location">{{ program.lokasi }}</div>
+                        <div class="training-instructor">Instruktur: {{ program.instruktur }}</div>
                     </div>
+                </div>
+            </el-card>
+
+            <!-- Quick Actions -->
+            <el-card class="rounded" shadow="hover">
+                <template #header>
+                    <span class="fw-semibold">Aksi Cepat</span>
+                </template>
+                <div class="quick-actions">
+                    <el-button-group>
+                        <el-button :tag="Link" :href="route('admin.lamaran.index')" type="primary" size="large">
+                            <el-icon><Document /></el-icon>
+                            Kelola Lamaran
+                        </el-button>
+                        <el-button :tag="Link" :href="route('admin.dokumen-lamaran.index')" type="success" size="large">
+                            <el-icon><Folder /></el-icon>
+                            Review Dokumen
+                        </el-button>
+                        <el-button :tag="Link" :href="route('admin.interview.index')" type="warning" size="large">
+                            <el-icon><Calendar /></el-icon>
+                            Interview
+                        </el-button>
+                        <el-button :tag="Link" :href="route('admin.talent.index')" type="info" size="large">
+                            <el-icon><User /></el-icon>
+                            Kelola Talent
+                        </el-button>
+                    </el-button-group>
                 </div>
             </el-card>
         </div>
@@ -42,54 +181,77 @@
 </template>
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
-import { Link } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3'
+import { Document, Folder, Calendar, User } from '@element-plus/icons-vue'
 
 // import { echarts } from 'echarts/core';
 // Refs for charts
 const statusChart = ref(null);
 const monthlyChart = ref(null);
 const props = defineProps({
-    stats : Array,
-    program : Array
+    stats: Array,
+    monthlyData: Array,
+    statusDistribution: Object,
+    recentApplications: Array,
+    program: Array,
+    additionalStats: Object
 });
 
-const activities = ref([
-    {
-        id: 1,
-        action: 'Pendaftaran baru',
-        user: 'Siti Nurhaliza',
-        time: '2 jam lalu',
-        color: '#409eff'
-    },
-    {
-        id: 2,
-        action: 'Interview selesai',
-        user: 'Ahmad Wijaya',
-        time: '3 jam lalu',
-        color: '#67c23a'
-    },
-    {
-        id: 3,
-        action: 'Dokumen diverifikasi',
-        user: 'Maria Santos',
-        time: '5 jam lalu',
-        color: '#e6a23c'
-    },
-    {
-        id: 4,
-        action: 'Training dimulai',
-        user: 'Budi Santoso',
-        time: '1 hari lalu',
-        color: '#909399'
-    },
-    {
-        id: 5,
-        action: 'Status siap kerja',
-        user: 'Indah Permata',
-        time: '2 hari lalu',
-        color: '#67c23a'
-    }
-]);
+// Status mappings
+const statusLabels = {
+    'pending': 'Menunggu Review',
+    'diterima': 'Diterima', 
+    'ditolak': 'Ditolak',
+    'interview': 'Tahap Interview',
+    'medical': 'Medical Check Up',
+    'pelatihan': 'Pelatihan',
+    'siap': 'Siap Berangkat',
+    'selesai': 'Selesai'
+};
+
+const statusTypes = {
+    'pending': 'warning',
+    'diterima': 'success',
+    'ditolak': 'danger', 
+    'interview': 'primary',
+    'medical': 'info',
+    'pelatihan': '',
+    'siap': 'success',
+    'selesai': 'success'
+};
+
+const statusColors = {
+    'pending': '#e6a23c',
+    'diterima': '#67c23a',
+    'ditolak': '#f56c6c',
+    'interview': '#409eff', 
+    'medical': '#909399',
+    'pelatihan': '#8b5cf6',
+    'siap': '#67c23a',
+    'selesai': '#67c23a'
+};
+
+// Helper functions
+const getStatusLabel = (status) => statusLabels[status] || status;
+const getStatusType = (status) => statusTypes[status] || '';
+const getStatusColor = (status) => statusColors[status] || '#909399';
+
+const formatDate = (date) => {
+    return new Date(date).toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+    });
+};
+
+const getTotalApplications = () => {
+    if (!props.statusDistribution) return 1;
+    return Object.values(props.statusDistribution).reduce((sum, count) => sum + count, 0) || 1;
+};
+
+const getPercentage = (value, total) => {
+    return total > 0 ? Math.round((value / total) * 100) : 0;
+};
 
 
 
@@ -220,86 +382,199 @@ const quickActions = ref([
 //     chart.setOption(option);
 // };
 
+// Chart initialization
+const initMonthlyChart = async () => {
+    if (!props.monthlyData || !monthlyChart.value) return;
+    
+    // Dynamic import for echarts
+    const echarts = await import('echarts');
+    
+    const chart = echarts.init(monthlyChart.value);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    
+    const option = {
+        tooltip: {
+            trigger: 'axis',
+            formatter: 'Bulan {b}: {c} lamaran'
+        },
+        grid: {
+            left: '3%',
+            right: '4%', 
+            bottom: '3%',
+            containLabel: true
+        },
+        xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: months
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [
+            {
+                name: 'Lamaran',
+                type: 'line',
+                smooth: true,
+                data: props.monthlyData,
+                itemStyle: {
+                    color: '#409eff'
+                },
+                areaStyle: {
+                    color: {
+                        type: 'linear',
+                        x: 0,
+                        y: 0,
+                        x2: 0,
+                        y2: 1,
+                        colorStops: [{
+                            offset: 0, color: 'rgba(64, 158, 255, 0.3)'
+                        }, {
+                            offset: 1, color: 'rgba(64, 158, 255, 0.1)'
+                        }]
+                    }
+                }
+            }
+        ]
+    };
+    chart.setOption(option);
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        chart.resize();
+    });
+};
+
 onMounted(async () => {
     await nextTick();
-    // initStatusChart();
-    // initMonthlyChart();
+    initMonthlyChart();
 });
 
 </script>
 
 <style scoped>
-        .training-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-        }
-        .training-card {
-            background: white;
-            border-radius: 8px;
-            padding: 16px;
-            border: 1px solid #ebeef5;
-        }
-        .training-title {
-            font-weight: 500;
-            margin-bottom: 8px;
-            color: #303133;
-        }
-        .training-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 12px;
-            color: #909399;
-        }
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 16px;
-        }
-        .action-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            background: white;
-            border: 1px solid #ebeef5;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            text-decoration: none;
-            color: #303133;
-        }
-        .action-btn:hover {
-            border-color: #409eff;
-            background: #f0f9ff;
-            transform: translateY(-2px);
-        }
-        .action-icon {
-            font-size: 24px;
-            margin-bottom: 8px;
-        }
-        .action-text {
-            font-size: 12px;
-            text-align: center;
-        }
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
-        .grid-3 {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 24px;
-        }
-        @media (max-width: 768px) {
-            .grid-2, .grid-3 {
-                grid-template-columns: 1fr;
-            }
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+.stat-card {
+    transition: all 0.3s ease;
+}
 
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.application-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #ebeef5;
+}
+
+.application-item:last-child {
+    border-bottom: none;
+}
+
+.status-distribution {
+    space-y: 16px;
+}
+
+.status-item {
+    margin-bottom: 16px;
+}
+
+.additional-stats {
+    space-y: 20px;
+}
+
+.stat-group {
+    margin-bottom: 20px;
+}
+
+.stat-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #303133;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #606266;
+}
+
+.training-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+.training-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid #ebeef5;
+    transition: all 0.3s ease;
+}
+
+.training-card:hover {
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.training-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #303133;
+    font-size: 16px;
+}
+
+.training-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #909399;
+}
+
+.training-location {
+    font-size: 13px;
+    color: #606266;
+    margin-bottom: 4px;
+}
+
+.training-instructor {
+    font-size: 12px;
+    color: #909399;
+    font-style: italic;
+}
+
+.quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+}
+
+.quick-actions .el-button {
+    flex: 1;
+    min-width: 160px;
+}
+
+@media (max-width: 768px) {
+    .training-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .quick-actions {
+        flex-direction: column;
+    }
+    
+    .quick-actions .el-button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .el-col {
+        margin-bottom: 16px;
+    }
+}
 </style>

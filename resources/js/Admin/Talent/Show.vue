@@ -18,10 +18,10 @@
                         Edit Profile
                     </el-button>
                     
-                    <el-dropdown v-if="talent?.status !== 'selesai'" trigger="click">
+                    <el-dropdown v-if="activeApplication && activeApplication.status !== 'selesai'" trigger="click">
                         <el-button type="warning" size="small">
                             <i class="fa fa-exchange me-1"></i>
-                            Ubah Status
+                            Ubah Status Lamaran
                             <i class="fa fa-chevron-down ms-1"></i>
                         </el-button>
                         <template #dropdown>
@@ -29,8 +29,8 @@
                                 <el-dropdown-item 
                                     v-for="(label, status) in statusOptions" 
                                     :key="status"
-                                    @click="changeStatus(status)"
-                                    :disabled="status === talent?.status"
+                                    @click="changeApplicationStatus(status)"
+                                    :disabled="status === activeApplication?.status"
                                 >
                                     {{ label }}
                                 </el-dropdown-item>
@@ -48,22 +48,28 @@
                         Progress Status
                     </h3>
                     <div class="block-options">
-                        <el-tag 
-                            :type="statusProgress?.current?.color" 
-                            size="large"
-                        >
-                            {{ statusProgress?.current?.label }}
-                        </el-tag>
+                        <div class="d-flex flex-column">
+                            <el-tag 
+                                v-if="activeApplication"
+                                :type="getStatusType(activeApplication.status)" 
+                                size="large"
+                            >
+                                {{ getStatusLabel(activeApplication.status) }}
+                            </el-tag>
+                            <small class="text-muted mt-1" v-if="activeApplication">
+                                {{ activeApplication.lowongan?.posisi }} - {{ activeApplication.lowongan?.perusahaan }}
+                            </small>
+                        </div>
                     </div>
                 </div>
                 <div class="block-content">
                     <div class="row mb-3">
                         <div class="col-12">
                             <el-progress 
-                                :percentage="statusProgress?.percentage || 0"
+                                :percentage="applicationProgress?.percentage || 0"
                                 :stroke-width="20"
                                 :text-inside="true"
-                                :status="talent?.status === 'ditolak' ? 'exception' : 'success'"
+                                :status="activeApplication?.status === 'ditolak' ? 'exception' : 'success'"
                             >
                             </el-progress>
                         </div>
@@ -71,13 +77,13 @@
                     
                     <!-- Status Steps -->
                     <el-steps 
-                        :active="statusProgress?.current?.step || 0" 
-                        :process-status="talent?.status === 'ditolak' ? 'error' : 'process'"
+                        :active="applicationProgress?.current?.step || 0" 
+                        :process-status="activeApplication?.status === 'ditolak' ? 'error' : 'process'"
                         align-center
                         class="mt-3"
                     >
                         <el-step 
-                            v-for="(status, key) in statusProgress?.all" 
+                            v-for="(status, key) in applicationProgress?.all" 
                             :key="key"
                             :title="status.label"
                             v-show="key !== 'ditolak'"
@@ -86,9 +92,9 @@
                 </div>
             </div>
 
-            <!-- Completion Statistics -->
+            <!-- Statistics Cards -->
             <div class="row mb-4">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="block block-rounded">
                         <div class="block-header block-header-default">
                             <h3 class="block-title">
@@ -112,12 +118,12 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="block block-rounded">
                         <div class="block-header block-header-default">
                             <h3 class="block-title">
                                 <i class="fa fa-file me-2"></i>
-                                Dokumen Lengkap
+                                Dokumen Lamaran
                             </h3>
                         </div>
                         <div class="block-content text-center">
@@ -137,6 +143,59 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-md-4">
+                    <div class="block block-rounded">
+                        <div class="block-header block-header-default">
+                            <h3 class="block-title">
+                                <i class="fa fa-briefcase me-2"></i>
+                                Total Lamaran
+                            </h3>
+                        </div>
+                        <div class="block-content text-center">
+                            <div class="fs-2 fw-bold text-primary mb-2">{{ completionStats?.applications?.total || 0 }}</div>
+                            <div class="small text-muted">
+                                <div>Aktif: {{ completionStats?.applications?.active || 0 }}</div>
+                                <div>Selesai: {{ completionStats?.applications?.completed || 0 }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Applications List -->
+            <div class="block block-rounded mb-4" v-if="talent?.lamaran && talent.lamaran.length > 0">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">
+                        <i class="fa fa-list me-2"></i>
+                        Daftar Lamaran
+                    </h3>
+                </div>
+                <div class="block-content">
+                    <el-table :data="talent?.lamaran || []" border class="w-100" header-cell-class-name="bg-body text-dark">
+                        <el-table-column prop="tanggal_lamaran" label="Tanggal" width="120">
+                            <template #default="{ row }">
+                                {{ formatDate(row.tanggal_lamaran) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="lowongan.posisi" label="Posisi" />
+                        <el-table-column prop="lowongan.perusahaan" label="Perusahaan" />
+                        <el-table-column prop="lowongan.negara_tujuan" label="Negara" width="120" />
+                        <el-table-column prop="status" label="Status" width="150">
+                            <template #default="{ row }">
+                                <el-tag :type="getStatusType(row.status)" size="small">
+                                    {{ getStatusLabel(row.status) }}
+                                </el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="Aksi" width="150">
+                            <template #default="{ row }">
+                                <el-button :tag="Link" :href="route('admin.lamaran.show', row.id)" type="primary" size="small">
+                                    Detail
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
             </div>
             <!-- Tab Navigation -->
             <div class="block block-rounded">
@@ -148,10 +207,10 @@
                                 <!-- Alert for rejected status -->
                                 <el-alert
                                     class="mb-4"
-                                    v-if="talent?.status === 'ditolak'"
-                                    title="Catatan Penolakan"
+                                    v-if="activeApplication?.status === 'ditolak'"
+                                    title="Catatan Penolakan Lamaran"
                                     type="error"
-                                    :description="talent?.detail?.catatan"
+                                    :description="activeApplication?.catatan"
                                     show-icon
                                     :closable="false"
                                 />
@@ -295,80 +354,63 @@
                         <!-- Documents Tab -->
                         <el-tab-pane label="Dokumen" name="documents">
                             <div class="p-4">
-                                <div class="border-bottom border-2 mb-4">
+                                <div class="border-bottom border-2 mb-4 d-flex justify-content-between align-items-center">
                                     <h4 class="h5 mb-2">
                                         <i class="fa fa-files-o me-2"></i>
-                                        Dokumen Lampiran
+                                        Dokumen Per Lamaran
                                     </h4>
+                                    <el-button :tag="Link" :href="route('admin.dokumen-lamaran.index')" type="primary" size="small">
+                                        Kelola Semua Dokumen
+                                    </el-button>
                                 </div>
-                                <el-descriptions column="2" label-width="240px" :border="true" class="mb-4">
-                                    <el-descriptions-item label="KTP">
-                                        <span v-if="!talent?.detail?.ktp">-</span>
-                                        <el-button v-else tag="a" :href="'/uploads/'+talent?.detail?.ktp" target="_blank" type="primary" size="small">
-                                            <i class="fa fa-file-pdf-o"></i> Lihat
-                                        </el-button>
-                                    </el-descriptions-item>
-                                    <el-descriptions-item label="Kartu Keluarga">
-                                        <span v-if="!talent?.detail?.kk">-</span>
-                                        <el-button v-else tag="a" :href="'/uploads/'+talent?.detail?.kk" target="_blank" type="primary" size="small">
-                                            <i class="fa fa-file-pdf-o"></i> Lihat
-                                        </el-button>
-                                    </el-descriptions-item>
-                                    <el-descriptions-item label="Akte Lahir">
-                                        <span v-if="!talent?.detail?.akte_lahir">-</span>
-                                        <el-button v-else tag="a" :href="'/uploads/'+talent?.detail?.akte_lahir" target="_blank" type="primary" size="small">
-                                            <i class="fa fa-file-pdf-o"></i> Lihat
-                                        </el-button>
-                                    </el-descriptions-item>
-                                    <el-descriptions-item label="Buku Nikah">
-                                        <span v-if="!talent?.detail?.buku_nikah">-</span>
-                                        <el-button v-else tag="a" :href="'/uploads/'+talent?.detail?.buku_nikah" target="_blank" type="primary" size="small">
-                                            <i class="fa fa-file-pdf-o"></i> Lihat
-                                        </el-button>
-                                    </el-descriptions-item>
-                                    <el-descriptions-item label="Surat Keterangan Sehat">
-                                        <span v-if="!talent?.detail?.surat_keterangan_sehat">-</span>
-                                        <el-button v-else tag="a" :href="'/uploads/'+talent?.detail?.surat_keterangan_sehat" target="_blank" type="primary" size="small">
-                                            <i class="fa fa-file-pdf-o"></i> Lihat
-                                        </el-button>
-                                    </el-descriptions-item>
-                                    <el-descriptions-item label="Surat Izin Keluarga">
-                                        <span v-if="!talent?.detail?.surat_izin_keluarga">-</span>
-                                        <el-button v-else tag="a" :href="'/uploads/'+talent?.detail?.surat_izin_keluarga" target="_blank" type="primary" size="small">
-                                            <i class="fa fa-file-pdf-o"></i> Lihat
-                                        </el-button>
-                                    </el-descriptions-item>
-                                    <el-descriptions-item label="Ijazah Terakhir">
-                                        <span v-if="!talent?.detail?.ijazah">-</span>
-                                        <el-button v-else tag="a" :href="'/uploads/'+talent?.detail?.ijazah" target="_blank" type="primary" size="small">
-                                            <i class="fa fa-file-pdf-o"></i> Lihat
-                                        </el-button>
-                                    </el-descriptions-item>
-                                    <el-descriptions-item label="Sertifikat Keahlian/Kompetensi">
-                                        <span v-if="!talent?.detail?.kompetensi">-</span>
-                                        <el-button v-else tag="a" :href="'/uploads/'+talent?.detail?.kompetensi" target="_blank" type="primary" size="small">
-                                            <i class="fa fa-file-pdf-o"></i> Lihat
-                                        </el-button>
-                                    </el-descriptions-item>
-                                    <el-descriptions-item label="Paspor">
-                                        <span v-if="!talent?.detail?.paspor">-</span>
-                                        <el-button v-else tag="a" :href="'/uploads/'+talent?.detail?.paspor" target="_blank" type="primary" size="small">
-                                            <i class="fa fa-file-pdf-o"></i> Lihat
-                                        </el-button>
-                                    </el-descriptions-item>
-                                    <el-descriptions-item label="Surat Keterangan Pengalaman Kerja">
-                                        <span v-if="!talent?.detail?.surat_pengalaman_kerja">-</span>
-                                        <el-button v-else tag="a" :href="'/uploads/'+talent?.detail?.surat_pengalaman_kerja" target="_blank" type="primary" size="small">
-                                            <i class="fa fa-file-pdf-o"></i> Lihat
-                                        </el-button>
-                                    </el-descriptions-item>
-                                    <el-descriptions-item label="SKCK">
-                                        <span v-if="!talent?.detail?.skck">-</span>
-                                        <el-button v-else tag="a" :href="'/uploads/'+talent?.detail?.skck" target="_blank" type="primary" size="small">
-                                            <i class="fa fa-file-pdf-o"></i> Lihat
-                                        </el-button>
-                                    </el-descriptions-item>
-                                </el-descriptions>
+                                
+                                <div v-if="documentStats">
+                                    <el-row :gutter="16" class="mb-4">
+                                        <el-col :span="6">
+                                            <el-statistic title="Total Dokumen" :value="documentStats.total" />
+                                        </el-col>
+                                        <el-col :span="6">
+                                            <el-statistic title="Menunggu Review" :value="documentStats.pending" />
+                                        </el-col>
+                                        <el-col :span="6">
+                                            <el-statistic title="Disetujui" :value="documentStats.approved" />
+                                        </el-col>
+                                        <el-col :span="6">
+                                            <el-statistic title="Tingkat Persetujuan" :value="documentStats.approval_rate" suffix="%" :precision="1" />
+                                        </el-col>
+                                    </el-row>
+                                </div>
+                                
+                                <div v-if="activeApplication && activeApplication.dokumen">
+                                    <h5 class="mb-3">Dokumen Lamaran Aktif ({{ activeApplication.lowongan?.posisi }})</h5>
+                                    <el-table :data="activeApplication.dokumen" border class="w-100" header-cell-class-name="bg-body text-dark" :empty-text="'Belum ada dokumen diupload'">
+                                        <el-table-column prop="kategoriDokumen.nama_kategori" label="Kategori Dokumen" />
+                                        <el-table-column prop="nama_file" label="Nama File" />
+                                        <el-table-column prop="diupload_tanggal" label="Tanggal Upload" width="120">
+                                            <template #default="{ row }">
+                                                {{ formatDate(row.diupload_tanggal) }}
+                                            </template>
+                                        </el-table-column>
+                                        <el-table-column prop="status" label="Status" width="120">
+                                            <template #default="{ row }">
+                                                <el-tag :type="getDocumentStatusType(row.status)" size="small">
+                                                    {{ getDocumentStatusLabel(row.status) }}
+                                                </el-tag>
+                                            </template>
+                                        </el-table-column>
+                                        <el-table-column label="Aksi" width="150">
+                                            <template #default="{ row }">
+                                                <el-button :tag="Link" :href="route('admin.dokumen-lamaran.show', row.id)" type="primary" size="small">
+                                                    Detail
+                                                </el-button>
+                                            </template>
+                                        </el-table-column>
+                                    </el-table>
+                                </div>
+                                
+                                <div v-else class="text-center py-4">
+                                    <el-empty description="Tidak ada lamaran aktif atau belum ada dokumen diupload" />
+                                </div>
                             </div>
                         </el-tab-pane>
 
@@ -381,57 +423,57 @@
                                         Riwayat Interview & Penilaian
                                     </h4>
                                 </div>
-                                <el-table 
-                                    :data="jadwalInterview" 
-                                    border 
-                                    class="w-100" 
-                                    header-cell-class-name="bg-body text-dark"
-                                    :empty-text="'Belum ada jadwal interview'"
-                                >
-                                    <el-table-column prop="tanggal" label="Tanggal" width="120">
-                                        <template #default="{ row }">
-                                            {{ formatDate(row.tanggal) }}
-                                        </template>
-                                    </el-table-column>
-                                    <el-table-column prop="waktu" label="Waktu" width="100" />
-                                    <el-table-column prop="pewawancara_nama" label="Pewawancara" />
-                                    <el-table-column prop="skor_interview" label="Skor Interview" width="120" align="center">
-                                        <template #default="{ row }">
-                                            <el-tag v-if="row.skor_interview" :type="getScoreType(row.skor_interview)">
-                                                {{ row.skor_interview }}
-                                            </el-tag>
-                                            <span v-else class="text-muted">-</span>
-                                        </template>
-                                    </el-table-column>
-                                    <el-table-column prop="skor_psikotes" label="Skor Psikotes" width="120" align="center">
-                                        <template #default="{ row }">
-                                            <el-tag v-if="row.skor_psikotes" :type="getScoreType(row.skor_psikotes)">
-                                                {{ row.skor_psikotes }}
-                                            </el-tag>
-                                            <span v-else class="text-muted">-</span>
-                                        </template>
-                                    </el-table-column>
-                                    <el-table-column prop="rekomendasi" label="Rekomendasi" width="150">
-                                        <template #default="{ row }">
-                                            <el-tag v-if="row.rekomendasi" :type="getRecommendationType(row.rekomendasi)" size="small">
-                                                {{ getRecommendationLabel(row.rekomendasi) }}
-                                            </el-tag>
-                                            <span v-else class="text-muted">-</span>
-                                        </template>
-                                    </el-table-column>
-                                    <el-table-column prop="hasil_catatan" label="Catatan" min-width="200">
-                                        <template #default="{ row }">
-                                            {{ row.hasil_catatan || '-' }}
-                                        </template>
-                                    </el-table-column>
-                                    <el-table-column prop="status" label="Status" width="120">
-                                        <template #default="{ row }">
-                                            <el-tag :type="row.tanggal_penilaian ? 'success' : 'warning'" size="small">
-                                                {{ row.tanggal_penilaian ? 'Selesai' : 'Terjadwal' }}
-                                            </el-tag>
-                                        </template>
-                                    </el-table-column>
-                                </el-table>
+                                <div v-if="talent?.lamaran && talent.lamaran.length > 0">
+                                    <div v-for="lamaran in talent.lamaran" :key="lamaran.id" class="mb-4">
+                                        <h6 class="text-primary">{{ lamaran.lowongan?.posisi }} - {{ lamaran.lowongan?.perusahaan }}</h6>
+                                        <el-table 
+                                            :data="lamaran.jadwalInterview || []" 
+                                            border 
+                                            class="w-100 mb-3" 
+                                            header-cell-class-name="bg-body text-dark"
+                                            :empty-text="'Belum ada jadwal interview untuk lamaran ini'"
+                                        >
+                                            <el-table-column prop="tanggal" label="Tanggal" width="120">
+                                                <template #default="{ row }">
+                                                    {{ formatDate(row.tanggal) }}
+                                                </template>
+                                            </el-table-column>
+                                            <el-table-column prop="waktu" label="Waktu" width="100" />
+                                            <el-table-column prop="pewawancara.nama" label="Pewawancara" />
+                                            <el-table-column prop="hasil.skor_interview" label="Skor Interview" width="120" align="center">
+                                                <template #default="{ row }">
+                                                    <el-tag v-if="row.hasil?.skor_interview" :type="getScoreType(row.hasil.skor_interview)">
+                                                        {{ row.hasil.skor_interview }}
+                                                    </el-tag>
+                                                    <span v-else class="text-muted">-</span>
+                                                </template>
+                                            </el-table-column>
+                                            <el-table-column prop="hasil.rekomendasi" label="Rekomendasi" width="150">
+                                                <template #default="{ row }">
+                                                    <el-tag v-if="row.hasil?.rekomendasi" :type="getRecommendationType(row.hasil.rekomendasi)" size="small">
+                                                        {{ getRecommendationLabel(row.hasil.rekomendasi) }}
+                                                    </el-tag>
+                                                    <span v-else class="text-muted">-</span>
+                                                </template>
+                                            </el-table-column>
+                                            <el-table-column prop="hasil.catatan" label="Catatan" min-width="200">
+                                                <template #default="{ row }">
+                                                    {{ row.hasil?.catatan || '-' }}
+                                                </template>
+                                            </el-table-column>
+                                            <el-table-column prop="status" label="Status" width="120">
+                                                <template #default="{ row }">
+                                                    <el-tag :type="row.hasil ? 'success' : 'warning'" size="small">
+                                                        {{ row.hasil ? 'Selesai' : 'Terjadwal' }}
+                                                    </el-tag>
+                                                </template>
+                                            </el-table-column>
+                                        </el-table>
+                                    </div>
+                                </div>
+                                <div v-else class="text-center py-4">
+                                    <el-empty description="Belum ada lamaran" />
+                                </div>
                             </div>
                         </el-tab-pane>
 
@@ -444,51 +486,54 @@
                                         Riwayat Pelatihan
                                     </h4>
                                 </div>
-                                <el-table 
-                                    :data="training" 
-                                    border 
-                                    class="w-100" 
-                                    header-cell-class-name="bg-body text-dark"
-                                    :empty-text="'Belum ada data pelatihan'"
-                                >
-                                    <el-table-column prop="program_nama" label="Program" min-width="200" />
-                                    <el-table-column prop="tanggal_daftar" label="Tanggal Daftar" width="120">
-                                        <template #default="{ row }">
-                                            {{ formatDate(row.tanggal_daftar) }}
-                                        </template>
-                                    </el-table-column>
-                                    <el-table-column prop="tanggal_mulai" label="Mulai" width="120">
-                                        <template #default="{ row }">
-                                            {{ formatDate(row.tanggal_mulai) }}
-                                        </template>
-                                    </el-table-column>
-                                    <el-table-column prop="tanggal_selesai" label="Selesai" width="120">
-                                        <template #default="{ row }">
-                                            {{ formatDate(row.tanggal_selesai) }}
-                                        </template>
-                                    </el-table-column>
-                                    <el-table-column prop="status" label="Status" width="150">
-                                        <template #default="{ row }">
-                                            <el-tag :type="getTrainingStatusType(row.status)" size="small">
-                                                {{ getTrainingStatusLabel(row.status) }}
-                                            </el-tag>
-                                        </template>
-                                    </el-table-column>
-                                    <el-table-column prop="nilai_akhir" label="Nilai" width="100" align="center">
-                                        <template #default="{ row }">
-                                            <el-tag v-if="row.nilai_akhir" :type="getScoreType(row.nilai_akhir)">
-                                                {{ row.nilai_akhir }}
-                                            </el-tag>
-                                            <span v-else class="text-muted">-</span>
-                                        </template>
-                                    </el-table-column>
-                                    <el-table-column prop="nomor_sertifikat" label="No. Sertifikat" width="150">
-                                        <template #default="{ row }">
-                                            {{ row.nomor_sertifikat || '-' }}
-                                        </template>
-                                    </el-table-column>
-                                    <el-table-column prop="pendaftar_nama" label="Didaftarkan Oleh" width="150" />
-                                </el-table>
+                                <div v-if="talent?.lamaran && talent.lamaran.length > 0">
+                                    <div v-for="lamaran in talent.lamaran" :key="lamaran.id" class="mb-4">
+                                        <h6 class="text-primary">{{ lamaran.lowongan?.posisi }} - {{ lamaran.lowongan?.perusahaan }}</h6>
+                                        <el-table 
+                                            :data="lamaran.training || []" 
+                                            border 
+                                            class="w-100 mb-3" 
+                                            header-cell-class-name="bg-body text-dark"
+                                            :empty-text="'Belum ada data pelatihan untuk lamaran ini'"
+                                        >
+                                            <el-table-column prop="program.nama" label="Program" min-width="200" />
+                                            <el-table-column prop="tanggal_daftar" label="Tanggal Daftar" width="120">
+                                                <template #default="{ row }">
+                                                    {{ formatDate(row.tanggal_daftar) }}
+                                                </template>
+                                            </el-table-column>
+                                            <el-table-column prop="tanggal_mulai" label="Mulai" width="120">
+                                                <template #default="{ row }">
+                                                    {{ formatDate(row.tanggal_mulai) }}
+                                                </template>
+                                            </el-table-column>
+                                            <el-table-column prop="tanggal_selesai" label="Selesai" width="120">
+                                                <template #default="{ row }">
+                                                    {{ formatDate(row.tanggal_selesai) }}
+                                                </template>
+                                            </el-table-column>
+                                            <el-table-column prop="status" label="Status" width="150">
+                                                <template #default="{ row }">
+                                                    <el-tag :type="getTrainingStatusType(row.status)" size="small">
+                                                        {{ getTrainingStatusLabel(row.status) }}
+                                                    </el-tag>
+                                                </template>
+                                            </el-table-column>
+                                            <el-table-column prop="nilai_akhir" label="Nilai" width="100" align="center">
+                                                <template #default="{ row }">
+                                                    <el-tag v-if="row.nilai_akhir" :type="getScoreType(row.nilai_akhir)">
+                                                        {{ row.nilai_akhir }}
+                                                    </el-tag>
+                                                    <span v-else class="text-muted">-</span>
+                                                </template>
+                                            </el-table-column>
+                                            <el-table-column prop="staff.nama" label="Didaftarkan Oleh" width="150" />
+                                        </el-table>
+                                    </div>
+                                </div>
+                                <div v-else class="text-center py-4">
+                                    <el-empty description="Belum ada lamaran" />
+                                </div>
                             </div>
                         </el-tab-pane>
 
@@ -501,47 +546,55 @@
                                         Medical Check Up Records
                                     </h4>
                                 </div>
-                                <div v-if="talent?.medical && talent.medical.length > 0">
-                                    <div v-for="(medical, index) in talent.medical" :key="index" class="mb-4">
-                                        <el-card>
-                                            <template #header>
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <h6 class="mb-0">Medical Check #{{ index + 1 }}</h6>
-                                                    <el-tag :type="medical.status === 'lulus' ? 'success' : 'danger'" size="small">
-                                                        {{ medical.status === 'lulus' ? 'Lulus' : 'Tidak Lulus' }}
-                                                    </el-tag>
-                                                </div>
-                                            </template>
-                                            <el-descriptions column="2" label-width="200px" :border="true">
-                                                <el-descriptions-item label="Tanggal Medical">
-                                                    {{ formatDate(medical.tanggal_medical) }}
-                                                </el-descriptions-item>
-                                                <el-descriptions-item label="Rumah Sakit">
-                                                    {{ medical.rumah_sakit || '-' }}
-                                                </el-descriptions-item>
-                                                <el-descriptions-item label="Dokter Pemeriksa">
-                                                    {{ medical.dokter || '-' }}
-                                                </el-descriptions-item>
-                                                <el-descriptions-item label="Tinggi Badan">
-                                                    {{ medical.tinggi_badan ? medical.tinggi_badan + ' cm' : '-' }}
-                                                </el-descriptions-item>
-                                                <el-descriptions-item label="Berat Badan">
-                                                    {{ medical.berat_badan ? medical.berat_badan + ' kg' : '-' }}
-                                                </el-descriptions-item>
-                                                <el-descriptions-item label="Tekanan Darah">
-                                                    {{ medical.tekanan_darah || '-' }}
-                                                </el-descriptions-item>
-                                                <el-descriptions-item label="Golongan Darah">
-                                                    {{ medical.golongan_darah || '-' }}
-                                                </el-descriptions-item>
-                                                <el-descriptions-item label="Mata">
-                                                    {{ medical.mata || '-' }}
-                                                </el-descriptions-item>
-                                                <el-descriptions-item label="Catatan" span="2">
-                                                    {{ medical.catatan || '-' }}
-                                                </el-descriptions-item>
-                                            </el-descriptions>
-                                        </el-card>
+                                <div v-if="talent?.lamaran && talent.lamaran.length > 0">
+                                    <div v-for="lamaran in talent.lamaran" :key="lamaran.id" class="mb-4">
+                                        <h6 class="text-primary">{{ lamaran.lowongan?.posisi }} - {{ lamaran.lowongan?.perusahaan }}</h6>
+                                        <div v-if="lamaran.medical && lamaran.medical.length > 0">
+                                            <div v-for="(medical, index) in lamaran.medical" :key="index" class="mb-3">
+                                                <el-card>
+                                                    <template #header>
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <h6 class="mb-0">Medical Check #{{ index + 1 }}</h6>
+                                                            <el-tag :type="medical.status === 'lulus' ? 'success' : 'danger'" size="small">
+                                                                {{ medical.status === 'lulus' ? 'Lulus' : 'Tidak Lulus' }}
+                                                            </el-tag>
+                                                        </div>
+                                                    </template>
+                                                    <el-descriptions column="2" label-width="200px" :border="true">
+                                                        <el-descriptions-item label="Tanggal Medical">
+                                                            {{ formatDate(medical.tanggal) }}
+                                                        </el-descriptions-item>
+                                                        <el-descriptions-item label="Rumah Sakit">
+                                                            {{ medical.rumah_sakit || '-' }}
+                                                        </el-descriptions-item>
+                                                        <el-descriptions-item label="Dokter Pemeriksa">
+                                                            {{ medical.dokter || '-' }}
+                                                        </el-descriptions-item>
+                                                        <el-descriptions-item label="Tinggi Badan">
+                                                            {{ medical.tinggi_badan ? medical.tinggi_badan + ' cm' : '-' }}
+                                                        </el-descriptions-item>
+                                                        <el-descriptions-item label="Berat Badan">
+                                                            {{ medical.berat_badan ? medical.berat_badan + ' kg' : '-' }}
+                                                        </el-descriptions-item>
+                                                        <el-descriptions-item label="Tekanan Darah">
+                                                            {{ medical.tekanan_darah || '-' }}
+                                                        </el-descriptions-item>
+                                                        <el-descriptions-item label="Golongan Darah">
+                                                            {{ medical.golongan_darah || '-' }}
+                                                        </el-descriptions-item>
+                                                        <el-descriptions-item label="Mata">
+                                                            {{ medical.mata || '-' }}
+                                                        </el-descriptions-item>
+                                                        <el-descriptions-item label="Catatan" span="2">
+                                                            {{ medical.catatan || '-' }}
+                                                        </el-descriptions-item>
+                                                    </el-descriptions>
+                                                </el-card>
+                                            </div>
+                                        </div>
+                                        <div v-else class="text-center py-3">
+                                            <el-empty description="Belum ada data medical check up untuk lamaran ini" :image-size="60" />
+                                        </div>
                                     </div>
                                 </div>
                                 <div v-else class="text-center py-4">
@@ -571,19 +624,19 @@ const props = defineProps({
         type: Object,
         default: () => ({})
     },
-    jadwalInterview: {
-        type: Array,
-        default: () => []
+    activeApplication: {
+        type: Object,
+        default: () => null
     },
-    training: {
-        type: Array,
-        default: () => []
-    },
-    statusProgress: {
+    applicationProgress: {
         type: Object,
         default: () => ({})
     },
     completionStats: {
+        type: Object,
+        default: () => ({})
+    },
+    documentStats: {
         type: Object,
         default: () => ({})
     },
@@ -659,23 +712,73 @@ const getTrainingStatusLabel = (status) => {
     return labels[status] || status;
 }
 
-const changeStatus = (newStatus) => {
+// Status mappings for applications
+const statusLabels = {
+    'pending': 'Menunggu Review',
+    'diterima': 'Diterima',
+    'ditolak': 'Ditolak',
+    'interview': 'Tahap Interview',
+    'medical': 'Medical Check Up',
+    'pelatihan': 'Pelatihan',
+    'siap': 'Siap Berangkat',
+    'selesai': 'Selesai'
+};
+
+const statusTypes = {
+    'pending': 'warning',
+    'diterima': 'success',
+    'ditolak': 'danger',
+    'interview': 'primary',
+    'medical': 'info',
+    'pelatihan': '',
+    'siap': 'success',
+    'selesai': 'success'
+};
+
+const getStatusLabel = (status) => statusLabels[status] || status;
+const getStatusType = (status) => statusTypes[status] || '';
+
+// Document status helpers
+const getDocumentStatusLabel = (status) => {
+    const labels = {
+        'pending': 'Menunggu Review',
+        'approved': 'Disetujui',
+        'rejected': 'Ditolak'
+    };
+    return labels[status] || status;
+};
+
+const getDocumentStatusType = (status) => {
+    const types = {
+        'pending': 'warning',
+        'approved': 'success', 
+        'rejected': 'danger'
+    };
+    return types[status] || '';
+};
+
+const changeApplicationStatus = (newStatus) => {
+    if (!props.activeApplication) {
+        ElMessage.error('Tidak ada lamaran aktif');
+        return;
+    }
+
     if (newStatus === 'ditolak') {
-        ElMessageBox.prompt('Alasan Penolakan', 'Tolak Talent', {
+        ElMessageBox.prompt('Alasan Penolakan Lamaran', 'Tolak Lamaran', {
             confirmButtonText: 'Kirim',
             cancelButtonText: 'Batal',
             inputType: 'textarea'
         })
         .then(({ value }) => {
-            updateStatus(newStatus, value);
+            updateApplicationStatus(newStatus, value);
         })
         .catch(() => {
             ElMessage.info('Penolakan dibatalkan.');
         });
     } else {
         ElMessageBox.confirm(
-            `Apakah Anda yakin ingin mengubah status menjadi "${props.statusOptions[newStatus]}"?`, 
-            'Ubah Status', 
+            `Apakah Anda yakin ingin mengubah status lamaran menjadi "${props.statusOptions[newStatus]}"?`, 
+            'Ubah Status Lamaran', 
             {
                 confirmButtonText: 'Ya, Ubah',
                 cancelButtonText: 'Batal',
@@ -683,7 +786,7 @@ const changeStatus = (newStatus) => {
             }
         )
         .then(() => {
-            updateStatus(newStatus);
+            updateApplicationStatus(newStatus);
         })
         .catch(() => {
             ElMessage.info('Perubahan status dibatalkan.');
@@ -691,18 +794,19 @@ const changeStatus = (newStatus) => {
     }
 }
 
-const updateStatus = (newStatus, reason = null) => {
+const updateApplicationStatus = (newStatus, catatan = null) => {
     const loading = ElLoading.service({
         lock: true,
-        text: 'Mengubah status...',
+        text: 'Mengubah status lamaran...',
     });
     
-    axios.post(`/admin/talent/${props.talent.id}/state`, {
-        state: newStatus,
-        reason: reason
+    axios.post(`/admin/talent/${props.talent.id}/update-application-status`, {
+        lamaran_id: props.activeApplication.id,
+        status: newStatus,
+        catatan: catatan
     })
     .then(response => {
-        ElMessage.success('Status berhasil diperbarui.');
+        ElMessage.success('Status lamaran berhasil diperbarui.');
         loading.close();
         router.visit(route('admin.talent.show', props.talent.id), {
             preserveState: false,
@@ -711,8 +815,8 @@ const updateStatus = (newStatus, reason = null) => {
     })
     .catch(error => {
         loading.close();
-        console.error('Error updating status:', error);
-        ElMessage.error('Gagal mengubah status. Silakan coba lagi.');
+        console.error('Error updating application status:', error);
+        ElMessage.error('Gagal mengubah status lamaran. Silakan coba lagi.');
     });
 }
 

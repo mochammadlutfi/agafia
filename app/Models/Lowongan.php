@@ -30,10 +30,21 @@ class Lowongan extends Model
         'status_label',
     ];
 
+    // Relationships
+    public function lamaran()
+    {
+        return $this->hasMany(Lamaran::class, 'lowongan_id');
+    }
+
     // Scopes
     public function scopeBuka($query)
     {
         return $query->where('status', 'buka');
+    }
+
+    public function scopeTutup($query)
+    {
+        return $query->where('status', 'tutup');
     }
 
     // Mutators & Accessors

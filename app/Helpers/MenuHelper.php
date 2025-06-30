@@ -30,27 +30,33 @@ class MenuHelper
             "to" => "admin.talent.index",
         ]);
     
-        // $menuData->push([
-        //     "icon" => "fa fa-file-medical",
-        //     "name" => "Dokumen",
-        //     "to" => "admin.document.index",
-        // ]);
+        $menuData->push([
+            "icon" => "fa fa-plane-departure",
+            "name" => "Lamaran",
+            "to" => "admin.lamaran.index",
+        ]);
     
         $menuData->push([
-            "name" => 'Interview',
-            "icon" => 'fa fa-calendar-alt',
-            "subActivePaths" => 'admin.interview.*',
-            "sub" => [
-                [
-                    "name" => 'Jadwal',
-                    "to" => 'admin.interview.jadwal.index',
-                ],
-                [
-                    "name" => 'Hasil',
-                    "to" => 'admin.interview.hasil.index',
-                ],
-            ]
+            "icon" => "fa fa-file-medical",
+            "name" => "Interview",
+            "to" => "admin.interview.index",
         ]);
+    
+        // $menuData->push([
+        //     "name" => 'Interview',
+        //     "icon" => 'fa fa-calendar-alt',
+        //     "subActivePaths" => 'admin.interview.*',
+        //     "sub" => [
+        //         [
+        //             "name" => 'Jadwal',
+        //             "to" => 'admin.interview.jadwal.index',
+        //         ],
+        //         [
+        //             "name" => 'Hasil',
+        //             "to" => 'admin.interview.hasil.index',
+        //         ],
+        //     ]
+        // ]);
     
         $menuData->push([
             "name" => 'Training',
@@ -84,12 +90,6 @@ class MenuHelper
             "name" => "Lowongan Kerja",
             "to" => "admin.lowongan.index",
         ]);
-        // $menuData->push([
-        //     "icon" => "fa fa-plane-departure",
-        //     "name" => "Medical Checkup",
-        //     "to" => "admin.departure.index",
-        // ]);
-    
         // $menuData->push([
         //     "icon" => "fa fa-chart-bar",
         //     "name" => "Laporan",

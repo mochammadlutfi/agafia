@@ -14,6 +14,7 @@ class HasilInterview extends Model
     protected $fillable = [
         'jadwal_id',
         'user_id',
+        'lamaran_id',
         'skor_interview',
         'skor_psikotes',
         'kemampuan_komunikasi',
@@ -51,6 +52,11 @@ class HasilInterview extends Model
     public function penyetuju()
     {
         return $this->belongsTo(Admin::class, 'disetujui_oleh');
+    }
+
+    public function lamaran()
+    {
+        return $this->belongsTo(Lamaran::class, 'lamaran_id');
     }
 
     // Scopes

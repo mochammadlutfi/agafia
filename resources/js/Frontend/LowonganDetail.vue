@@ -315,8 +315,8 @@
 
 <script setup>
 import BaseLayout from './Layouts/BaseLayout.vue'
-import { Link, usePage } from '@inertiajs/vue3'
-import { ElMessage } from 'element-plus'
+import { Link, usePage, router } from '@inertiajs/vue3'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const props = defineProps({
     job: Object,
@@ -349,7 +349,7 @@ const getApplyButtonText = () => {
     return 'Lamar Sekarang'
 }
 
-const applyJob = () => {
+const applyJob = async () => {
     if (!props.job) return
     
     if (props.job.status !== 'buka') {
@@ -362,11 +362,76 @@ const applyJob = () => {
         return
     }
     
-    // Here you would typically redirect to application form or handle the application
-    ElMessage.success(`Anda akan diarahkan untuk melamar posisi ${props.job.posisi}`)
-    
-    // You could redirect to registration/login or application form
-    // window.location.href = route('register')
+    try {
+        // Confirm application
+        await ElMessageBox.confirm(
+            `Apakah Anda yakin ingin melamar untuk posisi ${props.job.posisi} di ${props.job.perusahaan}?`,
+            'Konfirmasi Lamaran',
+            {
+                confirmButtonText: 'Ya, Lamar Sekarang',
+                cancelButtonText: 'Batal',
+                type: 'info',
+                confirmButtonClass: 'el-button--primary',
+                cancelButtonClass: 'el-button--default'
+            }
+        )
+
+        // Show loading message
+        const loadingMessage = ElMessage({
+            message: 'Mengirim lamaran...',
+            type: 'info',
+            duration: 0, // Don't auto close
+            showClose: false
+        })
+
+        // Submit application using Inertia router
+        router.post('/user/lamaran/store', {
+            lowongan_id: props.job.id,
+            surat_lamaran: `Saya tertarik untuk melamar posisi ${props.job.posisi} di ${props.job.perusahaan}. Saya siap memberikan yang terbaik dan berkontribusi untuk kemajuan perusahaan.`
+        }, {
+            preserveState: false,
+            preserveScroll: false,
+            onSuccess: (page) => {
+                loadingMessage.close()
+                ElMessage.success('Lamaran berhasil dikirim!')
+                
+                // The redirect is handled by the controller
+                // No need for manual redirect here
+            },
+            onError: (errors) => {
+                loadingMessage.close()
+                
+                if (errors.profile_incomplete) {
+                    ElMessage.warning('Silakan lengkapi profil Anda terlebih dahulu')
+                    setTimeout(() => {
+                        router.visit('/user/biodata/form')
+                    }, 1500)
+                } else if (errors.already_applied) {
+                    ElMessage.warning('Anda sudah melamar untuk posisi ini')
+                    setTimeout(() => {
+                        router.visit('/user/lamaran')
+                    }, 1500)
+                } else {
+                    const firstError = Object.values(errors)[0]
+                    ElMessage.error(Array.isArray(firstError) ? firstError[0] : firstError)
+                }
+            },
+            onFinish: () => {
+                loadingMessage.close()
+            }
+        })
+
+    } catch (error) {
+        // Close loading message if exists
+        ElMessage.closeAll()
+        
+        if (error.dismissed) {
+            // User cancelled the confirmation
+            return
+        }
+        
+        ElMessage.error('Terjadi kesalahan: ' + error.message)
+    }
 }
 </script>
 

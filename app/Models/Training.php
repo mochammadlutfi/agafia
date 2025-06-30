@@ -13,6 +13,7 @@ class Training extends Model
 
     protected $fillable = [
         'user_id',
+        'lamaran_id',
         'program_id',
         'tanggal_daftar',
         'tanggal_mulai',
@@ -50,6 +51,11 @@ class Training extends Model
     public function staff()
     {
         return $this->belongsTo(Admin::class, 'didaftarkan_oleh');
+    }
+
+    public function lamaran()
+    {
+        return $this->belongsTo(Lamaran::class, 'lamaran_id');
     }
 
     // Scopes

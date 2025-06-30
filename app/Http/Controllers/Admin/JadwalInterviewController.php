@@ -16,6 +16,8 @@ use App\Notifications\JadwalInterviewNotification;
 
 
 use App\Models\JadwalInterview;
+use App\Models\Interview;
+use App\Models\Lamaran;
 use App\Models\User;
 
 
@@ -50,9 +52,7 @@ class JadwalInterviewController extends Controller
     
     public function store(Request $request)
     {
-        // dd($request->all());
         $rules = [
-            'user_id' => 'required',
             'tanggal' => 'required',
             'waktu' => 'required',
             'lokasi' => 'required',
@@ -60,7 +60,6 @@ class JadwalInterviewController extends Controller
         ];
 
         $pesan = [
-            'user_id.required' => 'Nama Talent Wajib Diisi!',
             'tanggal.required' => 'Tanggal Interview Wajib Diisi!',
             'waktu.required' => 'Waktu Interview Wajib Diisi!',
             'lokasi.required' => 'Lokasi Interview Wajib Diisi!',
@@ -73,21 +72,23 @@ class JadwalInterviewController extends Controller
         }else{
             DB::beginTransaction();
             try{
+
+                $lamaran = Lamaran::where('id', $request->lamaran_id)->first();
+                $user = User::where('id', $lamaran->user_id)->first();
                 
-                $data = new JadwalInterview();
-                $data->user_id = $request->user_id;
+                $data = new Interview();
+                $data->user_id = $lamaran->user_id;
+                $data->lamaran_id = $request->lamaran_id;
                 $data->lokasi = $request->lokasi;
                 $data->tanggal = $request->tanggal;
                 $data->waktu = $request->waktu;
                 $data->pewawancara_id = $request->pewawancara_id;
                 $data->catatan = $request->catatan;
-                $data->dibuat_oleh = auth()->guard('admin')->user()->id;
                 $data->status = 'dijadwalkan';
                 $data->save();
 
-                $user = User::find($request->user_id);
-                $user->status = 'interview';
-                $user->save();
+                $lamaran->status = 'interview';
+                $lamaran->save();
 
                 $user->notify(new JadwalInterviewNotification($data));
                 
@@ -98,7 +99,10 @@ class JadwalInterviewController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('admin.interview.jadwal.show', $data->id);
+            return response()->json([
+                'success' => true,
+                'message' => 'Jadwal berhasil Dibuat',
+            ]);
         }
     }
     /**

@@ -26,6 +26,12 @@ class KategoriDokumen extends Model
         'jenis_dokumen_label',
     ];
 
+    // Relationships
+    public function dokumenLamaran()
+    {
+        return $this->hasMany(DokumenLamaran::class, 'kategori_dokumen_id');
+    }
+
     // Scopes
     public function scopeWajib($query)
     {
@@ -35,6 +41,11 @@ class KategoriDokumen extends Model
     public function scopeByJenis($query, $jenis)
     {
         return $query->where('jenis_dokumen', $jenis);
+    }
+
+    public function scopePendaftaran($query)
+    {
+        return $query->where('jenis_dokumen', 'pendaftaran');
     }
 
     public function scopeMedical($query)
@@ -56,6 +67,7 @@ class KategoriDokumen extends Model
     public function getJenisDokumenLabelAttribute()
     {
         $labels = [
+            'pendaftaran' => 'Pendaftaran',
             'medical' => 'Medical',
             'keberangkatan' => 'Keberangkatan',
             'umum' => 'Umum',

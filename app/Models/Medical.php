@@ -9,12 +9,12 @@ class Medical extends Model
 {
     use HasFactory;
 
-    protected $table = 'medical_checkups';
+    protected $table = 'medical';
 
     protected $fillable = [
         'user_id',
-        'nama',
         'tanggal',
+        'nama',
         'hasil',
         'file',
         'status',
@@ -34,6 +34,7 @@ class Medical extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
 
     
     public function getStatusLabelAttribute()

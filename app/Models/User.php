@@ -22,7 +22,7 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var string[]
      */
     protected $fillable = [ 
-        'nama', 'email', 'password', 'status', 'aktif'
+        'nama', 'email', 'password', 'aktif'
     ];
 
     /**
@@ -46,7 +46,6 @@ class User extends Authenticatable implements MustVerifyEmail
     
     protected $appends = [
         // 'avatar_url',
-        'status_label',
         'initial_avatar'
     ];
 
@@ -69,7 +68,12 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function medical()
     {
-        return $this->hasOne(Medical::class, 'user_id');
+        return $this->hasMany(Medical::class, 'user_id');
+    }
+
+    public function lamaran()
+    {
+        return $this->hasMany(Lamaran::class, 'user_id');
     }
 
     
@@ -79,21 +83,6 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     // Mutators & Accessors
-    public function getStatusLabelAttribute()
-    {
-        $labels = [
-            'pending' => 'Pending',
-            'diterima' => 'Diterima',
-            'interview' => 'Interview',
-            'medical' => 'Medical Check Up',
-            'pelatihan' => 'Pelatihan',
-            'siap' => 'Siap Berangkat',
-            'selesai' => 'Selesai',
-            'ditolak' => 'Ditolak',
-        ];
-        
-        return $labels[$this->status] ?? $this->status;
-    }
 
     
     public function getInitialAvatarAttribute()

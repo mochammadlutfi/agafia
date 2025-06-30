@@ -87,7 +87,7 @@ class LowonganController extends Controller
                 if (is_file($request->foto)) {
                     $fotoDir = 'lowongan/'. Str::random(32) . '.' . $request->file('foto')->getClientOriginalExtension();
                     $directory = Storage::disk('public')->put($fotoDir, fopen($request->file('foto'), 'r+'));
-                    $data->foto = $fotoDir;
+                    $data->foto = '/uploads/'.$fotoDir;
                 }
                 $data->save();
 

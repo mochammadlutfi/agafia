@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jun 22, 2025 at 07:44 PM
+-- Generation Time: Jun 29, 2025 at 10:55 PM
 -- Server version: 8.0.30
 -- PHP Version: 8.3.16
 
@@ -50,6 +50,27 @@ INSERT INTO `admins` (`id`, `nama`, `username`, `email`, `password`, `level`, `r
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `dokumen_lamaran`
+--
+
+CREATE TABLE `dokumen_lamaran` (
+  `id` bigint UNSIGNED NOT NULL,
+  `lamaran_id` bigint UNSIGNED NOT NULL,
+  `kategori_dokumen_id` bigint UNSIGNED NOT NULL,
+  `nama_file` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `file_path` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` enum('pending','approved','rejected') COLLATE utf8mb4_unicode_ci DEFAULT 'pending',
+  `catatan` text COLLATE utf8mb4_unicode_ci COMMENT 'Catatan dari reviewer',
+  `diupload_tanggal` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `direview_oleh` bigint UNSIGNED DEFAULT NULL,
+  `direview_tanggal` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `failed_jobs`
 --
 
@@ -73,6 +94,7 @@ CREATE TABLE `hasil_interview` (
   `id` bigint UNSIGNED NOT NULL,
   `jadwal_id` bigint UNSIGNED NOT NULL,
   `user_id` bigint UNSIGNED NOT NULL,
+  `lamaran_id` bigint UNSIGNED NOT NULL,
   `skor_interview` int DEFAULT NULL COMMENT 'Skor interview (1-100)',
   `skor_psikotes` int DEFAULT NULL COMMENT 'Skor test psikologi (1-100)',
   `kemampuan_komunikasi` enum('kurang','cukup','baik','sangat_baik') DEFAULT NULL,
@@ -88,15 +110,6 @@ CREATE TABLE `hasil_interview` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
---
--- Dumping data for table `hasil_interview`
---
-
-INSERT INTO `hasil_interview` (`id`, `jadwal_id`, `user_id`, `skor_interview`, `skor_psikotes`, `kemampuan_komunikasi`, `kemampuan_teknis`, `penilaian_kepribadian`, `rekomendasi`, `catatan`, `dinilai_oleh`, `tanggal_penilaian`, `disetujui_oleh`, `tanggal_persetujuan`, `created_at`, `updated_at`) VALUES
-(1, 3, 51, 12, 21, 'kurang', 'cukup', 'wqe', 'bersyarat', 'qwe', 1, '2025-06-12 08:22:34', NULL, NULL, '2025-06-12 08:22:34', '2025-06-12 08:22:34'),
-(2, 3, 51, 12, 21, 'kurang', 'cukup', 'wqe', 'bersyarat', 'qwe', 1, '2025-06-12 08:22:47', NULL, NULL, '2025-06-12 08:22:47', '2025-06-12 08:22:47'),
-(5, 10, 52, 20, 20, 'baik', 'baik', 'wqsa', 'bersyarat', 'sas', 1, '2025-06-16 04:03:21', NULL, NULL, '2025-06-16 04:03:21', '2025-06-16 04:03:21');
-
 -- --------------------------------------------------------
 
 --
@@ -106,6 +119,7 @@ INSERT INTO `hasil_interview` (`id`, `jadwal_id`, `user_id`, `skor_interview`, `
 CREATE TABLE `jadwal_interview` (
   `id` bigint UNSIGNED NOT NULL,
   `user_id` bigint UNSIGNED NOT NULL,
+  `lamaran_id` bigint UNSIGNED NOT NULL,
   `tanggal` datetime NOT NULL,
   `waktu` time NOT NULL,
   `lokasi` varchar(255) NOT NULL,
@@ -116,14 +130,6 @@ CREATE TABLE `jadwal_interview` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `jadwal_interview`
---
-
-INSERT INTO `jadwal_interview` (`id`, `user_id`, `tanggal`, `waktu`, `lokasi`, `pewawancara_id`, `catatan`, `status`, `dibuat_oleh`, `created_at`, `updated_at`) VALUES
-(3, 51, '2025-06-11 00:00:00', '10:31:22', 'Kantor', 1, NULL, 'selesai', 1, '2025-06-12 03:31:39', '2025-06-12 08:22:34'),
-(10, 52, '2025-06-15 17:00:00', '11:01:44', 'Kantor', 1, 'Tidak ada', 'selesai', 1, '2025-06-16 04:02:26', '2025-06-16 04:03:21');
 
 -- --------------------------------------------------------
 
@@ -136,7 +142,7 @@ CREATE TABLE `kategori_dokumen` (
   `nama_kategori` varchar(255) NOT NULL,
   `deskripsi` text,
   `wajib` tinyint(1) DEFAULT '1',
-  `jenis_dokumen` enum('medical','keberangkatan','umum') NOT NULL,
+  `jenis_dokumen` enum('pendaftaran','medical','keberangkatan','umum') NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -146,10 +152,10 @@ CREATE TABLE `kategori_dokumen` (
 --
 
 INSERT INTO `kategori_dokumen` (`id`, `nama_kategori`, `deskripsi`, `wajib`, `jenis_dokumen`, `created_at`, `updated_at`) VALUES
-(1, 'KTP', 'Kartu Tanda Penduduk', 1, 'umum', NULL, NULL),
-(2, 'Ijazah', 'Ijazah Pendidikan Terakhir', 1, 'umum', NULL, NULL),
-(3, 'Kartu Keluarga', 'Kartu Keluarga', 1, 'umum', NULL, NULL),
-(4, 'Pas Foto', 'Pas Foto 4x6', 1, 'umum', NULL, NULL),
+(1, 'KTP', 'Kartu Tanda Penduduk', 1, 'pendaftaran', NULL, NULL),
+(2, 'Ijazah', 'Ijazah Pendidikan Terakhir', 1, 'pendaftaran', NULL, NULL),
+(3, 'Kartu Keluarga', 'Kartu Keluarga', 1, 'pendaftaran', NULL, NULL),
+(4, 'Pas Foto', 'Pas Foto 4x6', 1, 'pendaftaran', NULL, NULL),
 (5, 'Medical Check Up', 'Hasil Medical Check Up Lengkap', 1, 'medical', NULL, NULL),
 (6, 'Rontgen Dada', 'Hasil Rontgen Dada', 1, 'medical', NULL, NULL),
 (7, 'Tes Darah', 'Hasil Tes Darah Lengkap', 1, 'medical', NULL, NULL),
@@ -157,7 +163,30 @@ INSERT INTO `kategori_dokumen` (`id`, `nama_kategori`, `deskripsi`, `wajib`, `je
 (9, 'Paspor', 'Paspor', 1, 'keberangkatan', NULL, NULL),
 (10, 'Tiket Pesawat', 'Tiket Pesawat', 1, 'keberangkatan', NULL, NULL),
 (11, 'Asuransi', 'Asuransi Perjalanan', 1, 'keberangkatan', NULL, NULL),
-(12, 'Kontrak Kerja', 'Kontrak Kerja dengan Employer', 1, 'keberangkatan', NULL, NULL);
+(12, 'Kontrak Kerja', 'Kontrak Kerja dengan Employer', 1, 'keberangkatan', NULL, NULL),
+(13, 'CV/Resume', 'Curriculum Vitae atau Resume', 1, 'pendaftaran', NULL, NULL),
+(14, 'Surat Lamaran', 'Surat Lamaran Kerja', 0, 'pendaftaran', NULL, NULL),
+(15, 'Sertifikat Keahlian', 'Sertifikat Keahlian/Kompetensi', 0, 'pendaftaran', NULL, NULL),
+(16, 'Surat Pengalaman Kerja', 'Surat Keterangan Pengalaman Kerja', 0, 'pendaftaran', NULL, NULL),
+(17, 'SKCK', 'Surat Keterangan Catatan Kepolisian', 1, 'pendaftaran', NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `lamaran`
+--
+
+CREATE TABLE `lamaran` (
+  `id` bigint UNSIGNED NOT NULL,
+  `user_id` bigint UNSIGNED NOT NULL,
+  `lowongan_id` bigint UNSIGNED NOT NULL,
+  `tanggal_lamaran` date NOT NULL,
+  `status` enum('pending','diterima','ditolak','interview','medical','pelatihan','siap','selesai') COLLATE utf8mb4_unicode_ci DEFAULT 'pending',
+  `cv_file` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `catatan` text COLLATE utf8mb4_unicode_ci,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -179,13 +208,20 @@ CREATE TABLE `lowongan` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Dumping data for table `lowongan`
+--
+
+INSERT INTO `lowongan` (`id`, `perusahaan`, `posisi`, `skill`, `deskripsi`, `kuota`, `lokasi`, `status`, `foto`, `created_at`, `updated_at`) VALUES
+(2, 'Get Glow Salon,', 'Spa Terapist', 'Spa Therapist', 'Pria/Wanita\r\nUmur 18-38 Tahun\r\nLancar Berbahasa Inggris \r\nMemiliki Pengalaman sebagai SPA Therapist Min. 1 Tahun\r\nMemiliki Dokumen berupa : Paspor, KTP, KK, Akta Lahir, Ijazah, Akta Nikah/Cerai, SKCK Polda, AK 1 (Kartu Kuning), Sertifikat Keahlian.\r\nPra Medical\r\nSurat keterangan sehat\r\nPas Photo 4×6 latar belakang merah (6 Lembar)\r\nPas Photo 5×5 latar belakang putih, memakai Jas hitam berdasi (6 Lembar)\r\nMaterai 10.000 (6 lembar)\r\nSurat Izin Orang Tua/Wali\r\nSurat Status Perkawinan\r\nVaksin Covid Format WHO ( Bahasa Inggris )', 20, 'Al Rawdat Building Karama - Dubai', 'buka', '/uploads/lowongan/nttIWZecXtxvLGbzKj27EHzOvC0EmfyP.jpeg', '2025-06-29 01:29:45', '2025-06-29 01:33:40');
+
 -- --------------------------------------------------------
 
 --
--- Table structure for table `medical_checkups`
+-- Table structure for table `medical`
 --
 
-CREATE TABLE `medical_checkups` (
+CREATE TABLE `medical` (
   `id` bigint UNSIGNED NOT NULL,
   `user_id` bigint UNSIGNED NOT NULL,
   `tanggal` date NOT NULL,
@@ -197,13 +233,6 @@ CREATE TABLE `medical_checkups` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `medical_checkups`
---
-
-INSERT INTO `medical_checkups` (`id`, `user_id`, `tanggal`, `nama`, `hasil`, `file`, `catatan`, `status`, `created_at`, `updated_at`) VALUES
-(2, 52, '2025-06-16', 'Klinik Mayapada', 'Sehat', 'document/52/BUGyvKE9unvqWyunjsB0lrTlh21Q31md.jpeg', NULL, 'pending', '2025-06-16 04:04:49', '2025-06-16 04:04:49');
 
 -- --------------------------------------------------------
 
@@ -344,6 +373,7 @@ CREATE TABLE `settings` (
 CREATE TABLE `training` (
   `id` bigint UNSIGNED NOT NULL,
   `user_id` bigint UNSIGNED NOT NULL,
+  `lamaran_id` bigint UNSIGNED NOT NULL,
   `program_id` bigint UNSIGNED NOT NULL,
   `tanggal_daftar` date NOT NULL,
   `tanggal_mulai` date NOT NULL,
@@ -357,13 +387,6 @@ CREATE TABLE `training` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `training`
---
-
-INSERT INTO `training` (`id`, `user_id`, `program_id`, `tanggal_daftar`, `tanggal_mulai`, `tanggal_selesai`, `status`, `nilai_akhir`, `sertifikat_diterbitkan`, `nomor_sertifikat`, `catatan`, `didaftarkan_oleh`, `created_at`, `updated_at`) VALUES
-(4, 52, 5, '2025-06-16', '2025-06-15', '2025-06-20', 'terdaftar', NULL, 0, NULL, NULL, 1, '2025-06-16 04:06:25', '2025-06-16 04:06:25');
 
 -- --------------------------------------------------------
 
@@ -411,7 +434,6 @@ CREATE TABLE `users` (
   `password` varchar(255) NOT NULL,
   `aktif` tinyint(1) DEFAULT '1',
   `remember_token` varchar(100) DEFAULT NULL,
-  `status` enum('pending','diterima','interview','medical','pelatihan','siap','selesai','ditolak') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT 'pending',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -420,18 +442,20 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `nama`, `email`, `email_verified_at`, `password`, `aktif`, `remember_token`, `status`, `created_at`, `updated_at`) VALUES
-(42, 'Tomi Prasetyo M.Ak', 'nsihotang@example.net', NULL, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, '8Ht5G4Ec6k', 'pending', '2025-06-12 03:30:58', '2025-06-12 03:30:58'),
-(43, 'Hani Ulva Hastuti', 'epuspasari@example.net', NULL, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 'uaSWyGuObV', 'pending', '2025-06-12 03:30:58', '2025-06-12 03:30:58'),
-(44, 'Betania Hastuti S.Psi', 'aris.siregar@example.com', NULL, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, '4ymBHutjpT', 'pending', '2025-06-12 03:30:58', '2025-06-12 03:30:58'),
-(45, 'Nadine Riyanti', 'vinsen08@example.com', NULL, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 'pGfFQmLsMu', 'pending', '2025-06-12 03:30:58', '2025-06-12 03:30:58'),
-(46, 'Putri Novi Utami', 'balidin.uwais@example.com', NULL, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 'joCOlBCCYS', 'pending', '2025-06-12 03:30:58', '2025-06-12 03:30:58'),
-(47, 'Mustika Kairav Napitupulu S.T.', 'himawan76@example.com', NULL, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 'UhI9iAbNnh', 'pending', '2025-06-12 03:30:58', '2025-06-12 03:30:58'),
-(48, 'Tantri Winarsih', 'dagel14@example.org', NULL, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 'bq9qXuJ5Oz', 'pending', '2025-06-12 03:30:58', '2025-06-12 03:30:58'),
-(49, 'Candrakanta Wibisono S.Gz', 'dmandasari@example.net', NULL, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 'bHwxhv1KVK', 'pending', '2025-06-12 03:30:58', '2025-06-12 03:30:58'),
-(50, 'Ghani Sihombing', 'qpuspasari@example.com', NULL, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 'vlXxVhmDWG', 'pending', '2025-06-12 03:30:58', '2025-06-12 03:30:58'),
-(51, 'Irma Suartini', 'nalar28@example.org', NULL, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 'xEwjwPGGa1', 'pending', '2025-06-12 03:30:58', '2025-06-12 03:30:58'),
-(52, 'tsadas', 'asdas@gmail.com', '2025-06-12 22:21:27', '$2y$10$YQ2jzx6x/FSu36QxXUsbae5nRDZEn8g5fgsLD4pUwnDMLcHR1EJiu', 1, 'O4OSzwpejmjbFz7ng97EkynCr3Sqp94bIiBVUAF24vn7k7Gg9uX4HTkYHjSz', 'medical', '2025-06-12 22:14:27', '2025-06-16 04:04:49');
+INSERT INTO `users` (`id`, `nama`, `email`, `email_verified_at`, `password`, `aktif`, `remember_token`, `created_at`, `updated_at`) VALUES
+(42, 'Tomi Prasetyo M.Ak', 'nsihotang@example.net', NULL, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, '8Ht5G4Ec6k', '2025-06-12 03:30:58', '2025-06-12 03:30:58'),
+(43, 'Hani Ulva Hastuti', 'epuspasari@example.net', NULL, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 'uaSWyGuObV', '2025-06-12 03:30:58', '2025-06-12 03:30:58'),
+(44, 'Betania Hastuti S.Psi', 'aris.siregar@example.com', NULL, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, '4ymBHutjpT', '2025-06-12 03:30:58', '2025-06-12 03:30:58'),
+(45, 'Nadine Riyanti', 'vinsen08@example.com', NULL, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 'pGfFQmLsMu', '2025-06-12 03:30:58', '2025-06-12 03:30:58'),
+(46, 'Putri Novi Utami', 'balidin.uwais@example.com', NULL, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 'joCOlBCCYS', '2025-06-12 03:30:58', '2025-06-12 03:30:58'),
+(47, 'Mustika Kairav Napitupulu S.T.', 'himawan76@example.com', NULL, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 'UhI9iAbNnh', '2025-06-12 03:30:58', '2025-06-12 03:30:58'),
+(48, 'Tantri Winarsih', 'dagel14@example.org', NULL, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 'bq9qXuJ5Oz', '2025-06-12 03:30:58', '2025-06-12 03:30:58'),
+(49, 'Candrakanta Wibisono S.Gz', 'dmandasari@example.net', NULL, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 'bHwxhv1KVK', '2025-06-12 03:30:58', '2025-06-12 03:30:58'),
+(50, 'Ghani Sihombing', 'qpuspasari@example.com', NULL, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 'vlXxVhmDWG', '2025-06-12 03:30:58', '2025-06-12 03:30:58'),
+(51, 'Irma Suartini', 'nalar28@example.org', NULL, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 'xEwjwPGGa1', '2025-06-12 03:30:58', '2025-06-12 03:30:58'),
+(52, 'tsadas', 'asdas@gmail.com', '2025-06-12 22:21:27', '$2y$10$YQ2jzx6x/FSu36QxXUsbae5nRDZEn8g5fgsLD4pUwnDMLcHR1EJiu', 1, 'ZnkMNjHS6g83ijvSNwkjjeKBzhgvbyHjTDh3jxXvkcWYOYcq6kospvxDqdLP', '2025-06-12 22:14:27', '2025-06-16 04:04:49'),
+(53, 'Lutfi', 'mochamamdlutfi125@gmail.com', '2025-06-29 00:29:27', '$2y$10$1jWGXk5wb.HtDdXcdYcElOhaEKjn5x8TUaBkdeHBT9S8/CBYnRmUe', 1, 'gwVwyPxVngTCKOgDC4uFh3B6oT5ovfRWdNOKlHb8jrWAzNNvRcgrd4xpSSP8', '2025-06-29 00:27:37', '2025-06-29 00:29:27'),
+(54, 'Udin', 'udin@gmail.com', '2025-06-29 06:40:36', '$2y$10$xv/LNNCrAgjDilTFNqAt4OrruijAxtDLtNezlFbZXWkNKJ6S1UyKa', 1, '2ODd32TLG6EYwN9l39GPmzYMNksDAPSONvEpcVZRK6MZL4kHwoDDZm86jSQW', '2025-06-29 06:39:43', '2025-06-29 06:40:36');
 
 -- --------------------------------------------------------
 
@@ -448,35 +472,46 @@ CREATE TABLE `user_details` (
   `tanggal_lahir` date NOT NULL,
   `jenis_kelamin` enum('Laki-Laki','Perempuan') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `alamat` text NOT NULL,
+  `alamat_domisili` text COMMENT 'Alamat domisili saat ini (berbeda dari alamat KTP)',
+  `kode_pos` varchar(10) DEFAULT NULL COMMENT 'Kode pos',
+  `kecamatan` varchar(100) DEFAULT NULL COMMENT 'Kecamatan',
+  `kabupaten_kota` varchar(100) DEFAULT NULL COMMENT 'Kabupaten/Kota',
+  `provinsi` varchar(100) DEFAULT NULL COMMENT 'Provinsi',
   `phone` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `nama_izin` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `status_izin` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `nama_ayah` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `nama_ibu` varchar(191) DEFAULT NULL,
-  `phone_ortu` varchar(191) DEFAULT NULL,
-  `alamat_ortu` varchar(255) DEFAULT NULL,
+  `kontak_darurat_nama` varchar(255) DEFAULT NULL COMMENT 'Nama kontak darurat',
+  `kontak_darurat_phone` varchar(15) DEFAULT NULL COMMENT 'Nomor telepon kontak darurat',
+  `kontak_darurat_hubungan` varchar(100) DEFAULT NULL COMMENT 'Hubungan dengan kontak darurat',
+  `kontak_darurat_alamat` text COMMENT 'Alamat kontak darurat',
   `pendidikan` json DEFAULT NULL,
   `pengalaman` json DEFAULT NULL,
+  `pengalaman_luar_negeri` json DEFAULT NULL COMMENT 'Pengalaman kerja luar negeri:\r\n     [{"negara":"","perusahaan":"","posisi":"","tahun_mulai":"","tahun_selesai":"","deskripsi":"","gaji":""}]',
   `skill_bahasa` json DEFAULT NULL,
+  `bahasa_asing_skor` json DEFAULT NULL COMMENT 'Skor tes bahasa: {"toefl":"","ielts":"","jlpt":"","topik":"","arabic":"","mandarin":""}',
+  `visa_history` json DEFAULT NULL COMMENT 'Riwayat visa: [{"negara":"","jenis_visa":"","tahun":"","status":"","keterangan":""}]',
   `skill_teknis` json DEFAULT NULL,
+  `keahlian_khusus` text COMMENT 'Keahlian khusus untuk pekerjaan overseas',
+  `objektif_karir` text COMMENT 'Career objective/tujuan karir',
+  `ringkasan_profil` text COMMENT 'Professional summary/ringkasan profil',
+  `hobi` text COMMENT 'Hobi dan minat',
+  `motto_hidup` text COMMENT 'Motto hidup/quotes',
+  `sertifikat` json DEFAULT NULL COMMENT 'Array sertifikat: [{"nama":"","penerbit":"","tahun":"","nomor":"","file_path":""}]',
+  `prestasi` json DEFAULT NULL COMMENT 'Array prestasi: [{"nama":"","tingkat":"","tahun":"","deskripsi":""}]',
+  `achievement_highlights` text COMMENT 'Highlight pencapaian terpenting',
+  `organisasi` json DEFAULT NULL COMMENT 'Array organisasi: [{"nama":"","jabatan":"","tahun_mulai":"","tahun_selesai":"","deskripsi":""}]',
+  `referensi` json DEFAULT NULL COMMENT 'Array referensi: [{"nama":"","jabatan":"","perusahaan":"","phone":"","email":"","hubungan":""}]',
   `pekerjaan` varchar(191) DEFAULT NULL,
   `negara_tujuan` varchar(191) DEFAULT NULL,
-  `ktp` varchar(255) DEFAULT NULL,
-  `kk` varchar(255) DEFAULT NULL,
-  `akte_lahir` varchar(255) DEFAULT NULL,
-  `buku_nikah` varchar(255) DEFAULT NULL,
-  `surat_keterangan_sehat` varchar(255) DEFAULT NULL,
-  `surat_izin_keluarga` varchar(255) DEFAULT NULL,
-  `kompetensi` varchar(255) DEFAULT NULL,
-  `ijazah` varchar(255) DEFAULT NULL,
-  `paspor` varchar(255) DEFAULT NULL,
-  `surat_pengalaman_kerja` varchar(255) DEFAULT NULL,
-  `skck` varchar(255) DEFAULT NULL,
-  `foto` varchar(255) DEFAULT NULL,
-  `status` enum('draft','tervalidasi','sudah_interview','medical','pelatihan','siap','tolak','selesai') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT 'draft',
+  `foto` varchar(255) DEFAULT NULL COMMENT 'Path foto profil untuk CV',
+  `agama` varchar(50) DEFAULT NULL COMMENT 'Agama',
+  `status_perkawinan` enum('lajang','menikah','cerai','janda','duda') DEFAULT NULL COMMENT 'Status perkawinan',
+  `tinggi_badan` int DEFAULT NULL COMMENT 'Tinggi badan dalam cm',
+  `berat_badan` int DEFAULT NULL COMMENT 'Berat badan dalam kg',
+  `golongan_darah` enum('A','B','AB','O') DEFAULT NULL COMMENT 'Golongan darah',
+  `kondisi_kesehatan` text COMMENT 'Kondisi kesehatan khusus/alergi',
+  `medical_checkup_terakhir` date DEFAULT NULL COMMENT 'Tanggal medical check up terakhir',
+  `email_alternatif` varchar(255) DEFAULT NULL COMMENT 'Email alternatif selain yang di tabel users',
+  `media_sosial` json DEFAULT NULL COMMENT 'Media sosial: {"instagram":"@username","facebook":"nama","linkedin":"profile_url","whatsapp":"nomor"}',
   `catatan` text COMMENT 'Catatan dari talent manager/admin',
-  `divalidasi_tanggal` timestamp NULL DEFAULT NULL,
-  `divalidasi_oleh` bigint UNSIGNED DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -485,8 +520,8 @@ CREATE TABLE `user_details` (
 -- Dumping data for table `user_details`
 --
 
-INSERT INTO `user_details` (`id`, `user_id`, `nik`, `nama`, `tempat_lahir`, `tanggal_lahir`, `jenis_kelamin`, `alamat`, `phone`, `nama_izin`, `status_izin`, `nama_ayah`, `nama_ibu`, `phone_ortu`, `alamat_ortu`, `pendidikan`, `pengalaman`, `skill_bahasa`, `skill_teknis`, `pekerjaan`, `negara_tujuan`, `ktp`, `kk`, `akte_lahir`, `buku_nikah`, `surat_keterangan_sehat`, `surat_izin_keluarga`, `kompetensi`, `ijazah`, `paspor`, `surat_pengalaman_kerja`, `skck`, `foto`, `status`, `catatan`, `divalidasi_tanggal`, `divalidasi_oleh`, `created_at`, `updated_at`) VALUES
-(1, 52, '32021021312', 'Udin Bro', 'Bandung', '2020-06-16', 'Laki-Laki', 'Bandung Aja', '9882611818', 'Bapa aing', 'Gubernur', 'Bapak Ainhg', 'Masasih', '212121212121', 'sadz', '[{\"jurusan\": \"wqwq\", \"tingkat\": \"SD\", \"tahun_lulus\": \"2024-12-31T17:00:00.000Z\", \"nama_sekolah\": \"3121\"}, {\"jurusan\": \"21\", \"tingkat\": \"SD\", \"tahun_lulus\": \"2024-12-31T17:00:00.000Z\", \"nama_sekolah\": \"21\"}]', '[{\"nama\": \"121\", \"posisi\": \"wq\", \"tahun_masuk\": \"2024-12-31T17:00:00.000Z\", \"tahun_keluar\": \"2024-12-31T17:00:00.000Z\"}]', NULL, NULL, 'sad', 'asdasd', 'document/52/hZBIswsQxhGWV0gjuIA4OJFl9NAiEO3I.jpeg', 'document/52/ozOC69F0GOZRtqiFBCNC1UH18eIZoiEF.png', 'document/52/ACQREndj4i7dIui8X8xbCIVj62uZHfLo.jpeg', 'document/52/GvVYTail0j4fleuMQr6EN74rgyq3VL9a.jpeg', 'document/52/T6RxgIhoXXYM6Juw4xbptObcF0Tt909a.jpeg', 'document/52/g267Ke4XuGxBH0sdbfy2tM7pNKoh5969.jpeg', NULL, 'document/52/1sSA9agF0X2GHsmGnU9jTSEGw4g3H658.jpeg', 'document/52/npXJa805ndZoTB7X80MzZh6F7DCFTBhk.jpeg', 'document/52/1lXxyzxfUIlwH9tNHpBr2dwtXuwvaO8V.jpeg', 'document/52/qsRfYCzCLoGeg5szoKSwPlVKYhAkCWM5.jpeg', 'document/52/FOPPYTOrUxAfTLianbKH5q4ZvfnKY7XS.jpeg', 'draft', 'Ditolak', NULL, NULL, '2025-06-14 01:27:39', '2025-06-16 04:01:13');
+INSERT INTO `user_details` (`id`, `user_id`, `nik`, `nama`, `tempat_lahir`, `tanggal_lahir`, `jenis_kelamin`, `alamat`, `alamat_domisili`, `kode_pos`, `kecamatan`, `kabupaten_kota`, `provinsi`, `phone`, `kontak_darurat_nama`, `kontak_darurat_phone`, `kontak_darurat_hubungan`, `kontak_darurat_alamat`, `pendidikan`, `pengalaman`, `pengalaman_luar_negeri`, `skill_bahasa`, `bahasa_asing_skor`, `visa_history`, `skill_teknis`, `keahlian_khusus`, `objektif_karir`, `ringkasan_profil`, `hobi`, `motto_hidup`, `sertifikat`, `prestasi`, `achievement_highlights`, `organisasi`, `referensi`, `pekerjaan`, `negara_tujuan`, `foto`, `agama`, `status_perkawinan`, `tinggi_badan`, `berat_badan`, `golongan_darah`, `kondisi_kesehatan`, `medical_checkup_terakhir`, `email_alternatif`, `media_sosial`, `catatan`, `created_at`, `updated_at`) VALUES
+(1, 52, '32021021312', 'Udin Bro', 'Bandung', '2020-06-16', 'Laki-Laki', 'Bandung Aja', NULL, NULL, NULL, NULL, NULL, '9882611818', NULL, NULL, NULL, NULL, '[{\"jurusan\": \"wqwq\", \"tingkat\": \"SD\", \"tahun_lulus\": \"2024-12-31T17:00:00.000Z\", \"nama_sekolah\": \"3121\"}, {\"jurusan\": \"21\", \"tingkat\": \"SD\", \"tahun_lulus\": \"2024-12-31T17:00:00.000Z\", \"nama_sekolah\": \"21\"}]', '[{\"nama\": \"121\", \"posisi\": \"wq\", \"tahun_masuk\": \"2024-12-31T17:00:00.000Z\", \"tahun_keluar\": \"2024-12-31T17:00:00.000Z\"}]', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sad', 'asdasd', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Ditolak', '2025-06-14 01:27:39', '2025-06-16 04:01:13');
 
 --
 -- Indexes for dumped tables
@@ -497,6 +532,16 @@ INSERT INTO `user_details` (`id`, `user_id`, `nik`, `nama`, `tempat_lahir`, `tan
 --
 ALTER TABLE `admins`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `dokumen_lamaran`
+--
+ALTER TABLE `dokumen_lamaran`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_dokumen_per_lamaran` (`lamaran_id`,`kategori_dokumen_id`),
+  ADD KEY `dokumen_lamaran_lamaran_id` (`lamaran_id`),
+  ADD KEY `dokumen_lamaran_kategori_id` (`kategori_dokumen_id`),
+  ADD KEY `dokumen_lamaran_reviewer` (`direview_oleh`);
 
 --
 -- Indexes for table `failed_jobs`
@@ -513,7 +558,8 @@ ALTER TABLE `hasil_interview`
   ADD KEY `jadwal_id` (`jadwal_id`),
   ADD KEY `user_id` (`user_id`),
   ADD KEY `hasil_interview_ibfk_3` (`dinilai_oleh`),
-  ADD KEY `hasil_interview_ibfk_4` (`disetujui_oleh`);
+  ADD KEY `hasil_interview_ibfk_4` (`disetujui_oleh`),
+  ADD KEY `hasil_interview_lamaran_id` (`lamaran_id`);
 
 --
 -- Indexes for table `jadwal_interview`
@@ -523,7 +569,8 @@ ALTER TABLE `jadwal_interview`
   ADD KEY `idx_jadwal_interview_talent_id` (`user_id`),
   ADD KEY `idx_jadwal_interview_tanggal` (`tanggal`),
   ADD KEY `jadwal_interview_ibfk_2` (`dibuat_oleh`),
-  ADD KEY `jadwal_interview_ibfk_3` (`pewawancara_id`);
+  ADD KEY `jadwal_interview_ibfk_3` (`pewawancara_id`),
+  ADD KEY `jadwal_interview_lamaran_id` (`lamaran_id`);
 
 --
 -- Indexes for table `kategori_dokumen`
@@ -532,15 +579,23 @@ ALTER TABLE `kategori_dokumen`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `lamaran`
+--
+ALTER TABLE `lamaran`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `lamaran_user_id_foreign` (`user_id`),
+  ADD KEY `lamaran_lowongan_id_foreign` (`lowongan_id`);
+
+--
 -- Indexes for table `lowongan`
 --
 ALTER TABLE `lowongan`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `medical_checkups`
+-- Indexes for table `medical`
 --
-ALTER TABLE `medical_checkups`
+ALTER TABLE `medical`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_medical_checkups_user_id` (`user_id`);
 
@@ -615,7 +670,8 @@ ALTER TABLE `training`
   ADD KEY `program_id` (`program_id`),
   ADD KEY `idx_pendaftaran_pelatihan_talent_id` (`user_id`),
   ADD KEY `idx_pendaftaran_pelatihan_status` (`status`),
-  ADD KEY `pendaftaran_pelatihan_ibfk_3` (`didaftarkan_oleh`);
+  ADD KEY `pendaftaran_pelatihan_ibfk_3` (`didaftarkan_oleh`),
+  ADD KEY `training_lamaran_id` (`lamaran_id`);
 
 --
 -- Indexes for table `training_program`
@@ -636,8 +692,6 @@ ALTER TABLE `users`
 ALTER TABLE `user_details`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `nik` (`nik`),
-  ADD KEY `divalidasi_oleh` (`divalidasi_oleh`),
-  ADD KEY `idx_talents_status` (`status`),
   ADD KEY `idx_talents_user_id` (`user_id`);
 
 --
@@ -648,6 +702,12 @@ ALTER TABLE `user_details`
 -- AUTO_INCREMENT for table `admins`
 --
 ALTER TABLE `admins`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `dokumen_lamaran`
+--
+ALTER TABLE `dokumen_lamaran`
   MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
@@ -672,18 +732,24 @@ ALTER TABLE `jadwal_interview`
 -- AUTO_INCREMENT for table `kategori_dokumen`
 --
 ALTER TABLE `kategori_dokumen`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+
+--
+-- AUTO_INCREMENT for table `lamaran`
+--
+ALTER TABLE `lamaran`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `lowongan`
 --
 ALTER TABLE `lowongan`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT for table `medical_checkups`
+-- AUTO_INCREMENT for table `medical`
 --
-ALTER TABLE `medical_checkups`
+ALTER TABLE `medical`
   MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
@@ -732,17 +798,25 @@ ALTER TABLE `training_program`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
 
 --
 -- AUTO_INCREMENT for table `user_details`
 --
 ALTER TABLE `user_details`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `dokumen_lamaran`
+--
+ALTER TABLE `dokumen_lamaran`
+  ADD CONSTRAINT `dokumen_lamaran_kategori_id_foreign` FOREIGN KEY (`kategori_dokumen_id`) REFERENCES `kategori_dokumen` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `dokumen_lamaran_lamaran_id_foreign` FOREIGN KEY (`lamaran_id`) REFERENCES `lamaran` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `dokumen_lamaran_reviewer_foreign` FOREIGN KEY (`direview_oleh`) REFERENCES `admins` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `hasil_interview`
@@ -751,7 +825,8 @@ ALTER TABLE `hasil_interview`
   ADD CONSTRAINT `hasil_interview_ibfk_1` FOREIGN KEY (`jadwal_id`) REFERENCES `jadwal_interview` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `hasil_interview_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   ADD CONSTRAINT `hasil_interview_ibfk_3` FOREIGN KEY (`dinilai_oleh`) REFERENCES `admins` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
-  ADD CONSTRAINT `hasil_interview_ibfk_4` FOREIGN KEY (`disetujui_oleh`) REFERENCES `admins` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+  ADD CONSTRAINT `hasil_interview_ibfk_4` FOREIGN KEY (`disetujui_oleh`) REFERENCES `admins` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  ADD CONSTRAINT `hasil_interview_lamaran_id_foreign` FOREIGN KEY (`lamaran_id`) REFERENCES `lamaran` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `jadwal_interview`
@@ -759,12 +834,20 @@ ALTER TABLE `hasil_interview`
 ALTER TABLE `jadwal_interview`
   ADD CONSTRAINT `jadwal_interview_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   ADD CONSTRAINT `jadwal_interview_ibfk_2` FOREIGN KEY (`dibuat_oleh`) REFERENCES `admins` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
-  ADD CONSTRAINT `jadwal_interview_ibfk_3` FOREIGN KEY (`pewawancara_id`) REFERENCES `admins` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+  ADD CONSTRAINT `jadwal_interview_ibfk_3` FOREIGN KEY (`pewawancara_id`) REFERENCES `admins` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  ADD CONSTRAINT `jadwal_interview_lamaran_id_foreign` FOREIGN KEY (`lamaran_id`) REFERENCES `lamaran` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `medical_checkups`
+-- Constraints for table `lamaran`
 --
-ALTER TABLE `medical_checkups`
+ALTER TABLE `lamaran`
+  ADD CONSTRAINT `lamaran_lowongan_id_foreign` FOREIGN KEY (`lowongan_id`) REFERENCES `lowongan` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `lamaran_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `medical`
+--
+ALTER TABLE `medical`
   ADD CONSTRAINT `fk_medical_checkups_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
@@ -792,14 +875,14 @@ ALTER TABLE `role_has_permissions`
 ALTER TABLE `training`
   ADD CONSTRAINT `training_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   ADD CONSTRAINT `training_ibfk_2` FOREIGN KEY (`program_id`) REFERENCES `training_program` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `training_ibfk_3` FOREIGN KEY (`didaftarkan_oleh`) REFERENCES `admins` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+  ADD CONSTRAINT `training_ibfk_3` FOREIGN KEY (`didaftarkan_oleh`) REFERENCES `admins` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  ADD CONSTRAINT `training_lamaran_id_foreign` FOREIGN KEY (`lamaran_id`) REFERENCES `lamaran` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `user_details`
 --
 ALTER TABLE `user_details`
-  ADD CONSTRAINT `user_details_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `user_details_ibfk_2` FOREIGN KEY (`divalidasi_oleh`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+  ADD CONSTRAINT `user_details_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

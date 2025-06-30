@@ -17,6 +17,14 @@ use Intervention\Image\ImageManagerStatic;
 use Storage;
 use App\Notifications\RegisterNotification;
 use App\Models\User;
+use App\Models\Lamaran;
+use App\Models\JadwalInterview;
+use App\Models\HasilInterview;
+use App\Models\Training;
+use App\Models\Medical;
+use App\Models\DokumenLamaran;
+use App\Models\KategoriDokumen;
+use App\Models\UserDetail;
 
 class TalentController extends Controller
 {
@@ -47,78 +55,65 @@ class TalentController extends Controller
     public function show($id)
     {
         $talent = User::with([
-            'detail', 
-            'medical' => function($query) {
-                $query->latest();
+            'detail',
+            'lamaran' => function($query) {
+                $query->with([
+                    'lowongan',
+                    'dokumen.kategoriDokumen',
+                    'jadwalInterview' => function($q) {
+                        $q->with(['pewawancara', 'pembuat', 'hasil'])->latest();
+                    },
+                    'training' => function($q) {
+                        $q->with(['program', 'staff'])->latest();
+                    }
+                ])->latest();
             }
         ])->findOrFail($id);
 
-        // Get related data for better UX
-        $jadwalInterview = DB::table('jadwal_interview')
-            ->leftJoin('admins as pewawancara', 'jadwal_interview.pewawancara_id', '=', 'pewawancara.id')
-            ->leftJoin('admins as pembuat', 'jadwal_interview.dibuat_oleh', '=', 'pembuat.id')
-            ->leftJoin('hasil_interview', 'jadwal_interview.id', '=', 'hasil_interview.jadwal_id')
-            ->where('jadwal_interview.user_id', $id)
-            ->select(
-                'jadwal_interview.*',
-                'pewawancara.nama as pewawancara_nama',
-                'pembuat.nama as pembuat_nama',
-                'hasil_interview.skor_interview',
-                'hasil_interview.skor_psikotes',
-                'hasil_interview.rekomendasi',
-                'hasil_interview.catatan as hasil_catatan',
-                'hasil_interview.tanggal_penilaian'
-            )
-            ->orderBy('jadwal_interview.tanggal', 'desc')
-            ->get();
+        // Get active application (most recent non-rejected)
+        $activeApplication = $talent->lamaran
+            ->whereNotIn('status', ['ditolak'])
+            ->first();
 
-        $training = DB::table('training')
-            ->leftJoin('training_program', 'training.program_id', '=', 'training_program.id')
-            ->leftJoin('admins', 'training.didaftarkan_oleh', '=', 'admins.id')
-            ->where('training.user_id', $id)
-            ->select(
-                'training.*',
-                'training_program.nama as program_nama',
-                'training_program.deskripsi as program_deskripsi',
-                'training_program.durasi',
-                'training_program.lokasi as program_lokasi',
-                'training_program.instruktur',
-                'admins.nama as pendaftar_nama'
-            )
-            ->orderBy('training.tanggal_daftar', 'desc')
-            ->get();
-
-        // Calculate progress and statistics
-        $statusProgress = $this->calculateStatusProgress($talent->status);
-        $completionStats = $this->calculateCompletionStats($talent);
+        // Calculate completion statistics for active application
+        $completionStats = $this->calculateCompletionStats($talent, $activeApplication);
+        
+        // Get application progress if has active application
+        $applicationProgress = null;
+        if ($activeApplication) {
+            $applicationProgress = $this->calculateApplicationProgress($activeApplication);
+        }
+        
+        // Get document statistics
+        $documentStats = $this->calculateDocumentStats($talent);
         
         return Inertia::render('Talent/Show', [
             'talent' => $talent,
-            'jadwalInterview' => $jadwalInterview,
-            'training' => $training,
-            'statusProgress' => $statusProgress,
+            'activeApplication' => $activeApplication,
+            'applicationProgress' => $applicationProgress,
             'completionStats' => $completionStats,
+            'documentStats' => $documentStats,
             'statusOptions' => $this->getStatusOptions(),
         ]);
     }
 
     /**
-     * Calculate status progress for progress bar
+     * Calculate application progress for active application
      */
-    private function calculateStatusProgress($currentStatus)
+    private function calculateApplicationProgress($lamaran)
     {
         $statuses = [
-            'pending' => ['step' => 1, 'label' => 'Pendaftaran', 'color' => 'warning'],
-            'diterima' => ['step' => 2, 'label' => 'Diterima', 'color' => 'success'],
-            'interview' => ['step' => 3, 'label' => 'Interview', 'color' => 'info'],
-            'medical' => ['step' => 4, 'label' => 'Medical Check', 'color' => 'primary'],
+            'pending' => ['step' => 1, 'label' => 'Lamaran Dikirim', 'color' => 'warning'],
+            'diterima' => ['step' => 2, 'label' => 'Lamaran Diterima', 'color' => 'success'],
+            'interview' => ['step' => 3, 'label' => 'Tahap Interview', 'color' => 'info'],
+            'medical' => ['step' => 4, 'label' => 'Medical Check Up', 'color' => 'primary'],
             'pelatihan' => ['step' => 5, 'label' => 'Pelatihan', 'color' => 'purple'],
             'siap' => ['step' => 6, 'label' => 'Siap Berangkat', 'color' => 'success'],
             'selesai' => ['step' => 7, 'label' => 'Selesai', 'color' => 'success'],
             'ditolak' => ['step' => 0, 'label' => 'Ditolak', 'color' => 'danger'],
         ];
 
-        $current = $statuses[$currentStatus] ?? $statuses['pending'];
+        $current = $statuses[$lamaran->status] ?? $statuses['pending'];
         $totalSteps = 7;
         $progressPercentage = $current['step'] > 0 ? ($current['step'] / $totalSteps) * 100 : 0;
 
@@ -126,22 +121,19 @@ class TalentController extends Controller
             'current' => $current,
             'all' => $statuses,
             'percentage' => $progressPercentage,
-            'totalSteps' => $totalSteps
+            'totalSteps' => $totalSteps,
+            'lamaran' => $lamaran
         ];
     }
 
     /**
      * Calculate completion statistics
      */
-    private function calculateCompletionStats($talent)
+    private function calculateCompletionStats($talent, $activeApplication = null)
     {
         $requiredFields = [
             'nik', 'nama', 'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin',
             'alamat', 'phone', 'nama_ayah', 'nama_ibu'
-        ];
-
-        $documentFields = [
-            'ktp', 'kk', 'akte_lahir', 'ijazah', 'foto', 'paspor', 'skck'
         ];
 
         $completed = 0;
@@ -155,29 +147,84 @@ class TalentController extends Controller
             }
         }
 
-        $documentsCompleted = 0;
-        $documentsTotal = count($documentFields);
+        $profileStats = [
+            'completed' => $completed,
+            'total' => $total,
+            'percentage' => $total > 0 ? ($completed / $total) * 100 : 0
+        ];
+
+        // Document completion based on active application
+        $documentStats = ['completed' => 0, 'total' => 0, 'percentage' => 0];
         
-        if ($talent->detail) {
-            foreach ($documentFields as $field) {
-                if (!empty($talent->detail->$field)) {
-                    $documentsCompleted++;
-                }
-            }
+        if ($activeApplication) {
+            $requiredDocuments = $this->getRequiredDocumentsForStatus($activeApplication->status);
+            $uploadedDocuments = $activeApplication->dokumen;
+            
+            $documentStats = [
+                'completed' => $uploadedDocuments->count(),
+                'total' => $requiredDocuments->count(),
+                'percentage' => $requiredDocuments->count() > 0 ? 
+                    ($uploadedDocuments->count() / $requiredDocuments->count()) * 100 : 0
+            ];
         }
 
         return [
-            'profile' => [
-                'completed' => $completed,
-                'total' => $total,
-                'percentage' => $total > 0 ? ($completed / $total) * 100 : 0
-            ],
-            'documents' => [
-                'completed' => $documentsCompleted,
-                'total' => $documentsTotal,
-                'percentage' => $documentsTotal > 0 ? ($documentsCompleted / $documentsTotal) * 100 : 0
+            'profile' => $profileStats,
+            'documents' => $documentStats,
+            'applications' => [
+                'total' => $talent->lamaran->count(),
+                'active' => $talent->lamaran->whereNotIn('status', ['ditolak'])->count(),
+                'completed' => $talent->lamaran->whereIn('status', ['selesai'])->count()
             ]
         ];
+    }
+    
+    /**
+     * Calculate document statistics for all applications
+     */
+    private function calculateDocumentStats($talent)
+    {
+        $totalDokumen = DokumenLamaran::whereHas('lamaran', function($q) use ($talent) {
+            $q->where('user_id', $talent->id);
+        })->count();
+        
+        $approvedDokumen = DokumenLamaran::whereHas('lamaran', function($q) use ($talent) {
+            $q->where('user_id', $talent->id);
+        })->approved()->count();
+        
+        $pendingDokumen = DokumenLamaran::whereHas('lamaran', function($q) use ($talent) {
+            $q->where('user_id', $talent->id);
+        })->pending()->count();
+        
+        $rejectedDokumen = DokumenLamaran::whereHas('lamaran', function($q) use ($talent) {
+            $q->where('user_id', $talent->id);
+        })->rejected()->count();
+        
+        return [
+            'total' => $totalDokumen,
+            'approved' => $approvedDokumen,
+            'pending' => $pendingDokumen,
+            'rejected' => $rejectedDokumen,
+            'approval_rate' => $totalDokumen > 0 ? ($approvedDokumen / $totalDokumen) * 100 : 0
+        ];
+    }
+    
+    /**
+     * Get required documents for specific status
+     */
+    private function getRequiredDocumentsForStatus($status)
+    {
+        switch($status) {
+            case 'pending':
+            case 'diterima':
+                return KategoriDokumen::pendaftaran()->get();
+            case 'medical':
+                return KategoriDokumen::medical()->get();
+            case 'siap':
+                return KategoriDokumen::keberangkatan()->get();
+            default:
+                return collect();
+        }
     }
 
     /**
@@ -317,44 +364,112 @@ class TalentController extends Controller
     {
         $sort = !empty($request->sort) ? $request->sort : 'id';
         $sortDir = !empty($request->sortDir) ? $request->sortDir : 'desc';
+        $page = $request->page ?? 1;
+        $limit = $request->limit ?? 25;
         
-        $elq = User::with(['detail'])
-        ->when($request->q, function($query, $search){
-            $query->where('nama', 'LIKE', '%' . $search . '%');
+        $query = User::with([
+            'detail',
+            'lamaran' => function($q) {
+                $q->with('lowongan')->latest();
+            }
+        ])
+        ->when($request->search, function($query, $search){
+            $query->where('nama', 'LIKE', '%' . $search . '%')
+                  ->orWhere('email', 'LIKE', '%' . $search . '%')
+                  ->orWhereHas('detail', function($q) use ($search) {
+                      $q->where('nama', 'LIKE', '%' . $search . '%')
+                        ->orWhere('nik', 'LIKE', '%' . $search . '%');
+                  });
         })
         ->when($request->status, function($query, $status){
-            $query->where('status', $status);
+            if ($status !== 'all') {
+                $query->whereHas('lamaran', function($q) use ($status) {
+                    $q->where('status', $status);
+                });
+            }
         })
         ->orderBy($sort, $sortDir);
 
-        if($request->limit){
-            $data = $elq->paginate($request->limit);
-        }else{
-            $data = $elq->get();
-        }
+        // Always paginate the results
+        $data = $query->paginate($limit, ['*'], 'page', $page);
+        
+        // Transform data to include application info and status labels
+        $data->getCollection()->transform(function($user) {
+            $activeApplication = $user->lamaran->whereNotIn('status', ['ditolak'])->first();
+            $user->active_application = $activeApplication;
+            $user->status = $activeApplication ? $activeApplication->status : 'none';
+            $user->status_label = $this->getStatusLabel($user->status);
+            
+            // Use detail name if available, otherwise fallback to user name
+            $user->nama = $user->detail->nama ?? $user->nama;
+            
+            return $user;
+        });
 
         return response()->json($data);
     }
-
-    public function state($id, Request $request)
+    
+    /**
+     * Get status label for display
+     */
+    private function getStatusLabel($status)
     {
-        // dd($request->all());
+        $labels = [
+            'pending' => 'Menunggu Review',
+            'diterima' => 'Diterima',
+            'ditolak' => 'Ditolak',
+            'interview' => 'Interview',
+            'medical' => 'Medical Check Up',
+            'pelatihan' => 'Pelatihan',
+            'siap' => 'Siap Berangkat',
+            'selesai' => 'Selesai',
+            'none' => 'Belum Ada Lamaran'
+        ];
+        
+        return $labels[$status] ?? $status;
+    }
 
-        $user = User::find($id);
-        if($request->state == 'diterima'){
-            $user->status = 'diterima';
-        }else{
-            $user->status = 'ditolak';
-            $user->detail->update([
-                'catatan' => $request->reason,
-            ]);
-        }
-        $user->save();
-        $user->notify(new RegisterNotification($request->state, $request->reason));
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Status berhasil diperbarui',
+    /**
+     * Update application status for talent
+     */
+    public function updateApplicationStatus($id, Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'lamaran_id' => 'required|exists:lamaran,id',
+            'status' => 'required|in:pending,diterima,ditolak,interview,medical,pelatihan,siap,selesai',
+            'catatan' => 'nullable|string|max:1000'
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $user = User::findOrFail($id);
+            $lamaran = $user->lamaran()->findOrFail($request->lamaran_id);
+            
+            $lamaran->update([
+                'status' => $request->status,
+                'catatan' => $request->catatan
+            ]);
+
+            // Send notification to user
+            $user->notify(new RegisterNotification($request->status, $request->catatan));
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Status lamaran berhasil diperbarui',
+                'data' => $lamaran->fresh(['lowongan'])
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui status: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

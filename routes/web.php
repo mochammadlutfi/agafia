@@ -96,6 +96,9 @@ Route::namespace('Frontend')->group(function(){
                 Route::get('/', 'BiodataController@index')->name('index');
                 Route::get('/form', 'BiodataController@form')->name('form');
                 Route::post('/store','BiodataController@store')->name('store');
+                Route::get('/edit', 'BiodataController@edit')->name('edit');
+                Route::post('/update','BiodataController@update')->name('update');
+                Route::get('/pdf', 'BiodataController@pdf')->name('pdf');
             });
 
             Route::prefix('/medical')->name('medical.')->group(function () {
@@ -109,6 +112,33 @@ Route::namespace('Frontend')->group(function(){
                 Route::get('/', 'TrainingController@index')->name('index');
                 Route::get('/{id}', 'TrainingController@show')->name('show');
             });
+
+            // Lamaran (Job Application) Management
+            Route::prefix('/lamaran')->name('lamaran.')->group(function () {
+                Route::get('/', 'LamaranController@index')->name('index');
+                Route::get('/create/{lowongan}', 'LamaranController@create')->name('create');
+                Route::post('/store', 'LamaranController@store')->name('store');
+                Route::get('/{id}', 'LamaranController@show')->name('show');
+                Route::post('/{id}/cancel', 'LamaranController@cancel')->name('cancel');
+                Route::post('/{id}/update-cv', 'LamaranController@updateCv')->name('update-cv');
+                Route::get('/{id}/timeline', 'LamaranController@timeline')->name('timeline');
+            });
+
+            // Document Management
+            Route::prefix('/dokumen')->name('dokumen.')->group(function () {
+                Route::get('/{lamaran}', 'DokumenController@index')->name('index');
+                Route::get('/{lamaran}/create/{kategori}', 'DokumenController@create')->name('create');
+                Route::post('/{lamaran}/store', 'DokumenController@store')->name('store');
+                Route::get('/{lamaran}/{id}', 'DokumenController@show')->name('show');
+                Route::post('/{lamaran}/{id}/update', 'DokumenController@update')->name('update');
+                Route::delete('/{lamaran}/{id}', 'DokumenController@destroy')->name('destroy');
+                Route::get('/{lamaran}/{id}/download', 'DokumenController@download')->name('download');
+                Route::get('/{lamaran}/{id}/view', 'DokumenController@view')->name('view');
+                Route::get('/{lamaran}/progress', 'DokumenController@progress')->name('progress');
+            });
+
+            // Dashboard statistics API
+            Route::get('/dashboard/statistics', 'DashboardController@statistics')->name('dashboard.statistics');
         });
 
     });
@@ -150,7 +180,7 @@ Route::prefix('admin')->namespace('Admin')->name('admin.')->group(function(){
             Route::get('/{id}', 'TalentController@show')->name('show');
             Route::get('/{id}/edit','TalentController@edit')->name('edit');
             Route::post('/{id}/update','TalentController@update')->name('update');
-            Route::post('/{id}/state','TalentController@state')->name('state');
+            Route::post('/{id}/update-application-status','TalentController@updateApplicationStatus')->name('update-application-status');
             Route::delete('/{id}/hapus','TalentController@destroy')->name('delete');
         });
 
@@ -177,28 +207,15 @@ Route::prefix('admin')->namespace('Admin')->name('admin.')->group(function(){
         });
 
         Route::prefix('/interview')->name('interview.')->group(function () {
-            
-            Route::prefix('/jadwal')->name('jadwal.')->group(function () {
-                Route::get('/', 'JadwalInterviewController@index')->name('index');
-                Route::get('/create', 'JadwalInterviewController@create')->name('create');
-                Route::post('/store', 'JadwalInterviewController@store')->name('store');
-                Route::get('/data', 'JadwalInterviewController@data')->name('data');
-                Route::get('/{id}', 'JadwalInterviewController@show')->name('show');
-                Route::get('/{id}/edit','JadwalInterviewController@edit')->name('edit');
-                Route::post('/{id}/update','JadwalInterviewController@update')->name('update');
-                Route::delete('/{id}/hapus','JadwalInterviewController@destroy')->name('delete');
-            });
-            
-            Route::prefix('/hasil')->name('hasil.')->group(function () {
-                Route::get('/', 'HasilInterviewController@index')->name('index');
-                Route::get('/create', 'HasilInterviewController@create')->name('create');
-                Route::post('/store', 'HasilInterviewController@store')->name('store');
-                Route::get('/data', 'HasilInterviewController@data')->name('data');
-                Route::get('/{id}', 'HasilInterviewController@show')->name('show');
-                Route::get('/{id}/edit','HasilInterviewController@edit')->name('edit');
-                Route::post('/{id}/update','HasilInterviewController@update')->name('update');
-                Route::delete('/{id}/hapus','HasilInterviewController@destroy')->name('delete');
-            });
+            Route::get('/', 'InterviewController@index')->name('index');
+            Route::get('/create', 'InterviewController@create')->name('create');
+            Route::post('/store', 'InterviewController@store')->name('store');
+            Route::get('/data', 'InterviewController@data')->name('data');
+            Route::get('/{id}', 'InterviewController@show')->name('show');
+            Route::get('/{id}/edit','InterviewController@edit')->name('edit');
+            Route::post('/{id}/update','InterviewController@update')->name('update');
+            Route::post('/{id}/hasil','InterviewController@hasil')->name('hasil');
+            Route::delete('/{id}/hapus','InterviewController@destroy')->name('delete');
 
         });
 
@@ -233,6 +250,32 @@ Route::prefix('admin')->namespace('Admin')->name('admin.')->group(function(){
             Route::get('/{id}/edit','DepartureController@edit')->name('edit');
             Route::post('/{id}/update','DepartureController@update')->name('update');
             Route::delete('/{id}/hapus','DepartureController@destroy')->name('delete');
+        });
+
+        // Lamaran (Job Application) Management
+        Route::prefix('/lamaran')->name('lamaran.')->group(function () {
+            Route::get('/', 'LamaranController@index')->name('index');
+            Route::get('/data', 'LamaranController@data')->name('data');
+            Route::get('/{id}', 'LamaranController@show')->name('show');
+            Route::post('/{id}/update-status', 'LamaranController@updateStatus')->name('update-status');
+            Route::post('/bulk-update-status', 'LamaranController@bulkUpdateStatus')->name('bulk-update-status');
+            Route::get('/statistics', 'LamaranController@statistics')->name('statistics');
+            Route::get('/export', 'LamaranController@export')->name('export');
+            Route::delete('/{id}', 'LamaranController@destroy')->name('destroy');
+        });
+
+        // Document Review Management
+        Route::prefix('/dokumen-lamaran')->name('dokumen-lamaran.')->group(function () {
+            Route::get('/', 'DokumenLamaranController@index')->name('index');
+            Route::get('/data', 'DokumenLamaranController@data')->name('data');
+            Route::get('/{id}', 'DokumenLamaranController@show')->name('show');
+            Route::post('/{id}/review', 'DokumenLamaranController@review')->name('review');
+            Route::post('/bulk-review', 'DokumenLamaranController@bulkReview')->name('bulk-review');
+            Route::get('/{id}/download', 'DokumenLamaranController@download')->name('download');
+            Route::get('/{id}/view', 'DokumenLamaranController@view')->name('view');
+            Route::get('/by-lamaran/{lamaran}', 'DokumenLamaranController@byLamaran')->name('by-lamaran');
+            Route::get('/statistics', 'DokumenLamaranController@statistics')->name('statistics');
+            Route::delete('/{id}', 'DokumenLamaranController@destroy')->name('destroy');
         });
 
         Route::prefix('/lowongan')->name('lowongan.')->group(function () {

@@ -12,15 +12,9 @@
                                 </a>
                             </li>
                             <li class="nav-main-item">
-                                <a class="nav-main-link" :class="(route().current('user.interview')) ? 'active' : ''" :href="route('user.interview')">
+                                <a class="nav-main-link" :class="(route().current('user.lamaran.index')) ? 'active' : ''" :href="route('user.lamaran.index')">
                                     <i class="nav-main-link-icon fa fa-calendar-xmark"></i>
-                                    <span class="nav-main-link-name">Jadwal Interview</span>
-                                </a>
-                            </li>
-                            <li class="nav-main-item">
-                                <a class="nav-main-link" :class="(route().current('user.medical.index')) ? 'active' : ''" :href="route('user.medical.index')">
-                                    <i class="nav-main-link-icon fa fa-stethoscope"></i>
-                                    <span class="nav-main-link-name">Medical Checkup</span>
+                                    <span class="nav-main-link-name">Lamaran Saya</span>
                                 </a>
                             </li>
                             <li class="nav-main-item">

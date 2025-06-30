@@ -6,7 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use App\Models\JadwalInterview;
+use App\Models\Interview;
 use Carbon\Carbon;
 
 class JadwalInterviewNotification extends Notification
@@ -18,7 +18,7 @@ class JadwalInterviewNotification extends Notification
      *
      * @return void
      */
-    public function __construct(JadwalInterview $data)
+    public function __construct(Interview $data)
     {
         $this->data = $data;
     }

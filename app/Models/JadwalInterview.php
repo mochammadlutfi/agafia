@@ -14,6 +14,7 @@ class JadwalInterview extends Model
 
     protected $fillable = [
         'user_id',
+        'lamaran_id',
         'tanggal',
         'waktu',
         'lokasi',
@@ -50,6 +51,11 @@ class JadwalInterview extends Model
     public function hasil()
     {
         return $this->hasOne(HasilInterview::class, 'jadwal_id');
+    }
+
+    public function lamaran()
+    {
+        return $this->belongsTo(Lamaran::class, 'lamaran_id');
     }
 
     // Scopes
