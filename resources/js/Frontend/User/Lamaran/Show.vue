@@ -110,12 +110,12 @@
             </el-card>
 
             <!-- Application Information -->
-            <el-card class="mb-4">
+            <el-card class="mb-4 rounded">
                 <template #header>
-                    <h3>
+                    <div class="fs-4">
                         <i class="fa fa-info-circle me-2"></i>
                         Informasi Lamaran
-                    </h3>
+                    </div>
                 </template>
                 
                 <el-descriptions :column="1" border>
@@ -152,45 +152,85 @@
             </el-card>
 
             <!-- Interview Schedule (if exists) -->
-            <el-card v-if="false" class="mb-4">
+            <el-card v-if="lamaran.interview" class="mb-4 rounded">
                 <template #header>
-                    <h3>
+                    <div class="fs-4">
                         <i class="fa fa-calendar me-2"></i>
                         Jadwal Interview
-                    </h3>
+                    </div>
                 </template>
                 
                 <div class="interview-list">
-                    <div 
-                        v-for="interview in lamaran.jadwal_interview" 
-                        :key="interview.id"
-                        class="interview-item"
-                    >
+                    <div class="interview-item">
                         <div class="interview-header">
-                            <h4>Interview #{{ interview.id }}</h4>
+                            <h4>Interview #{{ lamaran.interview.id }}</h4>
                             <el-tag 
-                                :type="interview.status === 'selesai' ? 'success' : 'warning'"
+                                :type="lamaran.interview.status === 'selesai' ? 'success' : 'warning'"
                                 size="small"
                             >
-                                {{ interview.status === 'selesai' ? 'Selesai' : 'Terjadwal' }}
+                                {{ lamaran.interview.status === 'selesai' ? 'Selesai' : 'Terjadwal' }}
                             </el-tag>
                         </div>
                         <div class="interview-details">
-                            <p><strong>Tanggal:</strong> {{ formatDateTime(interview.tanggal) }}</p>
-                            <p><strong>Lokasi:</strong> {{ interview.lokasi || 'Online' }}</p>
-                            <p v-if="interview.catatan"><strong>Catatan:</strong> {{ interview.catatan }}</p>
+                            <p><strong>Tanggal:</strong> {{ formatDateTime(lamaran.interview.tanggal) }}</p>
+                            <p><strong>Lokasi:</strong> {{ lamaran.interview.lokasi || 'Online' }}</p>
+                            <p v-if="lamaran.interview.catatan"><strong>Catatan:</strong> {{ lamaran.interview.catatan }}</p>
                         </div>
                     </div>
                 </div>
             </el-card>
+
+            
+            <el-card v-if="getActiveStep() > 0" class="mb-4 rounded">
+                <template #header>
+                    <div class="fs-4">
+                        <i class="fa fa-calendar me-2"></i>
+                        Medical Check Up
+                    </div>
+                </template>
+                <div v-if="lamaran.medical">
+                    <el-descriptions :column="2" border direction="horizontal">
+                        <el-descriptions-item label="Nama Fasilitas Kesehatan">
+                            {{ lamaran.medical.nama }}
+                        </el-descriptions-item>
+                        <el-descriptions-item label="Tanggal Pengecekan">
+                            {{ format_date(lamaran.medical.tanggal) }}
+                        </el-descriptions-item>
+                        <el-descriptions-item label="Hasil">
+                            {{ lamaran.medical.hasil }}
+                        </el-descriptions-item>
+                        <el-descriptions-item label="Dokumen File">
+                            <span v-if="!lamaran.medical.file">-</span>
+                            <el-button v-else tag="a" :href="'/uploads/'+lamaran.medical.file" target="_blank" type="primary" size="small">
+                                <i class="fa fa-file-pdf-o"></i> Lihat
+                            </el-button>                        
+                        </el-descriptions-item>
+                        <el-descriptions-item label="Status">
+                            <el-tag :type="getMedicalStatus(lamaran.medical.status)" size="small">
+                                {{ lamaran.medical.status_label }}
+                            </el-tag>
+                        </el-descriptions-item>
+                        <el-descriptions-item label="Catatan" :span="2" label-position="top">
+                            {{ lamaran.medical.catatan }}
+                        </el-descriptions-item>
+                    </el-descriptions>
+                </div>
+                <el-empty v-else>
+                    <el-button 
+                        @click="showMedicalModal = true"
+                        type="primary">
+                        Upload Medical Checkup
+                    </el-button>
+                </el-empty>
+            </el-card>
             
             <!-- Job Details -->
-            <el-card class="mb-4">
+            <el-card class="mb-4 rounded">
                 <template #header>
-                    <h3>
+                    <div class="fs-4">
                         <i class="fa fa-briefcase me-2"></i>
                         Detail Pekerjaan
-                    </h3>
+                    </div>
                 </template>
                 
                 <el-descriptions :column="1" border>
@@ -310,19 +350,94 @@
                     </div>
                 </div>
             </el-card>
+        <el-dialog
+            v-model="showMedicalModal"
+            title="Medical Check Up"
+            width="600px"
+            :before-close="handleMedicalModalClose"
+        >
+            <el-form :model="medicalForm" :rules="medicalRules" ref="medicalFormRef" label-position="top" label-width="150px">
+                <el-form-item label="Tanggal Medical" prop="tanggal">
+                    <el-date-picker
+                        v-model="medicalForm.tanggal"
+                        type="date"
+                        placeholder="Pilih tanggal"
+                        format="DD/MM/YYYY"
+                        value-format="YYYY-MM-DD"
+                        style="width: 100%"
+                    />
+                </el-form-item>
+                <el-form-item label="Nama Fasilitas Kesehatan" prop="nama">
+                    <el-input v-model="medicalForm.nama" placeholder="Nama Fasilitas Kesehatan (misal:Rumah Sakit Bunga, dll)" />
+                </el-form-item>
+                <el-form-item label="Upload File" prop="file">
+                    <single-file-upload v-model="medicalForm.file"/>
+                </el-form-item>
+                <el-form-item label="Hasil" prop="hasil">
+                    <el-input v-model="medicalForm.hasil" placeholder="Hasil medical check" />
+                </el-form-item>
+                <el-form-item label="Catatan">
+                    <el-input
+                        v-model="medicalForm.catatan"
+                        type="textarea"
+                        :rows="3"
+                        placeholder="Catatan tambahan (opsional)"
+                    />
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="showMedicalModal = false">Batal</el-button>
+                    <el-button type="info" @click="submitMedicalForm" :loading="medicalLoading">
+                        Simpan
+                    </el-button>
+                </span>
+            </template>
+        </el-dialog>
     </user-layout>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, reactive } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
+import SingleFileUpload from '@/Components/SingleFileUpload.vue';
+import moment from 'moment';
 
 const props = defineProps({
     lamaran: Object,
     progress: Object
 })
 
+
+const showMedicalModal = ref(false)
+const showDocumentModal = ref(false)
+
+const medicalLoading = ref(false)
+const documentLoading = ref(false)
+
+const medicalFormRef = ref()
+const documentFormRef = ref()
+
+
+
+// Medical Form
+const medicalForm = reactive({
+    lamaran_id : props.lamaran.id,
+    tanggal: '',
+    nama: '',
+    hasil: '',
+    file: null,
+    catatan: '',
+    status: 'pending'
+})
+
+const medicalRules = {
+    tanggal: [{ required: true, message: 'Tanggal medical wajib diisi', trigger: 'blur' }],
+    nama: [{ required: true, message: 'Nama Faskes wajib diisi', trigger: 'blur' }],
+    file: [{ required: true, message: 'File wajib diupload', trigger: 'change' }],
+    hasil: [{ required: true, message: 'Hasil wajib diisi', trigger: 'blur' }]
+}
 // Status configurations
 const statusLabels = {
     'pending': 'Menunggu Review',
@@ -413,10 +528,33 @@ const getCurrentStepTitle = () => {
     return titles[props.lamaran.status] || 'Status Tidak Diketahui'
 }
 
+const format_date = (value) => {
+  if (value) {
+    return moment(String(value)).format('DD MMM YYYY');
+  }
+}
+
+const format_time = (value) => {
+  if (value) {
+    return moment(String(value)).format('HH:mm');
+  }
+}
+
+const getMedicalStatus = (status) => {
+  switch (status) {
+    case 'pending':
+      return 'warning';
+    case 'valid':
+      return 'success';
+    default:
+      return 'danger';
+  }
+};
+
 const getCurrentStepDescription = () => {
     const descriptions = {
-        'pending': 'Lamaran Anda sedang dalam tahap verifikasi oleh tim HRD. Mohon bersabar menunggu.',
-        'diterima': 'Selamat! Lamaran Anda diterima. Tim HRD akan menghubungi untuk jadwal interview.',
+        'pending': 'Lamaran Anda sedang dalam tahap verifikasi. Mohon bersabar menunggu.',
+        'diterima': 'Selamat! Lamaran Anda diterima. Kami akan menghubungi untuk jadwal interview.',
         'interview': 'Anda sedang dalam tahap interview. Pastikan persiapan Anda optimal.',
         'medical': 'Lakukan pemeriksaan kesehatan di fasilitas yang telah ditentukan.',
         'pelatihan': 'Ikuti program pelatihan sesuai jadwal yang telah diberikan.',
@@ -467,6 +605,44 @@ const cancelApplication = async () => {
         // User cancelled
     }
 }
+
+
+const submitMedicalForm = async () => {
+    if (!medicalFormRef.value) return
+    
+    await medicalFormRef.value.validate((valid) => {
+        if (valid) {
+            medicalLoading.value = true;
+            
+            try {
+                medicalForm.lamaran_id = props.lamaran.id
+                
+                axios.post(route('user.lamaran.medical'), medicalForm,{
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                })
+                
+                ElMessage.success('Medical check up berhasil dijadwalkan')
+                showMedicalModal.value = false
+                
+                // Refresh page data
+                router.visit(route('user.lamaran.show', props.lamaran.id), {
+                    preserveState: false,
+                    preserveScroll: true
+                })
+            } catch (error) {
+                console.error('Error scheduling medical:', error)
+                ElMessage.error('Gagal menjadwalkan medical check up')
+            } finally {
+                medicalLoading.value = false
+            }
+        }
+    })
+}
+
+
+
 </script>
 
 <style scoped>

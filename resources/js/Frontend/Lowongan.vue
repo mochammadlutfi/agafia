@@ -1,10 +1,9 @@
 <template>
     <base-layout>
         <!-- Hero Banner -->
-        <div class="w-100 position-relative mb-4 bg-primary">
-            <!-- <img src="/images/banner/Job-Training-Indonesia-1.jpg" class="w-100" style="height: 300px; object-fit: cover;"/> -->
-            <div class="position-absolute top-50 start-50 translate-middle text-center text-white">
-                <h1 class="display-4 fw-bold mb-3">Lowongan Kerja</h1>
+        <div class="bg-primary mb-4 p-4 w-100">
+            <div class="text-center text-white">
+                <h1 class="fs-2 fw-bold mb-3">Lowongan Kerja</h1>
                 <p class="lead">Temukan peluang karir terbaik untuk masa depan yang cerah</p>
             </div>
         </div>
@@ -22,44 +21,25 @@
                             <div class="block-content p-3">
                                 <div class="row g-3">
                                     <div class="col-md-4">
-                                        <el-input 
-                                            v-model="filters.search" 
-                                            placeholder="Cari posisi, perusahaan, atau lokasi..."
-                                            @input="filterJobs"
-                                        >
+                                        <el-input v-model="filters.search"
+                                            placeholder="Cari posisi, perusahaan, atau lokasi..." @input="filterJobs">
                                             <template #prefix>
                                                 <i class="fa fa-search"></i>
                                             </template>
                                         </el-input>
                                     </div>
                                     <div class="col-md-3">
-                                        <el-select 
-                                            v-model="filters.lokasi" 
-                                            placeholder="Pilih Lokasi"
-                                            @change="filterJobs"
-                                            clearable
-                                        >
-                                            <el-option 
-                                                v-for="lokasi in uniqueLocations" 
-                                                :key="lokasi" 
-                                                :label="lokasi" 
-                                                :value="lokasi"
-                                            />
+                                        <el-select v-model="filters.lokasi" placeholder="Pilih Lokasi"
+                                            @change="filterJobs" clearable>
+                                            <el-option v-for="lokasi in uniqueLocations" :key="lokasi" :label="lokasi"
+                                                :value="lokasi" />
                                         </el-select>
                                     </div>
                                     <div class="col-md-3">
-                                        <el-select 
-                                            v-model="filters.perusahaan" 
-                                            placeholder="Pilih Perusahaan"
-                                            @change="filterJobs"
-                                            clearable
-                                        >
-                                            <el-option 
-                                                v-for="perusahaan in uniqueCompanies" 
-                                                :key="perusahaan" 
-                                                :label="perusahaan" 
-                                                :value="perusahaan"
-                                            />
+                                        <el-select v-model="filters.perusahaan" placeholder="Pilih Perusahaan"
+                                            @change="filterJobs" clearable>
+                                            <el-option v-for="perusahaan in uniqueCompanies" :key="perusahaan"
+                                                :label="perusahaan" :value="perusahaan" />
                                         </el-select>
                                     </div>
                                     <div class="col-md-2">
@@ -76,7 +56,7 @@
                         <div class="block">
                             <div class="block-header block-header-default">
                                 <h3 class="block-title">
-                                    Daftar Lowongan 
+                                    Daftar Lowongan
                                     <small class="text-muted">({{ filteredJobs.length }} lowongan tersedia)</small>
                                 </h3>
                             </div>
@@ -90,19 +70,12 @@
                                 </div>
 
                                 <div v-else class="row">
-                                    <div 
-                                        v-for="job in filteredJobs" 
-                                        :key="job.id" 
-                                        class="col-lg-6 col-xl-4 mb-4"
-                                    >
+                                    <div v-for="job in filteredJobs" :key="job.id" class="col-lg-6 col-xl-4 mb-4">
                                         <div class="card h-100 shadow-sm">
                                             <div class="card-img-top position-relative">
-                                                <img 
-                                                    :src="job.foto ? job.foto : '/images/placeholder.png'" 
-                                                    class="w-100" 
-                                                    style="height: 200px; object-fit: cover;"
-                                                    :alt="job.posisi"
-                                                />
+                                                <img :src="job.foto ? job.foto : '/images/placeholder.png'"
+                                                    class="w-100" style="height: 200px; object-fit: cover;"
+                                                    :alt="job.posisi" />
                                                 <div class="position-absolute top-0 end-0 p-2">
                                                     <el-tag type="success" size="small">
                                                         {{ job.status_label }}
@@ -133,11 +106,7 @@
                                                     {{ truncateText(job.deskripsi, 100) }}
                                                 </p>
                                                 <div class="mt-auto">
-                                                    <el-button 
-                                                        type="primary" 
-                                                        class="w-100"
-                                                        @click="viewJobDetail(job)"
-                                                    >
+                                                    <el-button type="primary" class="w-100" @click="viewJobDetail(job)">
                                                         <i class="fa fa-eye me-1"></i>
                                                         Lihat Detail
                                                     </el-button>
@@ -154,27 +123,18 @@
         </div>
 
         <!-- Job Detail Modal -->
-        <el-dialog 
-            v-model="showDetailModal" 
-            :title="selectedJob?.posisi"
-            width="80%"
-            center
-        >
+        <el-dialog v-model="showDetailModal" :title="selectedJob?.posisi" width="80%" center>
             <div v-if="selectedJob" class="row">
                 <div class="col-md-5">
-                    <img 
-                        :src="selectedJob.foto ?? '/images/placeholder.png'" 
-                        class="w-100 rounded mb-3" 
-                        style="height: 250px; object-fit: cover;"
-                        :alt="selectedJob.posisi"
-                    />
+                    <img :src="selectedJob.foto ?? '/images/placeholder.png'" class="w-100 rounded mb-3"
+                        style="height: 250px; object-fit: cover;" :alt="selectedJob.posisi" />
                 </div>
                 <div class="col-md-7">
                     <div class="mb-3">
                         <h4 class="text-primary fw-bold mb-2">{{ selectedJob.posisi }}</h4>
                         <h5 class="text-muted">{{ selectedJob.perusahaan }}</h5>
                     </div>
-                    
+
                     <div class="row mb-3">
                         <div class="col-6">
                             <div class="d-flex align-items-center mb-2">
@@ -203,19 +163,11 @@
                     </div>
 
                     <div class="d-flex gap-2">
-                        <el-button 
-                            type="primary" 
-                            size="large"
-                            @click="applyJob"
-                            :disabled="!$page.props.user"
-                        >
+                        <el-button type="primary" size="large" @click="applyJob" :disabled="!$page.props.user">
                             <i class="fa fa-paper-plane me-1"></i>
                             {{ $page.props.user ? 'Lamar Sekarang' : 'Login untuk Melamar' }}
                         </el-button>
-                        <el-button 
-                            @click="showDetailModal = false"
-                            size="large"
-                        >
+                        <el-button @click="showDetailModal = false" size="large">
                             Tutup
                         </el-button>
                     </div>
@@ -258,7 +210,7 @@ const filteredJobs = computed(() => {
 
     if (filters.value.search) {
         const searchTerm = filters.value.search.toLowerCase()
-        jobs = jobs.filter(job => 
+        jobs = jobs.filter(job =>
             job.posisi.toLowerCase().includes(searchTerm) ||
             job.perusahaan.toLowerCase().includes(searchTerm) ||
             job.lokasi.toLowerCase().includes(searchTerm) ||
@@ -302,13 +254,13 @@ const viewJobDetail = (job) => {
 
 const applyJob = () => {
     if (!selectedJob.value) return
-    
+
     // Here you would typically redirect to application form or handle the application
     ElMessage.success(`Anda akan diarahkan untuk melamar posisi ${selectedJob.value.posisi}`)
-    
+
     // For now, just show a message and close modal
     showDetailModal.value = false
-    
+
     // You could redirect to registration/login or application form
     // window.location.href = route('register')
 }

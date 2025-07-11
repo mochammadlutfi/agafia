@@ -11,9 +11,8 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 
+use App\Models\Lamaran;
 use App\Models\Training;
-use App\Models\HasilInterview;
-use App\Models\NilaiDetail;
 
 
 class TrainingController extends Controller
@@ -47,14 +46,14 @@ class TrainingController extends Controller
     public function store(Request $request)
     {
         $rules = [
-            'user_id' => 'required',
+            'lamaran_id' => 'required',
             'program_id' => 'required',
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
         ];
 
         $pesan = [
-            'user_id.required' => 'Talent Wajib Diisi!',
+            'lamaran_id.required' => 'Talent Wajib Diisi!',
             'program_id.required' => 'Program Training Wajib Diisi!',
             'tanggal_mulai.required' => 'Tanggal Mulai Wajib Diisi!',
             'tanggal_mulai.date' => 'Format Tanggal Mulai Tidak Valid!',
@@ -70,23 +69,36 @@ class TrainingController extends Controller
             DB::beginTransaction();
             try{
                 $user = auth()->guard('admin')->user();
+                $lamaran = Lamaran::where('id', $request->lamaran_id)->first();
 
                 $data = new Training();
-                $data->user_id = $request->user_id;
+                $data->lamaran_id = $request->lamaran_id;
+                $data->user_id = $lamaran->user_id;
                 $data->program_id = $request->program_id;
-                $data->tanggal_daftar = Carbon::today();
+                $data->tanggal_daftar = $request->tanggal_daftar;
                 $data->tanggal_mulai = $request->tanggal_mulai;
                 $data->tanggal_selesai = $request->tanggal_selesai;
-                $data->status = 'terdaftar';
-                $data->didaftarkan_oleh = $user->id;
+                $data->status = $request->status;
+                $data->nilai_akhir = $request->nilai_akhir;
+                $data->sertifikat_diterbitkan = $request->sertifikat_diterbitkan;
+                $data->nomor_sertifikat = $request->nomor_sertifikat;
+                $data->catatan = $request->catatan;
+                $data->didaftarkan_oleh = auth()->guard('admin')->user()->id;
                 $data->save();
 
+                $lamaran->status = 'pelatihan';
+                $lamaran->save();
+
             }catch(\QueryException $e){
+                dd($e);
                 DB::rollback();
                 return back();
             }
             DB::commit();
-            return redirect()->route('admin.training.index');
+            return response()->json([
+                'success' => true,
+                'message' => 'Training berhasil Disimpan',
+            ]);
         }
     }
 
@@ -155,20 +167,35 @@ class TrainingController extends Controller
         }else{
             DB::beginTransaction();
             try{
+                $lamaran = Lamaran::where('id', $request->lamaran_id)->first();
+
                 $data = Training::where('id', $id)->first();
-                $data->user_id = $request->user_id;
+                $data->lamaran_id = $request->lamaran_id;
+                $data->user_id = $lamaran->user_id;
                 $data->program_id = $request->program_id;
                 $data->tanggal_mulai = $request->tanggal_mulai;
                 $data->tanggal_selesai = $request->tanggal_selesai;
                 $data->status = $request->status;
+                $data->nilai_akhir = $request->nilai_akhir;
+                $data->sertifikat_diterbitkan = $request->sertifikat_diterbitkan;
+                $data->nomor_sertifikat = $request->nomor_sertifikat;
+                $data->catatan = $request->catatan;
                 $data->save();
 
+                $lamaran->status = 'training';
+                $lamaran->save();
+
+
             }catch(\QueryException $e){
+                dd($e);
                 DB::rollback();
                 return back();
             }
             DB::commit();
-            return redirect()->route('admin.training.show', $id);
+            return response()->json([
+                'success' => true,
+                'message' => 'Training berhasil Disimpan',
+            ]);
         }
     }
 

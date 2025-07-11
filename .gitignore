@@ -19,3 +19,4 @@ vite.config.js
 /.vscode
 CLAUDE.md
 tki.zip
+public/build.zip

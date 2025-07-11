@@ -10,10 +10,13 @@ use Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+
+
 use App\Models\Lamaran;
+use App\Models\Medical;
 use App\Models\Lowongan;
-use App\Models\DokumenLamaran;
-use App\Models\KategoriDokumen;
 
 class LamaranController extends Controller
 {
@@ -189,7 +192,15 @@ class LamaranController extends Controller
         $user = auth()->user();
         
         $lamaran = $user->lamaran()->with([
-            'lowongan'
+            'lowongan',
+            'lowongan',
+            'interview' => function($q) {
+                return $q->with(['pewawancara']);
+            },
+            'medical',
+            'training' => function($q){
+                return $q->with(['program']);
+            }
         ])->findOrFail($id);
 
         // Calculate progress
@@ -392,5 +403,62 @@ class LamaranController extends Controller
         ];
 
         return $steps[$lamaran->status] ?? $steps['pending'];
+    }
+
+    
+    public function medical(Request $request)
+    {
+        $rules = [
+            'nama' => 'required',
+            'hasil' => 'required',
+            'tanggal' => 'required',
+            'file' => 'required',
+        ];
+
+        $pesan = [
+            'nama.required' => 'Nama Faskes Wajib Diisi!',
+            'hasil.required' => 'Hasil Wajib Diisi!',
+            'tanggal.required' => 'Tanggal Wajib Diisi!',
+            'file.required' => 'File Dokumen Wajib Diisi!',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $pesan);
+        if ($validator->fails()){
+            return back()->withErrors($validator->errors());
+        }else{
+            DB::beginTransaction();
+            try{
+                $lamaran = Lamaran::where('id', $request->lamaran_id)->first();
+
+                $data = new Medical();
+                $data->user_id = $lamaran->user_id;
+                $data->lamaran_id = $request->lamaran_id;
+                $data->nama = $request->nama;
+                $data->tanggal = $request->tanggal;
+                $data->hasil = $request->hasil;
+                
+                if (is_file($request->file)) {
+                    $fileDir = 'document/' . $lamaran->user_id .'/' . Str::random(32) . '.' . $request->file('file')->getClientOriginalExtension();
+                    $directory = Storage::disk('public')->put($fileDir, fopen($request->file('file'), 'r+'));
+                    $data->file = $fileDir;
+                }
+                $data->status = 'pending';
+                $data->save();
+
+                $lamaran->status = 'medical';
+                $lamaran->save();
+
+
+            }catch(\QueryException $e){
+                dd($e);
+                DB::rollback();
+                return back();
+            }
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'message' => 'Jadwal berhasil Dibuat',
+            ]);
+        }
     }
 }

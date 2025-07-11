@@ -46,7 +46,12 @@ class Lamaran extends Model
 
     public function interview()
     {
-        return $this->hasMany(Interview::class, 'lamaran_id');
+        return $this->hasOne(Interview::class, 'lamaran_id');
+    }
+
+    public function medical()
+    {
+        return $this->hasOne(Medical::class, 'lamaran_id');
     }
 
     public function hasilInterview()

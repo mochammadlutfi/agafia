@@ -23,7 +23,7 @@
                         Filter & Pencarian
                     </h3>
                 </div>
-                <div class="block-content">
+                <div class="block-content pb-4">
                     <el-row :gutter="16">
                         <el-col :span="6">
                             <el-input
@@ -37,7 +37,7 @@
                                 </template>
                             </el-input>
                         </el-col>
-                        <el-col :span="4">
+                        <el-col :span="5">
                             <el-select v-model="filters.status" placeholder="Status" @change="loadData" clearable>
                                 <el-option
                                     v-for="(label, value) in statusOptions"
@@ -47,7 +47,7 @@
                                 />
                             </el-select>
                         </el-col>
-                        <el-col :span="4">
+                        <el-col :span="5">
                             <el-date-picker
                                 v-model="filters.tanggal_dari"
                                 type="date"
@@ -56,7 +56,7 @@
                                 style="width: 100%"
                             />
                         </el-col>
-                        <el-col :span="4">
+                        <el-col :span="5">
                             <el-date-picker
                                 v-model="filters.tanggal_sampai"
                                 type="date"
@@ -65,15 +65,11 @@
                                 style="width: 100%"
                             />
                         </el-col>
-                        <el-col :span="6">
+                        <el-col :span="3">
                             <div class="d-flex gap-2">
                                 <el-button @click="resetFilters" type="default">
                                     <i class="fa fa-refresh me-1"></i>
                                     Reset
-                                </el-button>
-                                <el-button @click="loadStatistics" type="info">
-                                    <i class="fa fa-chart-bar me-1"></i>
-                                    Statistik
                                 </el-button>
                             </div>
                         </el-col>
@@ -150,9 +146,7 @@
                                 </div>
                             </template>
                         </el-table-column>
-                        
-                        <el-table-column prop="lowongan.negara_tujuan" label="Negara" width="120" />
-                        
+                                                
                         <el-table-column prop="tanggal_lamaran" label="Tanggal" width="120" sortable="custom">
                             <template #default="{ row }">
                                 {{ formatDate(row.tanggal_lamaran) }}
@@ -206,7 +200,7 @@
                 </div>
                 
                 <!-- Pagination -->
-                <div class="block-content" v-if="pagination.total > 0">
+                <div class="block-content p-2" v-if="pagination.total > 0">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="text-muted">
                             Menampilkan {{ pagination.from }} - {{ pagination.to }} dari {{ pagination.total }} data

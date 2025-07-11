@@ -10,7 +10,10 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
+use App\Models\Lamaran;
 use App\Models\Medical;
+use Illuminate\Support\Str;
+use Storage;
 
 
 class MedicalController extends Controller
@@ -23,6 +26,70 @@ class MedicalController extends Controller
     public function index()
     {
         return Inertia::render('Medical/Index');
+    }
+
+    
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        // dd($request->all());
+        $rules = [
+            'nama' => 'required',
+            'hasil' => 'required',
+            'tanggal' => 'required',
+            'file' => 'required',
+        ];
+
+        $pesan = [
+            'nama.required' => 'Nama Faskes Wajib Diisi!',
+            'hasil.required' => 'Hasil Wajib Diisi!',
+            'tanggal.required' => 'Tanggal Wajib Diisi!',
+            'file.required' => 'File Dokumen Wajib Diisi!',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $pesan);
+        if ($validator->fails()){
+            return back()->withErrors($validator->errors());
+        }else{
+            DB::beginTransaction();
+            try{
+                $lamaran = Lamaran::where('id', $request->lamaran_id)->first();
+
+                $data = new Medical();
+                $data->user_id = $lamaran->user_id;
+                $data->lamaran_id = $request->lamaran_id;
+                $data->nama = $request->nama;
+                $data->tanggal = $request->tanggal;
+                $data->hasil = $request->hasil;
+                
+                if (is_file($request->file)) {
+                    $fileDir = 'document/' . $lamaran->user_id .'/' . Str::random(32) . '.' . $request->file('file')->getClientOriginalExtension();
+                    $directory = Storage::disk('public')->put($fileDir, fopen($request->file('file'), 'r+'));
+                    $data->file = $fileDir;
+                }
+                $data->status = 'pending';
+                $data->save();
+
+                $lamaran->status = 'medical';
+                $lamaran->save();
+
+
+            }catch(\QueryException $e){
+                dd($e);
+                DB::rollback();
+                return back();
+            }
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'message' => 'Jadwal berhasil Dibuat',
+            ]);
+        }
     }
 
     /**

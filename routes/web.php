@@ -118,6 +118,8 @@ Route::namespace('Frontend')->group(function(){
                 Route::get('/', 'LamaranController@index')->name('index');
                 Route::get('/create/{lowongan}', 'LamaranController@create')->name('create');
                 Route::post('/store', 'LamaranController@store')->name('store');
+                Route::post('/medical', 'LamaranController@medical')->name('medical');
+                Route::post('/document', 'LamaranController@document')->name('document');
                 Route::get('/{id}', 'LamaranController@show')->name('show');
                 Route::post('/{id}/cancel', 'LamaranController@cancel')->name('cancel');
                 Route::post('/{id}/update-cv', 'LamaranController@updateCv')->name('update-cv');
@@ -199,6 +201,7 @@ Route::prefix('admin')->namespace('Admin')->name('admin.')->group(function(){
         Route::prefix('/medical')->name('medical.')->group(function () {
             Route::get('/', 'MedicalController@index')->name('index');
             Route::get('/data', 'MedicalController@data')->name('data');
+            Route::post('/store', 'MedicalController@store')->name('store');
             Route::get('/{id}', 'MedicalController@show')->name('show');
             Route::get('/{id}/edit','MedicalController@edit')->name('edit');
             Route::post('/{id}/update','MedicalController@update')->name('update');

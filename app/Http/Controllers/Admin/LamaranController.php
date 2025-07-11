@@ -48,6 +48,10 @@ class LamaranController extends Controller
             'lowongan',
             'interview' => function($q) {
                 return $q->with(['pewawancara']);
+            },
+            'medical',
+            'training' => function($q){
+                return $q->with(['program']);
             }
         ])->findOrFail($id);
 
