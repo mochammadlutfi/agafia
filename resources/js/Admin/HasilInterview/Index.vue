@@ -94,6 +94,70 @@
                 </div>
             </div>
         </div>
+        <el-dialog
+            v-model="showInterviewModal"
+            title="Jadwalkan Interview"
+            width="700px"
+            :before-close="handleInterviewModalClose"
+        >
+            <el-form :model="interviewForm" :rules="interviewRules" ref="interviewFormRef" label-width="150px">
+                <el-row :gutter="16">
+                    <el-col :span="12">
+                        <el-form-item label="Tanggal" prop="tanggal">
+                            <el-date-picker
+                                v-model="interviewForm.tanggal"
+                                type="date"
+                                placeholder="Pilih tanggal"
+                                format="DD/MM/YYYY "
+                                value-format="YYYY-MM-DD"
+                                style="width: 100%"
+                            />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                        <el-form-item label="Waktu" prop="waktu">
+                            <el-time-picker
+                                v-model="interviewForm.waktu"
+                                placeholder="Pilih waktu"
+                                format="HH:mm"
+                                value-format="HH:mm:ss"
+                                style="width: 100%"
+                            />
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-form-item label="Lokasi" prop="lokasi">
+                    <el-input v-model="interviewForm.lokasi" placeholder="Masukkan lokasi interview (misal: Kantor Pusat, Online via Zoom, dll)" />
+                </el-form-item>
+                <el-form-item label="Pewawancara" prop="pewawancara_id">
+                    <select-staff v-model="interviewForm.pewawancara_id" />
+                </el-form-item>
+                <el-form-item label="Status" prop="status">
+                    <el-select v-model="interviewForm.status" placeholder="Pilih status" style="width: 100%">
+                        <el-option label="Dijadwalkan" value="dijadwalkan" />
+                        <el-option label="Selesai" value="selesai" />
+                        <el-option label="Dibatalkan" value="dibatalkan" />
+                        <el-option label="Dijadwal Ulang" value="dijadwal_ulang" />
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="Catatan">
+                    <el-input
+                        v-model="interviewForm.catatan"
+                        type="textarea"
+                        :rows="3"
+                        placeholder="Catatan tambahan (opsional)"
+                    />
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="showInterviewModal = false">Batal</el-button>
+                    <el-button type="primary" @click="submitInterviewForm" :loading="interviewLoading">
+                        Jadwalkan Interview
+                    </el-button>
+                </span>
+            </template>
+        </el-dialog>
     </base-layout>
 </template>
 
@@ -113,6 +177,7 @@ const from = ref(0);
 const to = ref(0);
 const page = ref(1);
 const pageSize = ref(0);
+
 
 const doSearch = _.debounce(() => {
   isLoading.value = true;
@@ -186,6 +251,8 @@ const hapus = (id) => {
     });
   });
 };
+
+
 onMounted(() => {
   fetchData();
 });

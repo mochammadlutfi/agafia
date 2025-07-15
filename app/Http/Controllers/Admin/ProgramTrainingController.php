@@ -119,7 +119,7 @@ class ProgramTrainingController extends Controller
 
         return Inertia::render('ProgramTraining/Form',[
             'editMode' => true,
-            'value' => $value
+            'value' => $data
         ]);
     }
 
@@ -186,20 +186,20 @@ class ProgramTrainingController extends Controller
         DB::beginTransaction();
         try{
             
-            $pdk = Pendukung::find($id);
-            $pdk->delete();
+            $program = ProgramTraining::find($id);
+            $program->delete();
 
         }catch(\QueryException $e){
             DB::rollback();
             return response()->json([
                 'fail' => true,
                 'errors' => $e,
-                'pesan' => 'Error Menhapus Data Pendukung',
+                'pesan' => 'Error Menghapus Data Program Training',
             ]);
         }
 
         DB::commit();
-        return redirect()->route('admin.talent.index');
+        return redirect()->route('admin.training.program.index');
 
     }
 

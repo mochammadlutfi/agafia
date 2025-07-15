@@ -1,8 +1,8 @@
 <template>
-    <base-layout title="Detail Relawan">
+    <base-layout title="Detail Medical Checkup">
         <div class="content">
             <div class="content-heading d-flex justify-content-between align-items-center">
-                <span>Detail Medical Chekup</span>
+                <span>Detail Medical Checkup</span>
                 <div class="space-x-1">
                     <template v-if="data.status == 'pending'">
                     <el-button type="success" @click.prevent="onConfirm">
@@ -20,17 +20,20 @@
                 <div class="block-content p-4 fs-sm">
                     <el-alert
                     class="mb-4"
-                    v-if="data.status == 'ditolak'"
-                    title="Catatan"
+                    v-if="data.status == 'tidak_valid' && data.catatan"
+                    title="Catatan Penolakan"
                     type="error"
-                    :description="data.detail.catatan"
+                    :description="data.catatan"
                     show-icon
                     :closable="false"
                     />
                     
                     <el-descriptions :column="2" label-width="240px" :border="true">
-                        <el-descriptions-item label="Talent">
-                            {{ data.user.nama }}
+                        <el-descriptions-item label="Nama Pelamar">
+                            {{ data.lamaran?.user?.nama || '-' }}
+                        </el-descriptions-item>
+                        <el-descriptions-item label="Posisi Lamaran">
+                            {{ data.lamaran?.lowongan?.posisi || '-' }}
                         </el-descriptions-item>
                         <el-descriptions-item label="Nama Fasilitas Kesehatan">
                             {{ data.nama }}
@@ -38,22 +41,27 @@
                         <el-descriptions-item label="Tanggal Pengecekan">
                             {{ format_date(data.tanggal) }}
                         </el-descriptions-item>
-                        <el-descriptions-item label="Hasil">
-                            {{ data.hasil }}
+                        <el-descriptions-item label="Hasil Pemeriksaan">
+                            <el-tag :type="data.hasil === 'sehat' ? 'success' : 'warning'" size="small">
+                                {{ data.hasil }}
+                            </el-tag>
                         </el-descriptions-item>
-                        <el-descriptions-item label="Dokumen File">
-                            <span v-if="!data.file">-</span>
-                            <el-button v-else tag="a" :href="'/uploads/'+data.file" target="_blank" type="primary" size="small">
-                                <i class="fa fa-file-pdf-o"></i> Lihat
-                            </el-button>                        
-                        </el-descriptions-item>
-                        <el-descriptions-item label="Status">
+                        <el-descriptions-item label="Status Validasi">
                             <el-tag :type="getTypeStatus(data.status)" size="small">
                                 {{ data.status_label }}
                             </el-tag>
                         </el-descriptions-item>
+                        <el-descriptions-item label="Dokumen Medical">
+                            <span v-if="!data.file">-</span>
+                            <el-button v-else tag="a" :href="'/uploads/'+data.file" target="_blank" type="primary" size="small">
+                                <i class="fa fa-file-pdf-o"></i> Lihat Dokumen
+                            </el-button>                        
+                        </el-descriptions-item>
+                        <el-descriptions-item label="Tanggal Upload">
+                            {{ format_date(data.created_at) }}
+                        </el-descriptions-item>
                         <el-descriptions-item label="Catatan" :span="2" label-position="top">
-                            {{ data.catatan }}
+                            {{ data.catatan || '-' }}
                         </el-descriptions-item>
                     </el-descriptions>
                 </div>

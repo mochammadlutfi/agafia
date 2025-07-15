@@ -95,8 +95,17 @@ class LamaranController extends Controller
                       ->orWhere('perusahaan', 'LIKE', '%' . $search . '%');
                 });
             })
-            ->when($request->status, function($query, $status){
-                $query->where('status', $status);
+            ->when(!empty($request->status) && $request->status == 'diterima', function($query, $status){
+                $query->where('status', 'diterima')
+                ->orWhere('status', 'interview');
+            })
+            ->when(!empty($request->status) && $request->status == 'interview', function($query, $status){
+                $query->where('status', 'interview')
+                ->orWhere('status', 'medical');
+            })
+            ->when(!empty($request->status) && $request->status == 'training', function($query, $status){
+                $query->where('status', 'medical')
+                ->orWhere('status', 'training');
             })
             ->when($request->lowongan_id, function($query, $lowonganId){
                 $query->where('lowongan_id', $lowonganId);

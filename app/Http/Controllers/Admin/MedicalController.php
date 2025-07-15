@@ -54,7 +54,10 @@ class MedicalController extends Controller
 
         $validator = Validator::make($request->all(), $rules, $pesan);
         if ($validator->fails()){
-            return back()->withErrors($validator->errors());
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
         }else{
             DB::beginTransaction();
             try{
@@ -80,14 +83,16 @@ class MedicalController extends Controller
 
 
             }catch(\QueryException $e){
-                dd($e);
                 DB::rollback();
-                return back();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan saat menyimpan data'
+                ], 500);
             }
             DB::commit();
             return response()->json([
                 'success' => true,
-                'message' => 'Jadwal berhasil Dibuat',
+                'message' => 'Medical checkup berhasil ditambahkan',
             ]);
         }
     }
@@ -101,7 +106,9 @@ class MedicalController extends Controller
     public function show($id)
     {
         
-        $data = Medical::with(['user'])->where('id', $id)->first();
+        $data = Medical::with(['lamaran' => function($q){
+            return $q->with(['user.detail', 'lowongan']);
+        }])->where('id', $id)->first();
         
         return Inertia::render('Medical/Show', [
             'data' => $data
@@ -125,7 +132,7 @@ class MedicalController extends Controller
         ];
 
         $pesan = [
-            'nama.required' => 'Nama Pemeriksaan Wajib Diisi!',
+            'nama.required' => 'Nama Faskes Wajib Diisi!',
             'tanggal.required' => 'Tanggal Wajib Diisi!',
             'tanggal.date' => 'Format Tanggal Salah!',
             'hasil.required' => 'Hasil Wajib Diisi!',
@@ -134,24 +141,50 @@ class MedicalController extends Controller
 
         $validator = Validator::make($request->all(), $rules, $pesan);
         if ($validator->fails()){
-            return back()->withErrors($validator->errors());
-        }else{
-            DB::beginTransaction();
-            try{
-                $data = Medical::where('id', $id)->first();
-                $data->nama = $request->nama;
-                $data->tanggal = $request->tanggal;
-                $data->hasil = $request->hasil;
-                $data->status = $request->status;
-                $data->catatan = $request->catatan;
-                $data->save();
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
 
-            }catch(\QueryException $e){
-                DB::rollback();
-                return back();
+        DB::beginTransaction();
+        try{
+            $data = Medical::findOrFail($id);
+            
+            // Handle file upload if new file is provided
+            if ($request->hasFile('file')) {
+                // Delete old file if exists
+                if ($data->file && Storage::disk('public')->exists($data->file)) {
+                    Storage::disk('public')->delete($data->file);
+                }
+                
+                // Store new file
+                $lamaran = $data->lamaran;
+                $fileDir = 'document/' . $lamaran->user_id .'/' . Str::random(32) . '.' . $request->file('file')->getClientOriginalExtension();
+                Storage::disk('public')->put($fileDir, fopen($request->file('file'), 'r+'));
+                $data->file = $fileDir;
             }
+            
+            $data->nama = $request->nama;
+            $data->tanggal = $request->tanggal;
+            $data->hasil = $request->hasil;
+            $data->status = $request->status;
+            $data->catatan = $request->catatan;
+            $data->save();
+
             DB::commit();
-            return redirect()->route('admin.medical.show', $id);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Data medical checkup berhasil diperbarui'
+            ]);
+
+        }catch(\QueryException $e){
+            DB::rollback();
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memperbarui data'
+            ], 500);
         }
     }
 
@@ -165,14 +198,29 @@ class MedicalController extends Controller
     {
         DB::beginTransaction();
         try{
-            $hapus_db = Medical::destroy($id);
+            $data = Medical::findOrFail($id);
+            
+            // Delete associated file if exists
+            if ($data->file && Storage::disk('public')->exists($data->file)) {
+                Storage::disk('public')->delete($data->file);
+            }
+            
+            $data->delete();
+            
+            DB::commit();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Data medical checkup berhasil dihapus'
+            ]);
+            
         }catch(\QueryException $e){
             DB::rollback();
-            return back();
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menghapus data'
+            ], 500);
         }
-
-        DB::commit();
-        return redirect()->route('admin.medical.index');
     }
 
     public function state($id, Request $request)
@@ -201,7 +249,10 @@ class MedicalController extends Controller
         $limit = ($request->limit) ? $request->limit : 25;
         $paging = !empty($request->page) ? true : false;
 
-        $elq = Medical::when($request->q, function($query, $search){
+        $elq = Medical::with(['lamaran' => function($q){
+            return $q->with(['user', 'lowongan']);
+        }])
+        ->when($request->q, function($query, $search){
             $query->whereHas('user', function($q) use ($search) {
                 $q->where('nama', 'LIKE', '%' . $search . '%');
             });

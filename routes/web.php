@@ -215,7 +215,6 @@ Route::prefix('admin')->namespace('Admin')->name('admin.')->group(function(){
             Route::post('/store', 'InterviewController@store')->name('store');
             Route::get('/data', 'InterviewController@data')->name('data');
             Route::get('/{id}', 'InterviewController@show')->name('show');
-            Route::get('/{id}/edit','InterviewController@edit')->name('edit');
             Route::post('/{id}/update','InterviewController@update')->name('update');
             Route::post('/{id}/hasil','InterviewController@hasil')->name('hasil');
             Route::delete('/{id}/hapus','InterviewController@destroy')->name('delete');

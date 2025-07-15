@@ -121,22 +121,6 @@ class InterviewController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     * @param int $id
-     * @return Renderable
-     */
-    public function edit($id)
-    {
-        $data = Interview::with(['user', 'pewawancara', 'pembuat'])->where('id', $id)->first();
-
-
-        return Inertia::render('Interview/Form',[
-            'editMode' => true,
-            'data' => $data
-        ]);
-    }
-
-    /**
      * Update the specified resource in storage.
      * @param Request $request
      * @param int $id
@@ -145,7 +129,6 @@ class InterviewController extends Controller
     public function update(Request $request, $id)
     {
         $rules = [
-            'user_id' => 'required',
             'tanggal' => 'required',
             'waktu' => 'required',
             'lokasi' => 'required',
@@ -153,7 +136,6 @@ class InterviewController extends Controller
         ];
 
         $pesan = [
-            'user_id.required' => 'Nama Talent Wajib Diisi!',
             'tanggal.required' => 'Tanggal Interview Wajib Diisi!',
             'waktu.required' => 'Waktu Interview Wajib Diisi!',
             'lokasi.required' => 'Lokasi Interview Wajib Diisi!',
@@ -166,32 +148,39 @@ class InterviewController extends Controller
         }else{
             DB::beginTransaction();
             try{
+
+                
+                $lamaran = Lamaran::where('id', $request->lamaran_id)->first();
+                $user = User::where('id', $lamaran->user_id)->first();
                 
                 $data = Interview::where('id', $id)->first();
-                $data->user_id = $request->user_id;
+                $data->user_id = $lamaran->user_id;
+                $data->lamaran_id = $request->lamaran_id;
                 $data->lokasi = $request->lokasi;
                 $data->tanggal = $request->tanggal;
                 $data->waktu = $request->waktu;
                 $data->pewawancara_id = $request->pewawancara_id;
                 $data->catatan = $request->catatan;
-                $data->dibuat_oleh = auth()->guard('admin')->user()->id;
-                $data->status = 'dijadwalkan';
+                $data->status = $request->status;
                 $data->save();
 
+                $lamaran->status = 'interview';
+                $lamaran->save();
                 
-                $user = User::find($request->user_id);
-                $user->status = 'interview';
-                $user->save();
-
-                $user->notify(new JadwalInterviewNotification($data));
+                if($data->status == 'dijadwalkan'){
+                    $user->notify(new JadwalInterviewNotification($data));
+                }
 
             }catch(\QueryException $e){
                 DB::rollback();
                 dd($e);
             }
 
-            // DB::commit();
-            return redirect()->route('admin.interview.show', $id);
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'message' => 'Jadwal berhasil Dibuat',
+            ]);
         }
     }
 
@@ -205,8 +194,14 @@ class InterviewController extends Controller
         DB::beginTransaction();
         try{
             
-            $pdk = JadwalInterview::find($id);
-            $pdk->delete();
+            $data = Interview::find($id);
+
+            if($data->status == 'dijadwalkan'){
+                $lamaran = Lamaran::where('id', $data->lamaran_id)->first();
+                $lamaran->status = 'diterima';
+                $lamaran->save();
+            }
+            $data->delete();
 
         }catch(\QueryException $e){
             DB::rollback();
@@ -227,7 +222,9 @@ class InterviewController extends Controller
         $sort = !empty($request->sort) ? $request->sort : 'id';
         $sortDir = !empty($request->sortDir) ? $request->sortDir : 'desc';
         
-        $elq = Interview::with(['pewawancara', 'lamaran'])
+        $elq = Interview::with(['pewawancara', 'lamaran' => function($q){
+            $q->with(['user', 'lowongan']);
+        }])
         ->when($request->q, function($query, $search){
             $query->where('nama', 'LIKE', '%' . $search . '%');
         })

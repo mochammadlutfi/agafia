@@ -57,42 +57,12 @@ class TalentController extends Controller
         $talent = User::with([
             'detail',
             'lamaran' => function($query) {
-                $query->with([
-                    'lowongan',
-                    'interview' => function($q) {
-                        $q->with(['pewawancara', 'pembuat', 'hasil'])->latest();
-                    },
-                    'training' => function($q) {
-                        $q->with(['program', 'staff'])->latest();
-                    }
-                ])->latest();
+                $query->with(['lowongan'])->latest();
             }
         ])->findOrFail($id);
 
-        // Get active application (most recent non-rejected)
-        $activeApplication = $talent->lamaran
-            ->whereNotIn('status', ['ditolak'])
-            ->first();
-
-        // Calculate completion statistics for active application
-        $completionStats = $this->calculateCompletionStats($talent, $activeApplication);
-        
-        // Get application progress if has active application
-        $applicationProgress = null;
-        if ($activeApplication) {
-            $applicationProgress = $this->calculateApplicationProgress($activeApplication);
-        }
-        
-        // Get document statistics
-        $documentStats = $this->calculateDocumentStats($talent);
-        
         return Inertia::render('Talent/Show', [
             'talent' => $talent,
-            'activeApplication' => $activeApplication,
-            'applicationProgress' => $applicationProgress,
-            'completionStats' => $completionStats,
-            'documentStats' => $documentStats,
-            'statusOptions' => $this->getStatusOptions(),
         ]);
     }
 

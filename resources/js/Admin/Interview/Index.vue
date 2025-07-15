@@ -4,11 +4,8 @@
             <div class="content-heading d-flex justify-content-between align-items-center">
                 <span>Interview</span>
                 <div class="space-x-1">
-                    <el-button type="primary" :tag="Link" :href="route('admin.interview.create')">
-                        <i class="si si-plus me-1"></i>
-                        Lihat Jadwal
-                    </el-button>
-                    <el-button type="primary" :tag="Link" :href="route('admin.interview.create')">
+                    <el-button type="primary"
+                                        @click="openModal">
                         <i class="si si-plus me-1"></i>
                         Tambah Jadwal
                     </el-button>
@@ -41,7 +38,14 @@
                 <div class="block-content p-0">
                     <el-table :data="data" class="w-100" @sort-change="sortChange" header-cell-class-name="bg-body text-dark">
                         <el-table-column type="index" width="50" />
-                        <el-table-column prop="talent.nama" label="Talent" width="200" sortable/>
+                        <el-table-column label="Lamaran" width="200" sortable>
+                          <template #default="scope">
+                                <div>
+                                    <div class="fw-medium">{{ scope.row.lamaran.user.nama }}</div>
+                                    <small class="text-muted">{{ scope.row.lamaran.lowongan.posisi }}</small>
+                                </div>
+                          </template>  
+                        </el-table-column>
                         <el-table-column prop="tanggal" label="Tanggal" sortable>
                           <template #default="scope">
                             <span>{{ format_date(scope.row.tanggal) }}</span>
@@ -70,11 +74,9 @@
                                                 <i class="si fa-fw si-eye"></i>
                                               </Link>
                                             </el-dropdown-item>
-                                            <el-dropdown-item>
-                                              <Link :href="route('admin.interview.edit', {id: scope.row.id})" class="w-100 d-flex align-items-center justify-content-between space-x-1">
-                                                Ubah
-                                                <i class="si fa-fw si-note"></i>
-                                              </Link>
+                                            <el-dropdown-item class="d-flex align-items-center justify-content-between space-x-1" @click.prevent="edit(scope.row)">
+                                                Ubah Jadwal
+                                                <i class="si fa-fw si-trash"></i>
                                             </el-dropdown-item>
                                             <el-dropdown-item class="d-flex align-items-center justify-content-between space-x-1" @click.prevent="hapus(scope.row.id)">
                                                 Hapus
@@ -99,15 +101,92 @@
                 </div>
             </div>
         </div>
+
+        <!-- Interview Schedule Modal -->
+        <el-dialog
+            v-model="showInterviewModal"
+            title="Jadwalkan Interview"
+            width="700px"
+            :before-close="handleInterviewModalClose"
+        >
+            <el-form :model="interviewForm" :rules="interviewRules" ref="interviewFormRef" label-width="150px">
+                
+              <el-form-item label="Lamaran" prop="lamaran_id">
+                    <select-lamaran v-model="interviewForm.lamaran_id" status="diterima" />
+                </el-form-item>  
+              <el-row :gutter="16">
+                    <el-col :span="12">
+                        <el-form-item label="Tanggal" prop="tanggal">
+                            <el-date-picker
+                                v-model="interviewForm.tanggal"
+                                type="date"
+                                placeholder="Pilih tanggal"
+                                format="DD/MM/YYYY "
+                                value-format="YYYY-MM-DD"
+                                style="width: 100%"
+                            />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                        <el-form-item label="Waktu" prop="waktu">
+                            <el-time-picker
+                                v-model="interviewForm.waktu"
+                                placeholder="Pilih waktu"
+                                format="HH:mm"
+                                value-format="HH:mm:ss"
+                                style="width: 100%"
+                            />
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-form-item label="Lokasi" prop="lokasi">
+                    <el-input v-model="interviewForm.lokasi" placeholder="Masukkan lokasi interview (misal: Kantor Pusat, Online via Zoom, dll)" />
+                </el-form-item>
+                <el-form-item label="Pewawancara" prop="pewawancara_id">
+                    <select-staff v-model="interviewForm.pewawancara_id" />
+                </el-form-item>
+                <el-form-item label="Status" prop="status">
+                    <el-select v-model="interviewForm.status" placeholder="Pilih status" style="width: 100%">
+                        <el-option label="Dijadwalkan" value="dijadwalkan" />
+                        <el-option label="Selesai" value="selesai" />
+                        <el-option label="Dibatalkan" value="dibatalkan" />
+                        <el-option label="Dijadwal Ulang" value="dijadwal_ulang" />
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="Catatan">
+                    <el-input
+                        v-model="interviewForm.catatan"
+                        type="textarea"
+                        :rows="3"
+                        placeholder="Catatan tambahan (opsional)"
+                    />
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="showInterviewModal = false">Batal</el-button>
+                    <el-button type="primary" @click="submitInterviewForm" :loading="interviewLoading">
+                        Jadwalkan Interview
+                    </el-button>
+                </span>
+            </template>
+        </el-dialog>
     </base-layout>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, reactive } from 'vue';
 import axios from 'axios';
 import moment from 'moment';
 import { router } from '@inertiajs/vue3'
 import { Link } from '@inertiajs/vue3';
+import SelectLamaran from '@/Components/SelectLamaran.vue';
+import selectStaff from '@/Components/SelectStaff.vue';
+
+
+const props = defineProps({
+  error: Object,
+});
 
 const data = ref([]);
 const isLoading = ref(true);
@@ -118,6 +197,34 @@ const from = ref(0);
 const to = ref(0);
 const page = ref(1);
 const pageSize = ref(0);
+
+// Modal visibility
+const showInterviewModal = ref(false)
+
+// Loading states
+const interviewLoading = ref(false)
+
+// Form refs
+const interviewFormRef = ref()
+
+// Interview Form
+const interviewForm = reactive({
+  id: null,
+  lamaran_id: null,
+  tanggal: '',
+  lokasi: '',
+  pewawancara_id: '',
+  status: 'dijadwalkan',
+  catatan: ''
+})
+
+const interviewRules = {
+    lamaran: [{ required: true, message: 'Lamaran wajib diisi', trigger: 'change' }],
+    tanggal: [{ required: true, message: 'Tanggal interview wajib diisi', trigger: 'blur' }],
+    lokasi: [{ required: true, message: 'Lokasi interview wajib diisi', trigger: 'blur' }],
+    pewawancara_id: [{ required: true, message: 'Pewawancara wajib dipilih', trigger: 'change' }],
+    status: [{ required: true, message: 'Status wajib dipilih', trigger: 'change' }]
+}
 
 const doSearch = _.debounce(() => {
   isLoading.value = true;
@@ -179,7 +286,7 @@ const hapus = (id) => {
     cancelButtonText: 'Tidak!',
     type: 'warning',
   }).then(() => {
-    router.delete(`/admin/interview/${id}/delete`, {
+    router.delete(route('admin.interview.delete', {id : id}), {
       preserveScroll: true,
       onSuccess: () => {
         fetchData();
@@ -191,6 +298,75 @@ const hapus = (id) => {
     });
   });
 };
+
+
+const openModal = () => {
+    showInterviewModal.value = true;
+    interviewFormRef.value?.resetFields();
+    interviewForm.id = null;
+    interviewForm.lamaran_id = null;
+    interviewForm.tanggal = '';
+    interviewForm.lokasi = '';
+    interviewForm.pewawancara_id = '';
+    interviewForm.status = 'dijadwalkan';
+    interviewForm.catatan = '';
+}
+
+const edit = (row) => {
+    showInterviewModal.value = true;
+    interviewFormRef.value?.resetFields();
+    interviewForm.id = row.id;
+    interviewForm.lamaran_id = row.lamaran_id;
+    interviewForm.tanggal = row.tanggal;
+    interviewForm.lokasi = row.lokasi;
+    interviewForm.pewawancara_id = row.pewawancara_id;
+    interviewForm.status = row.status;
+    interviewForm.catatan = row.catatan || '';
+}
+
+
+// Modal handlers
+const handleInterviewModalClose = (done) => {
+    interviewFormRef.value?.resetFields()
+    done()
+}
+
+const handleMedicalModalClose = (done) => {
+    medicalFormRef.value?.resetFields()
+    medicalForm.file = null
+    medicalForm.fileName = ''
+    done()
+}
+
+// Form submissions
+const submitInterviewForm = async () => {
+    if (!interviewFormRef.value) return
+    
+    await interviewFormRef.value.validate((valid) => {
+        if (valid) {
+          interviewLoading.value = true
+          const url = interviewForm.id ? route('admin.interview.update', {id : interviewForm.id}) : route('admin.interview.store');
+          try {        
+              axios.post(url, interviewForm)
+              
+              ElMessage.success('Interview berhasil disimpan')
+              showInterviewModal.value = false
+              router.visit(route('admin.interview.index'), {
+                  preserveState: false,
+                  preserveScroll: true
+              });
+              
+          } catch (error) {
+              ElMessage.error('Gagal menjadwalkan interview')
+          } finally {
+              interviewLoading.value = false;
+          }
+        }
+    });
+    
+    fetchData();
+}
+
 onMounted(() => {
   fetchData();
 });

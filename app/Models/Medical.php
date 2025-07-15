@@ -35,6 +35,10 @@ class Medical extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function lamaran()
+    {
+        return $this->belongsTo(Lamaran::class, 'lamaran_id');
+    }
 
     
     public function getStatusLabelAttribute()
