@@ -997,7 +997,7 @@ const scheduleInterview = async () => {
     try {
         interviewForm.lamaran_id = props.lamaran.id
         
-        await axios.post(route('admin.interview.jadwal.store'), interviewForm)
+        await axios.post(route('admin.interview.store'), interviewForm)
         
         ElMessage.success('Interview berhasil dijadwalkan')
         showInterviewModal.value = false
@@ -1028,13 +1028,13 @@ const scheduleMedical = async () => {
         })
         
         ElMessage.success('Medical check up berhasil dijadwalkan')
-        // showMedicalModal.value = false
+        showMedicalModal.value = false
         
         // Refresh page data
-        // router.visit(route('admin.lamaran.show', props.lamaran.id), {
-        //     preserveState: false,
-        //     preserveScroll: true
-        // })
+        router.visit(route('admin.lamaran.show', props.lamaran.id), {
+            preserveState: false,
+            preserveScroll: true
+        })
     } catch (error) {
         console.error('Error scheduling medical:', error)
         ElMessage.error('Gagal menjadwalkan medical check up')

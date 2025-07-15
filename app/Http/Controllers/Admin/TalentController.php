@@ -59,8 +59,7 @@ class TalentController extends Controller
             'lamaran' => function($query) {
                 $query->with([
                     'lowongan',
-                    'dokumen.kategoriDokumen',
-                    'jadwalInterview' => function($q) {
+                    'interview' => function($q) {
                         $q->with(['pewawancara', 'pembuat', 'hasil'])->latest();
                     },
                     'training' => function($q) {
@@ -350,14 +349,6 @@ class TalentController extends Controller
         DB::commit();
         return redirect()->route('admin.talent.index');
 
-    }
-
-    public function report(Request $request)
-    {
-        $kelompok = $request->kelompok;
-        $paket = $request->paket;
-
-        return Excel::download(new AnakExport($kelompok, $paket), 'Data Anak.xlsx');
     }
 
     public function data(Request $request)
