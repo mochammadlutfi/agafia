@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Models\Lamaran;
 use App\Models\Lowongan;
 use App\Models\Training;
+use App\Models\Interview;
 use App\Models\ProgramTraining;
 use App\Models\DokumenLamaran;
 

@@ -94,41 +94,6 @@
                             />
                         </el-form-item>
                     </el-col>
-                    <el-col :md="12">
-                        <el-form-item label="Status" prop="status">
-                            <el-select v-model="trainingForm.status" placeholder="Pilih status" style="width: 100%">
-                                <el-option label="Terdaftar" value="terdaftar" />
-                                <el-option label="Proses" value="proses" />
-                                <el-option label="Lulus" value="lulus" />
-                                <el-option label="Tidak Lulus" value="tidak_lulus" />
-                            </el-select>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :md="12">
-                        <el-form-item label="Nilai Akhir" prop="nilai_akhir">
-                            <el-input-number
-                                v-model="trainingForm.nilai_akhir"
-                                :min="0"
-                                :max="100"
-                                :step="1"
-                                :precision="0"
-                                placeholder="Nilai 0-100"
-                                style="width: 100%"
-                            />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :md="12">
-                        <el-form-item label="Sertifikat">
-                            <el-checkbox v-model="trainingForm.sertifikat_diterbitkan">
-                                Sertifikat sudah diterbitkan
-                            </el-checkbox>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :md="12">
-                        <el-form-item label="No. Sertifikat" v-if="trainingForm.sertifikat_diterbitkan">
-                            <el-input v-model="trainingForm.nomor_sertifikat" placeholder="Nomor sertifikat" />
-                        </el-form-item>
-                    </el-col>
                 </el-row>
                 <el-form-item label="Catatan">
                     <el-input
@@ -189,8 +154,12 @@ const trainingForm = reactive({
 const trainingRules = {
     program_id: [{ required: true, message: 'Program pelatihan wajib dipilih', trigger: 'change' }],
     tanggal_daftar: [{ required: true, message: 'Tanggal daftar wajib diisi', trigger: 'blur' }],
-    status: [{ required: true, message: 'Status wajib dipilih', trigger: 'change' }]
+    tanggal_mulai: [{ required: true, message: 'Tanggal mulai wajib diisi', trigger: 'blur' }],
+    tanggal_selesai: [{ required: true, message: 'Tanggal selesai wajib diisi', trigger: 'blur' }]
 }
+
+
+
 
 // Modal handlers
 const handleTrainingModalClose = (done) => {

@@ -142,16 +142,6 @@
                         </el-form-item>
                     </el-col>
                     <el-col :md="12">
-                        <el-form-item label="Status" :error="errors.status">
-                            <el-select v-model="form.status" placeholder="Pilih status" style="width: 100%">
-                                <el-option label="Terdaftar" value="terdaftar" />
-                                <el-option label="Sedang Pelatihan" value="sedang_pelatihan" />
-                                <el-option label="Selesai" value="selesai" />
-                                <el-option label="Mengundurkan Diri" value="mengundurkan_diri" />
-                            </el-select>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :md="12">
                         <el-form-item label="Tanggal Mulai" :error="errors.tanggal_mulai">
                             <el-date-picker
                                 v-model="form.tanggal_mulai"
@@ -173,31 +163,6 @@
                                 value-format="YYYY-MM-DD"
                                 style="width: 100%"
                             />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :md="12">
-                        <el-form-item label="Nilai Akhir" :error="errors.nilai_akhir">
-                            <el-input-number
-                                v-model="form.nilai_akhir"
-                                :min="0"
-                                :max="100"
-                                :step="1"
-                                :precision="0"
-                                placeholder="Nilai 0-100"
-                                style="width: 100%"
-                            />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :md="12">
-                        <el-form-item label="Sertifikat">
-                            <el-checkbox v-model="form.sertifikat_diterbitkan">
-                                Sertifikat sudah diterbitkan
-                            </el-checkbox>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :md="12" v-if="form.sertifikat_diterbitkan">
-                        <el-form-item label="No. Sertifikat">
-                            <el-input v-model="form.nomor_sertifikat" placeholder="Nomor sertifikat" />
                         </el-form-item>
                     </el-col>
                 </el-row>

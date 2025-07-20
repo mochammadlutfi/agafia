@@ -75,8 +75,8 @@ class DashboardController extends Controller
             ->get()
             ->map(function($lamaran) {
                 $requiredDocs = $this->getRequiredDocumentsCount($lamaran->status);
-                $uploadedDocs = $lamaran->dokumen->count();
-                $approvedDocs = $lamaran->dokumen->where('status', 'approved')->count();
+                $uploadedDocs = $lamaran->dokumen()->count();
+                $approvedDocs = $lamaran->dokumen()->where('status', 'approved')->count();
                 
                 return [
                     'lamaran' => $lamaran,

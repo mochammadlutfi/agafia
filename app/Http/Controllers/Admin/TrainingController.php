@@ -333,4 +333,30 @@ class TrainingController extends Controller
         $statusOptions = $this->getStatusOptions();
         return $statusOptions[$status] ?? $status;
     }
+
+    
+    public function hasil(Request $request, $id)
+    {
+        DB::beginTransaction();
+        try{
+            $data = Training::where('id', $id)->first();
+            $data->nilai_akhir = $request->nilai_akhir;
+            $data->sertifikat_diterbitkan = $request->sertifikat_diterbitkan;
+            $data->nomor_sertifikat = $request->nomor_sertifikat;
+            $data->catatan = $request->catatan;
+            $data->status = 'selesai';
+            $data->save();
+
+
+        }catch(\QueryException $e){
+            dd($e);
+            DB::rollback();
+            return back();
+        }
+        DB::commit();
+        return response()->json([
+            'success' => true,
+            'message' => 'Training berhasil Disimpan',
+        ]);
+    }
 }

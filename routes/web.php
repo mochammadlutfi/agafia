@@ -237,6 +237,7 @@ Route::prefix('admin')->namespace('Admin')->name('admin.')->group(function(){
             Route::get('/{id}', 'TrainingController@show')->name('show');
             Route::get('/{id}/edit','TrainingController@edit')->name('edit');
             Route::post('/{id}/update','TrainingController@update')->name('update');
+            Route::post('/{id}/hasil','TrainingController@hasil')->name('hasil');
             Route::delete('/{id}/hapus','TrainingController@destroy')->name('delete');
 
         });

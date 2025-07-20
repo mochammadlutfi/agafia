@@ -185,9 +185,32 @@
                         </div>
                     </div>
                 </div>
-            </el-card>
 
-            
+                
+                <el-descriptions title="Hasil Interview" :column="2" border direction="horizontal" v-if="lamaran.interview.status == 'selesai'">
+                    <el-descriptions-item label="Skor Interview">
+                        {{ lamaran.interview.skor_interview ?? '-' }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="Skor Psikotes">
+                        {{ lamaran.interview.skor_psikotes ?? '-' }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="Kemampuan Komunikasi">
+                        {{ lamaran.interview.kemampuan_komunikasi ?? '-' }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="Kemampuan Teknis">
+                        {{ lamaran.interview.kemampuan_teknis ?? '-' }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="Rekomendasi">
+                        {{ lamaran.interview.rekomendasi ?? '-' }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="Penilaian Kepribadian">
+                        {{ lamaran.interview.kepribadian ?? '-' }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="Catatan">
+                        {{ lamaran.interview.catatan_hasil ?? '-' }}
+                    </el-descriptions-item>
+                </el-descriptions>
+            </el-card> 
 
             <el-card v-if="getActiveStep() > 0" class="mb-4 rounded">
                 <template #header>
@@ -259,11 +282,9 @@
                             </el-tag>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="nilai_akhir" label="Nilai" width="80" align="center" />
                     <el-table-column label="Aksi" width="120">
                         <template #default="{ row }">
-                            <el-button 
-                                @click="$emit('view-training', row.id)"
+                            <el-button :tag="Link" :href="route('user.training.show', row.id)"
                                 type="primary" 
                                 size="small"
                             >
