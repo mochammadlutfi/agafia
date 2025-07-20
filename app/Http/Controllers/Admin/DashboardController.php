@@ -59,7 +59,7 @@ class DashboardController extends Controller
         // Document statistics
         $total_dokumen = DokumenLamaran::count();
         $dokumen_pending = DokumenLamaran::pending()->count();
-        $dokumen_approved = DokumenLamaran::approved()->count();
+        $dokumen_approved = DokumenLamaran::diterima()->count();
         
         $stats = collect([
             [

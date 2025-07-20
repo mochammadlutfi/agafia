@@ -243,48 +243,33 @@ class InterviewController extends Controller
     
     public function hasil($id, Request $request)
     {
-        $rules = [
-            'kemampuan_komunikasi' => 'required',
-            'kemampuan_teknis' => 'required',
-            'penilaian_kepribadian' => 'required',
-            'rekomendasi' => 'required',
-            'skor_interview' => 'required',
-            'skor_psikotes' => 'required',
-        ];
+        DB::beginTransaction();
+        try{
+            
+            $data = Interview::where('id', $id)->first();
+            $data->skor_interview = $request->skor_interview;
+            $data->skor_psikotes = $request->skor_psikotes;
+            $data->kemampuan_komunikasi = $request->kemampuan_komunikasi;
+            $data->kemampuan_teknis = $request->kemampuan_teknis;
+            $data->kepribadian = $request->kepribadian;
+            $data->rekomendasi = $request->rekomendasi;
+            $data->catatan_hasil = $request->catatan;
+            $data->status = 'selesai';
+            $data->save();
 
-        $pesan = [
-            'kemampuan_komunikasi.required' => 'Kemampuan Komunikasi Wajib Diisi!',
-            'kemampuan_teknis.required' => 'Kemampuan Teknis Wajib Diisi!',
-            'penilaian_kepribadian.required' => 'Kepribadian Wajib Diisi!',
-            'skor_interview.required' => 'Nilai Interview Wajib Diisi!',
-            'skor_psikotes.required' => 'Nilai Psikotes Wajib Diisi!',
-        ];
+            $lamaran = Lamaran::where('id', $data->lamaran_id)->first();
+            $lamaran->status = 'medical';
+            $lamaran->save();
 
-        $validator =  Validator::make($request->all(), $rules, $pesan);
-        if ($validator->fails()){
-            return back()->withErrors($validator->errors());
-        }else{
-            DB::beginTransaction();
-            try{
-                
-                $data = Interview::where('id', $id)->first();
-                $data->skor_interview = $request->skor_interview;
-                $data->skor_psikotes = $request->skor_psikotes;
-                $data->kemampuan_komunikasi = $request->kemampuan_komunikasi;
-                $data->kemampuan_teknis = $request->kemampuan_teknis;
-                $data->penilaian_kepribadian = $request->penilaian_kepribadian;
-                $data->rekomendasi = $request->rekomendasi;
-                $data->catatan_hasil = $request->catatan;
-                $data->status = 'selesai';
-                $data->save();
-
-            }catch(\QueryException $e){
-                DB::rollback();
-                dd($e);
-            }
-
-            DB::commit();
-            return redirect()->route('admin.interview.show', $data->jadwal_id);
+        }catch(\QueryException $e){
+            DB::rollback();
+            dd($e);
         }
+
+        DB::commit();
+        return response()->json([
+            'success' => true,
+            'message' => 'Jadwal berhasil Dibuat',
+        ]);
     }
 }

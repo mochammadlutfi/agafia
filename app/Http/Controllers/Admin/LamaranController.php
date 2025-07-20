@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Models\Lowongan;
 use App\Models\DokumenLamaran;
 use App\Models\KategoriDokumen;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class LamaranController extends Controller
 {
@@ -49,6 +50,7 @@ class LamaranController extends Controller
             'interview' => function($q) {
                 return $q->with(['pewawancara']);
             },
+            'dokumen',
             'medical',
             'training' => function($q){
                 return $q->with(['program']);
@@ -311,6 +313,52 @@ class LamaranController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Export applications to PDF
+     */
+    public function exportPdf(Request $request)
+    {
+        $query = Lamaran::with(['user.detail', 'lowongan', 'interview.pewawancara', 'medical', 'training.program', 'dokumen'])
+            ->when($request->status, function($query, $status){
+                $query->where('status', $status);
+            })
+            ->when($request->lowongan_id, function($query, $lowonganId){
+                $query->where('lowongan_id', $lowonganId);
+            })
+            ->when($request->tanggal_dari, function($query, $tanggalDari){
+                $query->whereDate('tanggal_lamaran', '>=', $tanggalDari);
+            })
+            ->when($request->tanggal_sampai, function($query, $tanggalSampai){
+                $query->whereDate('tanggal_lamaran', '<=', $tanggalSampai);
+            })
+            ->orderBy('tanggal_lamaran', 'desc');
+
+        $data = $query->get();
+        
+        // Get filter information for report header
+        $filterInfo = [
+            'status' => $request->status ? $this->getStatusOptions()[$request->status] : 'Semua Status',
+            'tanggal_dari' => $request->tanggal_dari ? Carbon::parse($request->tanggal_dari)->format('d/m/Y') : null,
+            'tanggal_sampai' => $request->tanggal_sampai ? Carbon::parse($request->tanggal_sampai)->format('d/m/Y') : null,
+            'total_data' => $data->count(),
+            'tanggal_export' => now()->format('d/m/Y H:i:s')
+        ];
+
+        // Generate PDF
+        $pdf = PDF::loadView('pdf.lamaran-report', [
+            'data' => $data,
+            'filterInfo' => $filterInfo,
+            'statusOptions' => $this->getStatusOptions()
+        ]);
+
+        // Set paper size and orientation
+        $pdf->setPaper('A4', 'landscape');
+        
+        $filename = 'laporan-lamaran-' . date('Y-m-d-H-i-s') . '.pdf';
+        
+        return $pdf->download($filename);
     }
 
     /**

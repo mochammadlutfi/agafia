@@ -41,7 +41,7 @@ class Lamaran extends Model
 
     public function dokumen()
     {
-        return $this->hasMany(DokumenLamaran::class, 'lamaran_id');
+        return $this->hasOne(DokumenLamaran::class, 'lamaran_id');
     }
 
     public function interview()

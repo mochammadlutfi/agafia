@@ -13,24 +13,24 @@ class DokumenLamaran extends Model
 
     protected $fillable = [
         'lamaran_id',
-        'kategori_dokumen_id',
-        'nama_file',
-        'file_path',
+        'ktp',
+        'kk',
+        'akte_lahir',
+        'buku_nikah',
+        'surat_keterangan_sehat',
+        'surat_izin_keluarga',
+        'ijazah',
+        'sertifikat_keahlian',
+        'paspor',
+        'surat_pengalaman',
+        'skck',
         'status',
-        'catatan',
-        'diupload_tanggal',
-        'direview_oleh',
-        'direview_tanggal',
-    ];
-
-    protected $casts = [
-        'diupload_tanggal' => 'datetime',
-        'direview_tanggal' => 'datetime',
+        'catatan'
     ];
 
     protected $appends = [
         'status_label',
-        'file_url'
+        'status_color'
     ];
 
     // Relationships
@@ -39,79 +39,16 @@ class DokumenLamaran extends Model
         return $this->belongsTo(Lamaran::class, 'lamaran_id');
     }
 
-    public function kategoriDokumen()
-    {
-        return $this->belongsTo(KategoriDokumen::class, 'kategori_dokumen_id');
-    }
-
-    public function reviewer()
-    {
-        return $this->belongsTo(Admin::class, 'direview_oleh');
-    }
-
-    // Scopes
-    public function scopeByStatus($query, $status)
-    {
-        return $query->where('status', $status);
-    }
-
+    
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
     }
 
-    public function scopeApproved($query)
+    
+    public function scopeDiterima($query)
     {
-        return $query->where('status', 'approved');
-    }
-
-    public function scopeRejected($query)
-    {
-        return $query->where('status', 'rejected');
-    }
-
-    public function scopeByKategori($query, $kategoriId)
-    {
-        return $query->where('kategori_dokumen_id', $kategoriId);
-    }
-
-    public function scopeByJenisDokumen($query, $jenis)
-    {
-        return $query->whereHas('kategoriDokumen', function($q) use ($jenis) {
-            $q->where('jenis_dokumen', $jenis);
-        });
-    }
-
-    public function scopePendaftaran($query)
-    {
-        return $query->byJenisDokumen('pendaftaran');
-    }
-
-    public function scopeMedical($query)
-    {
-        return $query->byJenisDokumen('medical');
-    }
-
-    public function scopeKeberangkatan($query)
-    {
-        return $query->byJenisDokumen('keberangkatan');
-    }
-
-    public function scopeWajib($query)
-    {
-        return $query->whereHas('kategoriDokumen', function($q) {
-            $q->where('wajib', true);
-        });
-    }
-
-    public function scopeDireview($query)
-    {
-        return $query->whereNotNull('direview_oleh');
-    }
-
-    public function scopeBelumDireview($query)
-    {
-        return $query->whereNull('direview_oleh');
+        return $query->where('status', 'diterima');
     }
 
     // Mutators & Accessors
@@ -119,8 +56,8 @@ class DokumenLamaran extends Model
     {
         $labels = [
             'pending' => 'Menunggu Review',
-            'approved' => 'Disetujui',
-            'rejected' => 'Ditolak'
+            'diterima' => 'Disetujui',
+            'ditolak' => 'Ditolak'
         ];
 
         return $labels[$this->status] ?? $this->status;
@@ -130,91 +67,10 @@ class DokumenLamaran extends Model
     {
         $colors = [
             'pending' => 'warning',
-            'approved' => 'success',
-            'rejected' => 'danger'
+            'diterima' => 'success',
+            'ditolak' => 'danger'
         ];
 
         return $colors[$this->status] ?? 'secondary';
-    }
-
-    public function getFileUrlAttribute()
-    {
-        if ($this->file_path) {
-            return asset('uploads/' . $this->file_path);
-        }
-        return null;
-    }
-
-    public function getFileExtensionAttribute()
-    {
-        if ($this->file_path) {
-            return pathinfo($this->file_path, PATHINFO_EXTENSION);
-        }
-        return null;
-    }
-
-    public function getFileSizeAttribute()
-    {
-        if ($this->file_path) {
-            $fullPath = public_path('uploads/' . $this->file_path);
-            if (file_exists($fullPath)) {
-                $bytes = filesize($fullPath);
-                $units = ['B', 'KB', 'MB', 'GB'];
-                
-                for ($i = 0; $bytes > 1024; $i++) {
-                    $bytes /= 1024;
-                }
-                
-                return round($bytes, 2) . ' ' . $units[$i];
-            }
-        }
-        return null;
-    }
-
-    // Helper methods
-    public function isPending()
-    {
-        return $this->status === 'pending';
-    }
-
-    public function isApproved()
-    {
-        return $this->status === 'approved';
-    }
-
-    public function isRejected()
-    {
-        return $this->status === 'rejected';
-    }
-
-    public function isWajib()
-    {
-        return $this->kategoriDokumen && $this->kategoriDokumen->wajib;
-    }
-
-    public function isImage()
-    {
-        $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
-        return in_array(strtolower($this->file_extension), $imageExtensions);
-    }
-
-    public function isPdf()
-    {
-        return strtolower($this->file_extension) === 'pdf';
-    }
-
-    public function canBeReviewed()
-    {
-        return $this->status === 'pending';
-    }
-
-    public function markAsReviewed($status, $reviewerId, $catatan = null)
-    {
-        $this->update([
-            'status' => $status,
-            'direview_oleh' => $reviewerId,
-            'direview_tanggal' => now(),
-            'catatan' => $catatan
-        ]);
     }
 }

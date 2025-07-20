@@ -4,7 +4,13 @@
             <el-row :gutter="30">
                 <el-col :lg="6">
                     <el-card>
-                        <ul class="nav-main nav-main-landing">
+                        <ul class="nav-main nav-main-landing mb-0">
+                            <li class="nav-main-item">
+                                <a class="nav-main-link" :class="(route().current('user.dashboard')) ? 'active' : ''" :href="route('user.dashboard')">
+                                    <i class="nav-main-link-icon fa fa-home"></i>
+                                    <span class="nav-main-link-name">Dashboard</span>
+                                </a>
+                            </li>
                             <li class="nav-main-item">
                                 <a class="nav-main-link" :class="(route().current('user.biodata.index')) ? 'active' : ''" :href="route('user.biodata.index')">
                                     <i class="nav-main-link-icon fa fa-user"></i>
@@ -18,10 +24,16 @@
                                 </a>
                             </li>
                             <li class="nav-main-item">
-                                <a class="nav-main-link" :class="(route().current('user.biodata.index')) ? 'active' : ''" :href="route('user.biodata.index')">
-                                    <i class="fa fa-sign-out nav-main-link-icon"></i>
-                                    <span class="nav-main-link-name">Keluar</span>
+                                <a class="nav-main-link" :class="(route().current('user.training.index')) ? 'active' : ''" :href="route('user.training.index')">
+                                    <i class="nav-main-link-icon fa fa-chalkboard-teacher"></i>
+                                    <span class="nav-main-link-name">Training Saya</span>
                                 </a>
+                            </li>
+                            <li class="nav-main-item">
+                                <Link :href="route('admin.logout')" method="post" as="button" type="button" class="btn btn-logout nav-main-link w-100">
+                                    <i class="fa fa-sign-out nav-main-link-icon"></i>
+                                    <span class="nav-main-link-name text-start">Keluar</span>
+                                </Link>
                             </li>
                         </ul>
                     </el-card>

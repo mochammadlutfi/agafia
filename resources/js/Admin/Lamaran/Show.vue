@@ -8,7 +8,7 @@
                     <small class="text-muted">{{ lamaran?.user?.detail?.nama || lamaran?.user?.nama }}</small>
                 </div>
                 <div class="space-x-1">
-                    <el-button :tag="Link" :href="route('admin.lamaran.index')" type="default" size="large">
+                    <el-button :tag="Link" :href="route('admin.lamaran.index')" type="default">
                         <i class="fa fa-arrow-left me-1"></i>
                         Kembali
                     </el-button>
@@ -78,9 +78,9 @@
                     <!-- Application Details -->
                     <el-row :gutter="16">
                         <el-col :span="12">
-                            <el-descriptions title="Detail Lamaran" column="1" border>
+                            <el-descriptions title="Detail Lamaran" :column="1" border>
                                 <el-descriptions-item label="Tanggal Lamaran">
-                                    {{ formatDate(lamaran?.tanggal_lamaran) }}
+                                    {{ format_date(lamaran?.tanggal_lamaran) }}
                                 </el-descriptions-item>
                                 <el-descriptions-item label="Status">
                                     <el-tag :type="getStatusType(lamaran?.status)">
@@ -105,7 +105,7 @@
                             </el-descriptions>
                         </el-col>
                         <el-col :span="12">
-                            <el-descriptions title="Informasi Lowongan" column="1" border>
+                            <el-descriptions title="Informasi Lowongan" :column="1" border>
                                 <el-descriptions-item label="Posisi">
                                     {{ lamaran?.lowongan?.posisi }}
                                 </el-descriptions-item>
@@ -132,7 +132,7 @@
                             <div class="p-0">
                                 <el-row :gutter="24">
                                     <el-col :span="16">
-                                        <el-descriptions title="Data Pribadi" column="1" border>
+                                        <el-descriptions title="Data Pribadi" :column="1" border>
                                             <el-descriptions-item label="Nama Lengkap">
                                                 {{ lamaran?.user?.detail?.nama || lamaran?.user?.nama }}
                                             </el-descriptions-item>
@@ -150,7 +150,7 @@
                                                 </el-link>
                                             </el-descriptions-item>
                                             <el-descriptions-item label="Tempat, Tanggal Lahir">
-                                                {{ lamaran?.user?.detail?.tempat_lahir || '-' }}, {{ formatDate(lamaran?.user?.detail?.tanggal_lahir) }}
+                                                {{ lamaran?.user?.detail?.tempat_lahir || '-' }}, {{ format_date(lamaran?.user?.detail?.tanggal_lahir) }}
                                             </el-descriptions-item>
                                             <el-descriptions-item label="Jenis Kelamin">
                                                 {{ lamaran?.user?.detail?.jenis_kelamin || '-' }}
@@ -187,496 +187,47 @@
 
                         <!-- Interview History -->
                         <el-tab-pane label="Interview" name="interview">
-                            <div class="px-2">
-                                <div class="align-middle border-bottom d-flex justify-content-between mb-4 py-2">
-                                    <div class="fs-6 fw-semibold">Data Interview</div>
-                                </div>
-                                <div v-if="lamaran.interview">
-                                    <el-descriptions :column="2" border direction="horizontal">
-                                        <el-descriptions-item label="Tanggal">
-                                            {{ format_date(lamaran.interview.tanggal) }}
-                                        </el-descriptions-item>
-                                        <el-descriptions-item label="Waktu">
-                                            {{ format_time(lamaran.interview.waktu) }} WIB
-                                        </el-descriptions-item>
-                                        <el-descriptions-item label="Pewawancara">
-                                            {{ lamaran.interview?.pewawancara.nama || '-' }}
-                                        </el-descriptions-item>
-                                        <el-descriptions-item label="Lokasi" :span="2">
-                                            {{ lamaran.interview.lokasi }}
-                                        </el-descriptions-item>
-                                        <el-descriptions-item label="Status">
-                                            <el-tag :type="getStatusInterview(lamaran.interview.status)" size="small">
-                                                {{ lamaran.interview.status_label }}
-                                            </el-tag>
-                                        </el-descriptions-item>
-                                        <el-descriptions-item label="Catatan" :span="2">
-                                            {{ lamaran.interview.catatan ?? '-'}}
-                                        </el-descriptions-item>
-                                    </el-descriptions>
-                                </div>
-                                <el-empty v-else>
-                                    <el-button 
-                                        @click="showInterviewModal = true"
-                                        type="primary"
-                                        v-if="['diterima', 'interview'].includes(lamaran?.status)"
-                                    >
-                                        Jadwalkan Interview
-                                    </el-button>
-                                </el-empty>
-                            </div>
+                            <InterviewSection
+                                :interview="lamaran.interview"
+                                :can-schedule="['diterima', 'interview'].includes(lamaran?.status)"
+                                :lamaran-id="lamaran.id"
+                            />
                         </el-tab-pane>
 
                         <!-- MCU -->
                         <el-tab-pane label="Medical Checkup" name="medical">
-                            <div class="px-2">
-                                <div class="align-middle border-bottom d-flex justify-content-between mb-4 py-2">
-                                    <div class="fs-6 fw-semibold">Data Medical Checkup</div>
-                                </div>
-                                <div v-if="lamaran.medical">
-                                    <el-descriptions :column="2" border direction="horizontal">
-                                        <el-descriptions-item label="Nama Fasilitas Kesehatan">
-                                            {{ lamaran.medical.nama }}
-                                        </el-descriptions-item>
-                                        <el-descriptions-item label="Tanggal Pengecekan">
-                                            {{ format_date(lamaran.medical.tanggal) }}
-                                        </el-descriptions-item>
-                                        <el-descriptions-item label="Hasil">
-                                            {{ lamaran.medical.hasil }}
-                                        </el-descriptions-item>
-                                        <el-descriptions-item label="Dokumen File">
-                                            <span v-if="!lamaran.medical.file">-</span>
-                                            <el-button v-else tag="a" :href="'/uploads/'+lamaran.medical.file" target="_blank" type="primary" size="small">
-                                                <i class="fa fa-file-pdf-o"></i> Lihat
-                                            </el-button>                        
-                                        </el-descriptions-item>
-                                        <el-descriptions-item label="Status">
-                                            <el-tag :type="getMedicalStatus(lamaran.medical.status)" size="small">
-                                                {{ lamaran.medical.status_label }}
-                                            </el-tag>
-                                        </el-descriptions-item>
-                                        <el-descriptions-item label="Catatan" :span="2" label-position="top">
-                                            {{ lamaran.medical.catatan }}
-                                        </el-descriptions-item>
-                                    </el-descriptions>
-                                </div>
-                                <el-empty v-else>
-                                    <el-button 
-                                        @click="showMedicalModal = true"
-                                        type="primary">
-                                        Upload Medical Checkup
-                                    </el-button>
-                                </el-empty>
-                            </div>
+                            <MedicalSection
+                                :medical="lamaran.medical"
+                                :can-schedule="['medical', 'pelatihan'].includes(lamaran?.status)"
+                                :lamaran-id="lamaran.id"
+                                :user-id="lamaran.user_id"
+                            />
                         </el-tab-pane>
 
 
                         <!-- Training History -->
                         <el-tab-pane label="Pelatihan" name="training">
-                            <div class="px-2">
-                                <div class="align-middle border-bottom d-flex justify-content-between mb-4 py-2">
-                                    <div class="fs-6 fw-semibold">Data Training</div>
-                                    <el-button 
-                                        @click="showTrainingModal = true"
-                                        type="primary"
-                                        v-if="['medical', 'pelatihan'].includes(lamaran?.status)"
-                                    >
-                                        Daftarkan Training
-                                    </el-button>
-                                </div>
-
-                                <el-table 
-                                    :data="lamaran?.training || []" 
-                                    border 
-                                    style="width: 100%"
-                                    :empty-text="'Belum ada data pelatihan'"
-                                >
-                                    <el-table-column prop="program.nama" label="Program" />
-                                    <el-table-column prop="tanggal_daftar" label="Tanggal Daftar" width="120">
-                                        <template #default="{ row }">
-                                            {{ formatDate(row.tanggal_daftar) }}
-                                        </template>
-                                    </el-table-column>
-                                    <el-table-column prop="status" label="Status" width="150">
-                                        <template #default="{ row }">
-                                            <el-tag :type="getTrainingStatusType(row.status)" size="small">
-                                                {{ getTrainingStatusLabel(row.status) }}
-                                            </el-tag>
-                                        </template>
-                                    </el-table-column>
-                                    <el-table-column prop="nilai_akhir" label="Nilai" width="80" align="center" />
-                                    <el-table-column label="Aksi" width="120">
-                                        <template #default="{ row }">
-                                            <el-button 
-                                                :tag="Link" 
-                                                :href="route('admin.training.show', row.id)" 
-                                                type="primary" 
-                                                size="small"
-                                            >
-                                                Detail
-                                            </el-button>
-                                        </template>
-                                    </el-table-column>
-                                </el-table>
-                            </div>
+                            <TrainingSection
+                                :training="lamaran?.training"
+                                :can-schedule="['medical', 'pelatihan'].includes(lamaran?.status)"
+                                :lamaran-id="lamaran.id"
+                                @view-training="(id) => router.visit(route('admin.training.show', id))"
+                            />
                         </el-tab-pane>
 
                         <!-- Documents -->
                         <el-tab-pane label="Dokumen" name="documents">
-                            <div class="p-4">
-                                <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <h5>Dokumen Lamaran</h5>
-                                    <el-button 
-                                        :tag="Link" 
-                                        :href="route('admin.dokumen-lamaran.by-lamaran', lamaran?.id)" 
-                                        type="primary"
-                                    >
-                                        Kelola Dokumen
-                                    </el-button>
-                                </div>
-
-                                <el-table 
-                                    :data="lamaran?.dokumen || []" 
-                                    border 
-                                    style="width: 100%"
-                                    :empty-text="'Belum ada dokumen diupload'"
-                                >
-                                    <el-table-column prop="kategori_dokumen.nama_kategori" label="Kategori" />
-                                    <el-table-column prop="nama_file" label="Nama File" />
-                                    <el-table-column prop="diupload_tanggal" label="Tanggal Upload" width="140">
-                                        <template #default="{ row }">
-                                            {{ formatDate(row.diupload_tanggal) }}
-                                        </template>
-                                    </el-table-column>
-                                    <el-table-column prop="status" label="Status" width="120">
-                                        <template #default="{ row }">
-                                            <el-tag :type="getDocumentStatusType(row.status)" size="small">
-                                                {{ getDocumentStatusLabel(row.status) }}
-                                            </el-tag>
-                                        </template>
-                                    </el-table-column>
-                                    <el-table-column label="Aksi" width="180">
-                                        <template #default="{ row }">
-                                            <div class="d-flex gap-1">
-                                                <el-button 
-                                                    :tag="Link" 
-                                                    :href="route('admin.dokumen-lamaran.show', row.id)" 
-                                                    type="primary" 
-                                                    size="small"
-                                                >
-                                                    Detail
-                                                </el-button>
-                                                <el-button 
-                                                    tag="a" 
-                                                    :href="route('admin.dokumen-lamaran.view', row.id)" 
-                                                    target="_blank" 
-                                                    type="info" 
-                                                    size="small"
-                                                >
-                                                    Lihat
-                                                </el-button>
-                                            </div>
-                                        </template>
-                                    </el-table-column>
-                                </el-table>
-                            </div>
+                            <DocumentSection
+                                :dokumen="lamaran.dokumen"
+                                :lamaran-id="lamaran.id"
+                            />
                         </el-tab-pane>
                     </el-tabs>
                 </div>
             </div>
         </div>
 
-        <!-- Interview Schedule Modal -->
-        <el-dialog
-            v-model="showInterviewModal"
-            title="Jadwalkan Interview"
-            width="700px"
-            :before-close="handleInterviewModalClose"
-        >
-            <el-form :model="interviewForm" :rules="interviewRules" ref="interviewFormRef" label-width="150px">
-                <el-row :gutter="16">
-                    <el-col :span="12">
-                        <el-form-item label="Tanggal" prop="tanggal">
-                            <el-date-picker
-                                v-model="interviewForm.tanggal"
-                                type="date"
-                                placeholder="Pilih tanggal"
-                                format="DD/MM/YYYY "
-                                value-format="YYYY-MM-DD"
-                                style="width: 100%"
-                            />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="12">
-                        <el-form-item label="Waktu" prop="waktu">
-                            <el-time-picker
-                                v-model="interviewForm.waktu"
-                                placeholder="Pilih waktu"
-                                format="HH:mm"
-                                value-format="HH:mm:ss"
-                                style="width: 100%"
-                            />
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-                <el-form-item label="Lokasi" prop="lokasi">
-                    <el-input v-model="interviewForm.lokasi" placeholder="Masukkan lokasi interview (misal: Kantor Pusat, Online via Zoom, dll)" />
-                </el-form-item>
-                <el-form-item label="Pewawancara" prop="pewawancara_id">
-                    <select-staff v-model="interviewForm.pewawancara_id" />
-                </el-form-item>
-                <el-form-item label="Status" prop="status">
-                    <el-select v-model="interviewForm.status" placeholder="Pilih status" style="width: 100%">
-                        <el-option label="Dijadwalkan" value="dijadwalkan" />
-                        <el-option label="Selesai" value="selesai" />
-                        <el-option label="Dibatalkan" value="dibatalkan" />
-                        <el-option label="Dijadwal Ulang" value="dijadwal_ulang" />
-                    </el-select>
-                </el-form-item>
-                <el-form-item label="Catatan">
-                    <el-input
-                        v-model="interviewForm.catatan"
-                        type="textarea"
-                        :rows="3"
-                        placeholder="Catatan tambahan (opsional)"
-                    />
-                </el-form-item>
-            </el-form>
-            <template #footer>
-                <span class="dialog-footer">
-                    <el-button @click="showInterviewModal = false">Batal</el-button>
-                    <el-button type="primary" @click="submitInterviewForm" :loading="interviewLoading">
-                        Jadwalkan Interview
-                    </el-button>
-                </span>
-            </template>
-        </el-dialog>
 
-        <!-- Medical Check Modal -->
-        <el-dialog
-            v-model="showMedicalModal"
-            title="Jadwalkan Medical Check Up"
-            width="600px"
-            :before-close="handleMedicalModalClose"
-        >
-            <el-form :model="medicalForm" :rules="medicalRules" ref="medicalFormRef" label-position="top" label-width="150px">
-                <el-form-item label="Tanggal Medical" prop="tanggal">
-                    <el-date-picker
-                        v-model="medicalForm.tanggal"
-                        type="date"
-                        placeholder="Pilih tanggal"
-                        format="DD/MM/YYYY"
-                        value-format="YYYY-MM-DD"
-                        style="width: 100%"
-                    />
-                </el-form-item>
-                <el-form-item label="Nama Fasilitas Kesehatan" prop="nama">
-                    <el-input v-model="medicalForm.nama" placeholder="Nama Fasilitas Kesehatan (misal:Rumah Sakit Bunga, dll)" />
-                </el-form-item>
-                <el-form-item label="Upload File" prop="file">
-                    <single-file-upload v-model="medicalForm.file"/>
-                </el-form-item>
-                <el-form-item label="Hasil" prop="hasil">
-                    <el-input v-model="medicalForm.hasil" placeholder="Hasil medical check" />
-                </el-form-item>
-                <el-form-item label="Status" prop="status">
-                    <el-select v-model="medicalForm.status" placeholder="Pilih status" style="width: 100%">
-                        <el-option label="Pending" value="pending" />
-                        <el-option label="Valid" value="valid" />
-                        <el-option label="Tidak Valid" value="tidak valid" />
-                    </el-select>
-                </el-form-item>
-                <el-form-item label="Catatan">
-                    <el-input
-                        v-model="medicalForm.catatan"
-                        type="textarea"
-                        :rows="3"
-                        placeholder="Catatan tambahan (opsional)"
-                    />
-                </el-form-item>
-            </el-form>
-            <template #footer>
-                <span class="dialog-footer">
-                    <el-button @click="showMedicalModal = false">Batal</el-button>
-                    <el-button type="info" @click="submitMedicalForm" :loading="medicalLoading">
-                        Simpan
-                    </el-button>
-                </span>
-            </template>
-        </el-dialog>
-
-        <!-- Training Modal -->
-        <el-dialog
-            v-model="showTrainingModal"
-            title="Daftarkan Pelatihan"
-            width="600px"
-            :before-close="handleTrainingModalClose"
-        >
-            <el-form :model="trainingForm" label-position="top" :rules="trainingRules" ref="trainingFormRef" label-width="150px">
-                <el-row :gutter="20">
-                    <el-col :md="12">
-                        <el-form-item label="Program Pelatihan" prop="program_id">
-                            <select-program v-model="trainingForm.program_id"/>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :md="12">
-                        <el-form-item label="Tanggal Daftar" prop="tanggal_daftar">
-                            <el-date-picker
-                                v-model="trainingForm.tanggal_daftar"
-                                type="date"
-                                placeholder="Pilih tanggal daftar"
-                                format="DD/MM/YYYY"
-                                value-format="YYYY-MM-DD"
-                                style="width: 100%"
-                            />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :md="12">
-                        <el-form-item label="Tanggal Mulai" prop="tanggal_mulai">
-                            <el-date-picker
-                                v-model="trainingForm.tanggal_mulai"
-                                type="date"
-                                placeholder="Pilih tanggal mulai"
-                                format="DD/MM/YYYY"
-                                value-format="YYYY-MM-DD"
-                                style="width: 100%"
-                            />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :md="12">
-                        <el-form-item label="Tanggal Selesai" prop="tanggal_selesai">
-                            <el-date-picker
-                                v-model="trainingForm.tanggal_selesai"
-                                type="date"
-                                placeholder="Pilih tanggal selesai"
-                                format="DD/MM/YYYY"
-                                value-format="YYYY-MM-DD"
-                                style="width: 100%"
-                            />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :md="12">
-                        <el-form-item label="Status" prop="status">
-                            <el-select v-model="trainingForm.status" placeholder="Pilih status" style="width: 100%">
-                                <el-option label="Terdaftar" value="terdaftar" />
-                                <el-option label="Sedang Pelatihan" value="sedang_pelatihan" />
-                                <el-option label="Selesai" value="selesai" />
-                                <el-option label="Mengundurkan Diri" value="mengundurkan_diri" />
-                            </el-select>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :md="12">
-                        <el-form-item label="Nilai Akhir" prop="nilai_akhir">
-                            <el-input-number
-                                v-model="trainingForm.nilai_akhir"
-                                :min="0"
-                                :max="100"
-                                :step="1"
-                                :precision="0"
-                                placeholder="Nilai 0-100"
-                                style="width: 100%"
-                            />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :md="12">
-                        <el-form-item label="Sertifikat">
-                            <el-checkbox v-model="trainingForm.sertifikat_diterbitkan">
-                                Sertifikat sudah diterbitkan
-                            </el-checkbox>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :md="12">
-                        <el-form-item label="No. Sertifikat" v-if="trainingForm.sertifikat_diterbitkan">
-                            <el-input v-model="trainingForm.nomor_sertifikat" placeholder="Nomor sertifikat" />
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-                <el-form-item label="Catatan">
-                    <el-input
-                        v-model="trainingForm.catatan"
-                        type="textarea"
-                        :rows="3"
-                        placeholder="Catatan tambahan (opsional)"
-                    />
-                </el-form-item>
-            </el-form>
-            <template #footer>
-                <span class="dialog-footer">
-                    <el-button @click="showTrainingModal = false">Batal</el-button>
-                    <el-button type="success" @click="submitTrainingForm" :loading="trainingLoading">
-                        Daftarkan
-                    </el-button>
-                </span>
-            </template>
-        </el-dialog>
-        
-        <!-- Hasil Interview -->
-        <el-dialog
-            v-model="modalHasil"
-            title="Konfirmasi Selesai"
-            width="800">
-            <el-form label-position="top" :model="formHasilInterview" label-width="100%"  :rules="hasilInterviewRules" ref="hasilInterviewFormRef">
-                <el-row :gutter="20">
-                    <el-col :span="12">
-                        <el-form-item label="Skor Interview" prop="skor_interview">
-                            <el-input v-model="formHasilInterview.skor_interview" type="number" />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="12">
-                        <el-form-item label="Skor Psikotes" prop="skor_psikotes">
-                            <el-input v-model="formHasilInterview.skor_psikotes" type="number" />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="8">
-                        <el-form-item label="Kemampuan Komunikasi" prop="kemampuan_komunikasi">
-                            <el-select v-model="formHasilInterview.kemampuan_komunikasi" placeholder="Pilih">
-                                <el-option value="kurang" label="Kurang" />
-                                <el-option value="cukup" label="Cukup" />
-                                <el-option value="baik" label="Baik" />
-                                <el-option value="sangat_baik" label="Sangat Baik" />
-                            </el-select>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="8">
-                        <el-form-item label="Kemampuan Teknis" prop="kemampuan_teknis">
-                            <el-select v-model="formHasilInterview.kemampuan_teknis" placeholder="Pilih">
-                                <el-option value="kurang" label="Kurang" />
-                                <el-option value="cukup" label="Cukup" />
-                                <el-option value="baik" label="Baik" />
-                                <el-option value="sangat_baik" label="Sangat Baik" />
-                            </el-select>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="8">
-                        <el-form-item label="Rekomendasi" prop="rekomendasi">
-                            <el-select v-model="formHasilInterview.rekomendasi" placeholder="Pilih">
-                                <el-option value="tidak_direkomendasikan" label="Tidak Direkomendasikan" />
-                                <el-option value="bersyarat" label="Bersyarat" />
-                                <el-option value="direkomendasikan" label="Direkomendasikan" />
-                                <el-option value="sangat_direkomendasikan" label="Sangat Direkomendasikan" />
-                            </el-select>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="12">
-                        <el-form-item label="Penilaian Kepribadian" prop="kepribadian">
-                            <el-input v-model="formHasilInterview.kepribadian" type="textarea" :rows="4"/>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="12">
-                        <el-form-item label="Catatan" prop="catatan">
-                            <el-input v-model="formHasilInterview.catatan" type="textarea" :rows="4"/>
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-                
-                <div class="text-end">
-                    <el-button @click="dialogVisible = false">Cancel</el-button>
-                    <el-button type="success" @click="submitHasilInterview" :loading="hasilInterivewLoading">
-                        Simpan
-                    </el-button>
-                </div>
-            </el-form>
-        </el-dialog>
     </base-layout>
 </template>
 
@@ -684,82 +235,16 @@
 import { ref, reactive } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
-import { UploadFilled } from '@element-plus/icons-vue'
-import SelectStaff from '@/Components/SelectStaff.vue';
 import axios from 'axios'
-import moment from 'moment';
-import SingleFileUpload from '@/Components/SingleFileUpload.vue';
-import SelectProgram from '@/Components/SelectProgram.vue';
+import moment from 'moment'
+import InterviewSection from '@/Components/Admin/InterviewSection.vue'
+import MedicalSection from '@/Components/Admin/MedicalSection.vue'
+import TrainingSection from '@/Components/Admin/TrainingSection.vue'
+import DocumentSection from '@/Components/Admin/DocumentSection.vue'
+
 
 const activeTab = ref('applicant')
 
-// Modal visibility
-const showInterviewModal = ref(false)
-const showMedicalModal = ref(false)
-const showTrainingModal = ref(false)
-
-// Loading states
-const interviewLoading = ref(false)
-const medicalLoading = ref(false)
-const trainingLoading = ref(false)
-
-// Form refs
-const interviewFormRef = ref()
-const medicalFormRef = ref()
-const trainingFormRef = ref()
-
-// Interview Form
-const interviewForm = reactive({
-    lamaran_id: null,
-    tanggal: '',
-    lokasi: '',
-    pewawancara_id: '',
-    status: 'dijadwalkan',
-    catatan: ''
-})
-
-const interviewRules = {
-    tanggal: [{ required: true, message: 'Tanggal interview wajib diisi', trigger: 'blur' }],
-    lokasi: [{ required: true, message: 'Lokasi interview wajib diisi', trigger: 'blur' }],
-    pewawancara_id: [{ required: true, message: 'Pewawancara wajib dipilih', trigger: 'change' }],
-    status: [{ required: true, message: 'Status wajib dipilih', trigger: 'change' }]
-}
-
-// Medical Form
-const medicalForm = reactive({
-    lamaran_id : props.lamaran.id,
-    user_id : props.lamaran.user_id,
-    tanggal: '',
-    nama: '',
-    hasil: '',
-    file: null,
-    catatan: '',
-    status: 'pending'
-})
-
-const medicalRules = {
-    tanggal: [{ required: true, message: 'Tanggal medical wajib diisi', trigger: 'blur' }],
-    nama: [{ required: true, message: 'Nama Faskes wajib diisi', trigger: 'blur' }],
-    file: [{ required: true, message: 'File wajib diupload', trigger: 'change' }],
-    hasil: [{ required: true, message: 'Hasil wajib diisi', trigger: 'blur' }],
-    status: [{ required: true, message: 'Status wajib dipilih', trigger: 'change' }]
-}
-
-// Training Form
-const trainingForm = reactive({
-    user_id: null,
-    lamaran_id: null,
-    program_id: '',
-    tanggal_daftar: '',
-    tanggal_mulai: '',
-    tanggal_selesai: '',
-    status: 'terdaftar',
-    nilai_akhir: null,
-    sertifikat_diterbitkan: false,
-    nomor_sertifikat: '',
-    catatan: '',
-    didaftarkan_oleh: null
-});
 
 const format_date = (value) => {
   if (value) {
@@ -816,6 +301,18 @@ const trainingRules = {
     status: [{ required: true, message: 'Status wajib dipilih', trigger: 'change' }]
 }
 
+const dokumenRules = {
+    ktp: [{ required: true, message: 'KTP wajib diisi', trigger: 'change' }],
+    kk: [{ required: true, message: 'Kartu keluarga wajib diisi', trigger: 'change' }],
+    akte_lahir: [{ required: true, message: 'Akte lahir wajib diisi', trigger: 'change' }],
+    surat_keterangan_sehat: [{ required: true, message: 'Surat Keterangan Sehat wajib diisi', trigger: 'change' }],
+    surat_izin_keluarga: [{ required: true, message: 'Surat izin keluarga wajib diisi', trigger: 'change' }],
+    ijazah: [{ required: true, message: 'Ijazah Terakhir wajib diisi', trigger: 'change' }],
+    sertifikat_keahlian: [{ required: false, message: 'Sertifikat keahlian wajib diisi', trigger: 'change' }],
+    paspor: [{ required: true, message: 'Paspor wajib diisi', trigger: 'change' }],
+    surat_pengalaman: [{ required: false, message: 'Surat pengalaman kerja wajib diisi', trigger: 'change' }],
+    skck: [{ required: true, message: 'SKCK wajib diisi', trigger: 'change' }],
+}
 const props = defineProps({
     lamaran: Object,
     completionStats: Object,
@@ -876,24 +373,7 @@ const getMedicalStatus = (status) => {
   }
 };
 
-// Document helpers
-const getDocumentStatusLabel = (status) => {
-    const labels = {
-        'pending': 'Menunggu Review',
-        'approved': 'Disetujui',
-        'rejected': 'Ditolak'
-    }
-    return labels[status] || status
-}
 
-const getDocumentStatusType = (status) => {
-    const types = {
-        'pending': 'warning',
-        'approved': 'success',
-        'rejected': 'danger'
-    }
-    return types[status] || ''
-}
 
 const getDocumentCompletionPercentage = () => {
     if (!props.completionStats?.documents) return 0
@@ -922,16 +402,6 @@ const getTrainingStatusLabel = (status) => {
     return labels[status] || status
 }
 
-// Format helpers
-const formatDate = (date) => {
-    if (!date) return '-'
-    return new Date(date).toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric'
-    })
-}
-
 const formatCurrency = (amount) => {
     if (!amount) return '-'
     return new Intl.NumberFormat('id-ID', {
@@ -941,131 +411,6 @@ const formatCurrency = (amount) => {
     }).format(amount)
 }
 
-// Modal handlers
-const handleInterviewModalClose = (done) => {
-    interviewFormRef.value?.resetFields()
-    done()
-}
-
-const handleMedicalModalClose = (done) => {
-    medicalFormRef.value?.resetFields()
-    medicalForm.file = null
-    medicalForm.fileName = ''
-    done()
-}
-
-const handleTrainingModalClose = (done) => {
-    trainingFormRef.value?.resetFields()
-    done()
-}
-
-// Form submissions
-const submitInterviewForm = async () => {
-    if (!interviewFormRef.value) return
-    
-    await interviewFormRef.value.validate((valid) => {
-        if (valid) {
-            scheduleInterview()
-        }
-    })
-}
-
-const submitMedicalForm = async () => {
-    if (!medicalFormRef.value) return
-    
-    await medicalFormRef.value.validate((valid) => {
-        if (valid) {
-            scheduleMedical()
-        }
-    })
-}
-
-const submitTrainingForm = async () => {
-    if (!trainingFormRef.value) return
-    
-    await trainingFormRef.value.validate((valid) => {
-        if (valid) {
-            scheduleTraining()
-        }
-    })
-}
-
-// API calls
-const scheduleInterview = async () => {
-    interviewLoading.value = true
-    
-    try {
-        interviewForm.lamaran_id = props.lamaran.id
-        
-        await axios.post(route('admin.interview.store'), interviewForm)
-        
-        ElMessage.success('Interview berhasil dijadwalkan')
-        showInterviewModal.value = false
-        
-        // Refresh page data
-        router.visit(route('admin.lamaran.show', props.lamaran.id), {
-            preserveState: false,
-            preserveScroll: true
-        })
-    } catch (error) {
-        console.error('Error scheduling interview:', error)
-        ElMessage.error('Gagal menjadwalkan interview')
-    } finally {
-        interviewLoading.value = false
-    }
-}
-
-const scheduleMedical = async () => {
-    medicalLoading.value = true;
-    
-    try {
-        medicalForm.lamaran_id = props.lamaran.id
-        
-        await axios.post(route('admin.medical.store'), medicalForm,{
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        })
-        
-        ElMessage.success('Medical check up berhasil dijadwalkan')
-        showMedicalModal.value = false
-        
-        // Refresh page data
-        router.visit(route('admin.lamaran.show', props.lamaran.id), {
-            preserveState: false,
-            preserveScroll: true
-        })
-    } catch (error) {
-        console.error('Error scheduling medical:', error)
-        ElMessage.error('Gagal menjadwalkan medical check up')
-    } finally {
-        medicalLoading.value = false
-    }
-}
-
-const scheduleTraining = async () => {
-    trainingLoading.value = true
-    
-    try {
-        trainingForm.lamaran_id = props.lamaran.id
-        const url = (trainingForm.id) ? route('admin.training.update', {id : trainingForm.id}) : route('admin.training.store');
-        await axios.post(url, trainingForm)
-        
-        ElMessage.success('Pelatihan berhasil didaftarkan')
-        showTrainingModal.value = false
-        
-        // Refresh page data
-        router.visit(route('admin.lamaran.show', props.lamaran.id), {
-            preserveState: false,
-            preserveScroll: true
-        })
-    } catch (error) {
-        console.error('Error scheduling training:', error)
-        ElMessage.error('Gagal mendaftarkan pelatihan')
-    } finally {
-        trainingLoading.value = false
-    }
-}
 
 // Status update
 const updateStatus = async (status) => {
@@ -1118,6 +463,7 @@ const updateStatus = async (status) => {
         loading.close()
     }
 }
+
 </script>
 
 <style scoped>

@@ -101,11 +101,18 @@
                 <div class="current-step-details mt-4">
                     <el-alert
                         :title="getCurrentStepTitle()"
-                        :description="getCurrentStepDescription()"
                         :type="getCurrentStepType()"
                         show-icon
                         :closable="false"
-                    />
+                    >
+
+                    <template #default>
+                        {{ getCurrentStepDescription() }}
+                        <div>
+                            {{ lamaran.catatan || 'Tidak ada catatan' }}
+                        </div>
+                        </template> 
+                    </el-alert>
                 </div>
             </el-card>
 
@@ -181,6 +188,7 @@
             </el-card>
 
             
+
             <el-card v-if="getActiveStep() > 0" class="mb-4 rounded">
                 <template #header>
                     <div class="fs-4">
@@ -224,6 +232,111 @@
                 </el-empty>
             </el-card>
             
+            <el-card v-if="lamaran.training.length" class="mb-4 rounded">
+                <template #header>
+                    <div class="fs-4">
+                        <i class="fa fa-chalkboard-teacher me-2"></i>
+                        Training
+                    </div>
+                </template>
+                
+                <el-table 
+                    :data="lamaran.training || []" 
+                    border 
+                    style="width: 100%"
+                    :empty-text="'Belum ada data pelatihan'"
+                >
+                    <el-table-column prop="program.nama" label="Program" />
+                    <el-table-column prop="tanggal_daftar" label="Tanggal Daftar" width="120">
+                        <template #default="{ row }">
+                            {{ formatDate(row.tanggal_daftar) }}
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="status" label="Status" width="150">
+                        <template #default="{ row }">
+                            <el-tag :type="getStatusType(row.status)" size="small">
+                                {{ getStatusLabel(row.status) }}
+                            </el-tag>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="nilai_akhir" label="Nilai" width="80" align="center" />
+                    <el-table-column label="Aksi" width="120">
+                        <template #default="{ row }">
+                            <el-button 
+                                @click="$emit('view-training', row.id)"
+                                type="primary" 
+                                size="small"
+                            >
+                                Detail
+                            </el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+                
+            </el-card>
+            
+            <el-card class="mb-4 rounded">
+                <template #header>
+                    <div class="fs-4">
+                        <i class="fa fa-file me-2"></i>
+                        Dokumen Kelengkapan
+                    </div>
+                </template>
+
+                
+                <div v-if="lamaran.dokumen">
+                    <!-- Document Status Overview -->
+                    <el-card class="mb-4">
+                        <template #header>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold">Status Review Dokumen</span>
+                            </div>
+                        </template>
+                        <el-row :gutter="16">
+                            <el-col :span="8">
+                                <el-statistic title="Status" :value="lamaran.dokumen.status_label">
+                                    <template #suffix>
+                                        <el-tag :type="lamaran.dokumen.status_color" size="small" class="ms-2">
+                                            {{ lamaran.dokumen.status_label }}
+                                        </el-tag>
+                                    </template>
+                                </el-statistic>
+                            </el-col>
+                            <el-col :span="16">
+                                <div>
+                                    <strong>Catatan Review:</strong>
+                                    <p class="mt-1 mb-0 text-muted">{{ lamaran.dokumen.catatan || 'Belum ada catatan review' }}</p>
+                                </div>
+                            </el-col>
+                        </el-row>
+                    </el-card>
+                    
+                    <!-- Document List -->
+                    <el-descriptions :column="2" border direction="horizontal">
+                        <el-descriptions-item :label="doc.label" v-for="(doc, index) in documentTableData" :key="index">
+                            <el-button 
+                                v-if="doc.file"
+                                tag="a" 
+                                :href="'/uploads/' + doc.file" 
+                                target="_blank" 
+                                type="primary" 
+                                size="small"
+                            >
+                                <i class="fa fa-eye me-1"></i>
+                                Lihat
+                            </el-button>
+                            <span v-else class="text-muted">-</span>
+                        </el-descriptions-item>
+                    </el-descriptions>
+                </div>
+                <el-empty v-else>
+                    <el-button 
+                        @click="openDocumentModal"
+                        type="primary">
+                        Upload Dokumen
+                    </el-button>
+                </el-empty>
+            </el-card>
             <!-- Job Details -->
             <el-card class="mb-4 rounded">
                 <template #header>
@@ -394,6 +507,80 @@
                 </span>
             </template>
         </el-dialog>
+
+        
+        <el-dialog
+            v-model="showDokumenModal"
+            title="Upload Dokumen"
+            width="800px"
+            :before-close="handleDokumenModalClose">
+            <el-form label-position="top" :model="dokumenForm" label-width="100%" :rules="dokumenRules" ref="dokumenFormRef">
+                <el-row :gutter="20">
+                    <el-col :span="12">
+                        <el-form-item label="KTP" prop="ktp">
+                            <single-file-upload v-model="dokumenForm.ktp" />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                        <el-form-item label="Kartu Keluarga" prop="kk">
+                            <single-file-upload v-model="dokumenForm.kk" />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                        <el-form-item label="Akte Kelahiran" prop="akte_lahir">
+                            <single-file-upload v-model="dokumenForm.akte_lahir" />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                        <el-form-item label="Buku Nikah (Jika ada)" prop="buku_nikah">
+                            <single-file-upload v-model="dokumenForm.buku_nikah" />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                        <el-form-item label="Surat Keterangan Sehat" prop="surat_keterangan_sehat">
+                            <single-file-upload v-model="dokumenForm.surat_keterangan_sehat" />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                        <el-form-item label="Surat Izin Keluarga" prop="surat_izin_keluarga">
+                            <single-file-upload v-model="dokumenForm.surat_izin_keluarga" />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                        <el-form-item label="Ijazah Terakhir" prop="ijazah">
+                            <single-file-upload v-model="dokumenForm.ijazah" />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                        <el-form-item label="Sertifikat Keahlian/ Kompetensi" prop="sertifikat_keahlian">
+                            <single-file-upload v-model="dokumenForm.sertifikat_keahlian" />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                        <el-form-item label="Paspor" prop="paspor">
+                            <single-file-upload v-model="dokumenForm.paspor" />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                        <el-form-item label="Surat Keterangan Pengalaman Kerja" prop="surat_pengalaman">
+                            <single-file-upload v-model="dokumenForm.surat_pengalaman" />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                        <el-form-item label="SKCK" prop="skck">
+                            <single-file-upload v-model="dokumenForm.skck" />
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                
+                <div class="text-end">
+                    <el-button @click="showDokumenModal = false">Cancel</el-button>
+                    <el-button type="success" @click="submitDokumen" :loading="dokumenLoading">
+                        Simpan
+                    </el-button>
+                </div>
+            </el-form>
+        </el-dialog>
     </user-layout>
 </template>
 
@@ -411,15 +598,42 @@ const props = defineProps({
 
 
 const showMedicalModal = ref(false)
-const showDocumentModal = ref(false)
+const showDokumenModal = ref(false)
 
 const medicalLoading = ref(false)
-const documentLoading = ref(false)
+const dokumenLoading = ref(false)
 
 const medicalFormRef = ref()
-const documentFormRef = ref()
+const dokumenFormRef = ref()
+
+const dokumenForm = reactive({
+    lamaran_id: props.lamaran.id,
+    ktp: null,
+    kk: null,
+    akte_lahir: null,
+    buku_nikah: null,
+    surat_keterangan_sehat: null,
+    surat_izin_keluarga: null,
+    ijazah: null,
+    sertifikat_keahlian: null,
+    paspor: null,
+    surat_pengalaman: null,
+    skck: null
+})
 
 
+const dokumenRules = {
+    ktp: [{ required: true, message: 'KTP wajib diisi', trigger: 'change' }],
+    kk: [{ required: true, message: 'Kartu keluarga wajib diisi', trigger: 'change' }],
+    akte_lahir: [{ required: true, message: 'Akte lahir wajib diisi', trigger: 'change' }],
+    surat_keterangan_sehat: [{ required: true, message: 'Surat keterangan sehat wajib diisi', trigger: 'change' }],
+    surat_izin_keluarga: [{ required: true, message: 'Surat izin keluarga wajib diisi', trigger: 'change' }],
+    ijazah: [{ required: true, message: 'Ijazah wajib diisi', trigger: 'change' }],
+    sertifikat_keahlian: [{ required: false, message: 'Sertifikat keahlian wajib diisi', trigger: 'change' }],
+    paspor: [{ required: true, message: 'Paspor wajib diisi', trigger: 'change' }],
+    surat_pengalaman: [{ required: false, message: 'Surat pengalaman kerja wajib diisi', trigger: 'change' }],
+    skck: [{ required: true, message: 'SKCK wajib diisi', trigger: 'change' }],
+}
 
 // Medical Form
 const medicalForm = reactive({
@@ -464,6 +678,25 @@ const statusTypes = {
 // Helper functions
 const getStatusLabel = (status) => statusLabels[status] || status
 const getStatusType = (status) => statusTypes[status] || ''
+
+
+const documentTableData = computed(() => {
+    if (!props.lamaran.dokumen) return []
+    
+    return [
+        { field: 'ktp', label: 'KTP', file: props.lamaran.dokumen.ktp },
+        { field: 'kk', label: 'Kartu Keluarga', file: props.lamaran.dokumen.kk },
+        { field: 'akte_lahir', label: 'Akte Kelahiran', file: props.lamaran.dokumen.akte_lahir },
+        { field: 'buku_nikah', label: 'Buku Nikah', file: props.lamaran.dokumen.buku_nikah },
+        { field: 'surat_keterangan_sehat', label: 'Surat Keterangan Sehat', file: props.lamaran.dokumen.surat_keterangan_sehat },
+        { field: 'surat_izin_keluarga', label: 'Surat Izin Keluarga', file: props.lamaran.dokumen.surat_izin_keluarga },
+        { field: 'ijazah', label: 'Ijazah Terakhir', file: props.lamaran.dokumen.ijazah },
+        { field: 'sertifikat_keahlian', label: 'Sertifikat Keahlian', file: props.lamaran.dokumen.sertifikat_keahlian },
+        { field: 'paspor', label: 'Paspor', file: props.lamaran.dokumen.paspor },
+        { field: 'surat_pengalaman', label: 'Surat Pengalaman Kerja', file: props.lamaran.dokumen.surat_pengalaman },
+        { field: 'skck', label: 'SKCK', file: props.lamaran.dokumen.skck },
+    ]
+})
 
 const formatDate = (date) => {
     return new Date(date).toLocaleDateString('id-ID', {
@@ -560,7 +793,7 @@ const getCurrentStepDescription = () => {
         'pelatihan': 'Ikuti program pelatihan sesuai jadwal yang telah diberikan.',
         'siap': 'Upload dokumen kelengkapan untuk proses keberangkatan.',
         'selesai': 'Selamat! Semua tahap telah selesai. Anda siap untuk penempatan kerja.',
-        'ditolak': 'Lamaran tidak dapat diproses lebih lanjut. Silakan coba lamar posisi lain.'
+        'ditolak': 'Lamaran tidak dapat diproses lebih lanjut.'
     }
     return descriptions[props.lamaran.status] || 'Tidak ada deskripsi tersedia.'
 }
@@ -641,7 +874,72 @@ const submitMedicalForm = async () => {
     })
 }
 
+const handleDokumenModalClose = (done) => {
+    dokumenFormRef.value?.resetFields()
+    Object.keys(dokumenForm).forEach(key => {
+        if (key !== 'lamaran_id') {
+            dokumenForm[key] = null
+        }
+    })
+    done()
+}
 
+const openDocumentModal = () => {
+    if (props.dokumen) {
+        // Pre-fill form with existing data
+        Object.keys(dokumenForm).forEach(key => {
+            if (props.dokumen[key] && key !== 'lamaran_id') {
+                dokumenForm[key] = props.dokumen[key]
+            }
+        })
+    }
+    showDokumenModal.value = true
+}
+
+// Form submissions
+const submitDokumen = async () => {
+    if (!dokumenFormRef.value) return
+    
+    await dokumenFormRef.value.validate((valid) => {
+        if (valid) {
+            uploadDokumen()
+        }
+    })
+}
+
+const uploadDokumen = async () => {
+    dokumenLoading.value = true
+    
+    try {
+        const formData = new FormData()
+        
+        Object.keys(dokumenForm).forEach(key => {
+            if (dokumenForm[key] !== null) {
+                formData.append(key, dokumenForm[key])
+            }
+        })
+        
+        await axios.post(route('user.lamaran.document'), formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+        
+        ElMessage.success('Dokumen berhasil diupload')
+        showDokumenModal.value = false
+        
+        // Refresh page data
+        router.visit(route('user.lamaran.show', props.lamaran.id), {
+            preserveState: false,
+            preserveScroll: true
+        })
+    } catch (error) {
+        console.error('Error uploading documents:', error)
+        ElMessage.error('Gagal mengupload dokumen')
+    } finally {
+        dokumenLoading.value = false
+    }
+}
 
 </script>
 

@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\Lamaran;
 use App\Models\Medical;
 use App\Models\Lowongan;
+use App\Models\DokumenLamaran;
 
 class LamaranController extends Controller
 {
@@ -200,7 +201,8 @@ class LamaranController extends Controller
             'medical',
             'training' => function($q){
                 return $q->with(['program']);
-            }
+            },
+            'dokumen'
         ])->findOrFail($id);
 
         // Calculate progress
@@ -459,6 +461,63 @@ class LamaranController extends Controller
                 'success' => true,
                 'message' => 'Jadwal berhasil Dibuat',
             ]);
+        }
+    }
+
+    public function document(Request $request)
+    {
+        
+        DB::beginTransaction();
+        try {
+            $lamaran = Lamaran::findOrFail($request->lamaran_id);
+
+            $existingDocument = DokumenLamaran::where('lamaran_id', $request->lamaran_id)->first();
+            
+            if ($existingDocument) {
+                $data = $existingDocument;
+            } else {
+                $data = new DokumenLamaran();
+                $data->lamaran_id = $request->lamaran_id;
+                $data->status = 'pending';
+            }
+
+            // Handle file uploads
+            $fileFields = [
+                'ktp', 'kk', 'akte_lahir', 'buku_nikah', 'surat_keterangan_sehat', 
+                'surat_izin_keluarga', 'ijazah', 'sertifikat_keahlian', 
+                'paspor', 'surat_pengalaman', 'skck'
+            ];
+
+            foreach ($fileFields as $field) {
+                if ($request->hasFile($field)) {
+                    // Delete old file if exists
+                    if ($data->$field && Storage::disk('public')->exists($data->$field)) {
+                        Storage::disk('public')->delete($data->$field);
+                    }
+                    
+                    // Store new file
+                    $fileDir = 'documents/' . $lamaran->user_id . '/' . $field . '/' . Str::random(32) . '.' . $request->file($field)->getClientOriginalExtension();
+                    Storage::disk('public')->put($fileDir, fopen($request->file($field), 'r+'));
+                    $data->$field = $fileDir;
+                }
+            }
+
+            $data->save();
+
+            DB::commit();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Dokumen berhasil disimpan',
+                'data' => $data
+            ]);
+
+        } catch (\QueryException $e) {
+            DB::rollback();
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menyimpan data'
+            ], 500);
         }
     }
 }

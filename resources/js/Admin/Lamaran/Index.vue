@@ -8,10 +8,25 @@
                     <small class="text-muted">Kelola dan pantau semua lamaran pekerjaan</small>
                 </div>
                 <div class="space-x-1">
-                    <el-button type="success" @click="exportData" :loading="exportLoading">
-                        <i class="fa fa-download me-1"></i>
-                        Export
-                    </el-button>
+                    <el-dropdown trigger="click">
+                        <el-button type="success" :loading="exportLoading">
+                            <i class="fa fa-download me-1"></i>
+                            Export
+                            <el-icon class="el-icon--right"><arrow-down /></el-icon>
+                        </el-button>
+                        <template #dropdown>
+                            <el-dropdown-menu>
+                                <el-dropdown-item @click="exportData">
+                                    <i class="fa fa-file-excel-o me-2"></i>
+                                    Export CSV
+                                </el-dropdown-item>
+                                <el-dropdown-item @click="showPdfExportModal = true">
+                                    <i class="fa fa-file-pdf-o me-2"></i>
+                                    Export PDF
+                                </el-dropdown-item>
+                            </el-dropdown-menu>
+                        </template>
+                    </el-dropdown>
                 </div>
             </div>
 
@@ -217,6 +232,100 @@
                 </div>
             </div>
         </div>
+
+        <!-- PDF Export Modal -->
+        <el-dialog
+            v-model="showPdfExportModal"
+            title="Export Laporan PDF"
+            width="600px"
+            :before-close="handlePdfModalClose"
+        >
+            <el-form :model="pdfExportForm" label-position="top" ref="pdfExportFormRef">
+                <el-alert
+                    title="Export Laporan PDF"
+                    type="info"
+                    description="Pilih filter untuk menggenerate laporan PDF yang komprehensif dengan detail lengkap data lamaran."
+                    show-icon
+                    :closable="false"
+                    class="mb-4"
+                />
+
+                <el-row :gutter="16">
+                    <el-col :span="12">
+                        <el-form-item label="Filter Status">
+                            <el-select v-model="pdfExportForm.status" placeholder="Pilih status (opsional)" clearable style="width: 100%">
+                                <el-option
+                                    v-for="(label, value) in statusOptions"
+                                    :key="value"
+                                    :label="label"
+                                    :value="value"
+                                />
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                        <el-form-item label="Lowongan">
+                            <el-input v-model="pdfExportForm.lowongan_id" placeholder="ID Lowongan (opsional)" />
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+
+                <el-row :gutter="16">
+                    <el-col :span="12">
+                        <el-form-item label="Tanggal Mulai">
+                            <el-date-picker
+                                v-model="pdfExportForm.tanggal_dari"
+                                type="date"
+                                placeholder="Pilih tanggal mulai"
+                                style="width: 100%"
+                                format="DD/MM/YYYY"
+                                value-format="YYYY-MM-DD"
+                            />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                        <el-form-item label="Tanggal Akhir">
+                            <el-date-picker
+                                v-model="pdfExportForm.tanggal_sampai"
+                                type="date"
+                                placeholder="Pilih tanggal akhir"
+                                style="width: 100%"
+                                format="DD/MM/YYYY"
+                                value-format="YYYY-MM-DD"
+                            />
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+
+                <el-form-item label="Preview Filter">
+                    <div class="border rounded p-3 bg-light">
+                        <div class="small text-muted">
+                            <div v-if="pdfExportForm.status">
+                                <strong>Status:</strong> {{ statusOptions[pdfExportForm.status] }}
+                            </div>
+                            <div v-if="pdfExportForm.tanggal_dari || pdfExportForm.tanggal_sampai">
+                                <strong>Periode:</strong> 
+                                {{ pdfExportForm.tanggal_dari ? formatDate(pdfExportForm.tanggal_dari) : 'Awal' }} - 
+                                {{ pdfExportForm.tanggal_sampai ? formatDate(pdfExportForm.tanggal_sampai) : 'Sekarang' }}
+                            </div>
+                            <div v-if="!pdfExportForm.status && !pdfExportForm.tanggal_dari && !pdfExportForm.tanggal_sampai">
+                                <em>Semua data lamaran akan disertakan dalam laporan</em>
+                            </div>
+                        </div>
+                    </div>
+                </el-form-item>
+            </el-form>
+
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="showPdfExportModal = false">Batal</el-button>
+                    <el-button type="danger" @click="exportPdf" :loading="pdfExportLoading">
+                        <i class="fa fa-file-pdf-o me-1"></i>
+                        Generate PDF
+                    </el-button>
+                </span>
+            </template>
+        </el-dialog>
     </base-layout>
 </template>
 
@@ -231,8 +340,11 @@ import { debounce } from 'lodash'
 // Reactive data
 const loading = ref(false)
 const exportLoading = ref(false)
+const pdfExportLoading = ref(false)
+const showPdfExportModal = ref(false)
 const tableData = ref([])
 const selectedRows = ref([])
+const pdfExportFormRef = ref()
 
 const filters = reactive({
     q: '',
@@ -252,6 +364,13 @@ const pagination = reactive({
 const sorting = reactive({
     sort: 'id',
     sortDir: 'desc'
+})
+
+const pdfExportForm = reactive({
+    status: '',
+    lowongan_id: '',
+    tanggal_dari: '',
+    tanggal_sampai: ''
 })
 
 // Status options
@@ -461,6 +580,40 @@ const exportData = async () => {
     } finally {
         exportLoading.value = false
     }
+}
+
+// PDF Export functions
+const exportPdf = async () => {
+    pdfExportLoading.value = true
+    try {
+        const params = new URLSearchParams()
+        
+        // Add non-empty parameters
+        Object.keys(pdfExportForm).forEach(key => {
+            if (pdfExportForm[key]) {
+                params.append(key, pdfExportForm[key])
+            }
+        })
+        
+        const url = route('admin.lamaran.export-pdf') + (params.toString() ? '?' + params.toString() : '')
+        window.open(url, '_blank')
+        
+        ElMessage.success('PDF sedang diproses, file akan didownload secara otomatis')
+        showPdfExportModal.value = false
+    } catch (error) {
+        console.error('Error exporting PDF:', error)
+        ElMessage.error('Gagal mengexport PDF')
+    } finally {
+        pdfExportLoading.value = false
+    }
+}
+
+const handlePdfModalClose = (done) => {
+    // Reset form
+    Object.keys(pdfExportForm).forEach(key => {
+        pdfExportForm[key] = ''
+    })
+    done()
 }
 
 const loadStatistics = async () => {

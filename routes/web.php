@@ -21,11 +21,6 @@ Route::namespace('Frontend')->group(function(){
         Route::get('/lowongan','HomeController@lowongan')->name('lowongan');
         Route::get('/lowongan/{id}','HomeController@lowonganDetail')->name('lowongan.detail');
         
-        // Route::prefix('/video')->name('video.')->group(function () {
-        //     Route::get('/', 'VideoController@index')->name('index');
-        //     Route::get('/data', 'VideoController@data')->name('data');
-        //     Route::get('/{slug}', 'VideoController@show')->name('show');
-        // });
 
         
         Route::namespace('Auth')->group(function () {
@@ -237,6 +232,7 @@ Route::prefix('admin')->namespace('Admin')->name('admin.')->group(function(){
             
             Route::get('/', 'TrainingController@index')->name('index');
             Route::get('/data', 'TrainingController@data')->name('data');
+            Route::get('/export-pdf', 'TrainingController@exportPdf')->name('export-pdf');
             Route::post('/store', 'TrainingController@store')->name('store');
             Route::get('/{id}', 'TrainingController@show')->name('show');
             Route::get('/{id}/edit','TrainingController@edit')->name('edit');
@@ -258,25 +254,27 @@ Route::prefix('admin')->namespace('Admin')->name('admin.')->group(function(){
         Route::prefix('/lamaran')->name('lamaran.')->group(function () {
             Route::get('/', 'LamaranController@index')->name('index');
             Route::get('/data', 'LamaranController@data')->name('data');
-            Route::get('/{id}', 'LamaranController@show')->name('show');
-            Route::post('/{id}/update-status', 'LamaranController@updateStatus')->name('update-status');
             Route::post('/bulk-update-status', 'LamaranController@bulkUpdateStatus')->name('bulk-update-status');
             Route::get('/statistics', 'LamaranController@statistics')->name('statistics');
             Route::get('/export', 'LamaranController@export')->name('export');
+            Route::get('/export-pdf', 'LamaranController@exportPdf')->name('export-pdf');
             Route::delete('/{id}', 'LamaranController@destroy')->name('destroy');
+            Route::get('/{id}', 'LamaranController@show')->name('show');
+            Route::post('/{id}/update-status', 'LamaranController@updateStatus')->name('update-status');
         });
 
         // Document Review Management
         Route::prefix('/dokumen-lamaran')->name('dokumen-lamaran.')->group(function () {
             Route::get('/', 'DokumenLamaranController@index')->name('index');
+            Route::get('/create', 'DokumenLamaranController@create')->name('create');
+            Route::post('/store', 'DokumenLamaranController@store')->name('store');
             Route::get('/data', 'DokumenLamaranController@data')->name('data');
+            Route::get('/by-lamaran/{lamaranId}', 'DokumenLamaranController@byLamaran')->name('by-lamaran');
             Route::get('/{id}', 'DokumenLamaranController@show')->name('show');
-            Route::post('/{id}/review', 'DokumenLamaranController@review')->name('review');
-            Route::post('/bulk-review', 'DokumenLamaranController@bulkReview')->name('bulk-review');
-            Route::get('/{id}/download', 'DokumenLamaranController@download')->name('download');
+            Route::get('/{id}/edit', 'DokumenLamaranController@edit')->name('edit');
+            Route::put('/{id}/update', 'DokumenLamaranController@update')->name('update');
+            Route::post('/{id}/update-status', 'DokumenLamaranController@updateStatus')->name('update-status');
             Route::get('/{id}/view', 'DokumenLamaranController@view')->name('view');
-            Route::get('/by-lamaran/{lamaran}', 'DokumenLamaranController@byLamaran')->name('by-lamaran');
-            Route::get('/statistics', 'DokumenLamaranController@statistics')->name('statistics');
             Route::delete('/{id}', 'DokumenLamaranController@destroy')->name('destroy');
         });
 
