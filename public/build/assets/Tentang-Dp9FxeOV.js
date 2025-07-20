@@ -1,0 +1,1 @@
+import{A as a,U as n,p as o,o as t,v as c,B as e}from"./id-C9hYMH1B.js";const r={},_=e("div",{class:"w-100"},[e("img",{src:"/images/banner/Job-Training-Indonesia-1.jpg",class:"w-100"})],-1);function i(l,d){const s=n("base-layout");return t(),o(s,null,{default:c(()=>[_]),_:1})}const f=a(r,[["render",i]]);export{f as default};

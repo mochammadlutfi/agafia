@@ -12,7 +12,6 @@ use Inertia\Inertia;
 use App\Models\User;
 use App\Models\Lamaran;
 use App\Models\Lowongan;
-use App\Models\JadwalInterview;
 use App\Models\Training;
 use App\Models\ProgramTraining;
 use App\Models\DokumenLamaran;
@@ -42,7 +41,7 @@ class DashboardController extends Controller
         $total_pending = Lamaran::pending()->count();
         $total_diterima = Lamaran::diterima()->count();
         $total_ditolak = Lamaran::ditolak()->count();
-        $interview_scheduled = JadwalInterview::where('status', 'dijadwalkan')->count();
+        $interview_scheduled = Interview::where('status', 'dijadwalkan')->count();
         $medical_process = Lamaran::where('status', 'medical')->count();
         $training_process = Lamaran::where('status', 'pelatihan')->count();
         $siap_berangkat = Lamaran::siap()->count();

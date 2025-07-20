@@ -9,11 +9,11 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
-use App\Models\JadwalInterview;
 use App\Models\Lamaran;
 use App\Models\Lowongan;
 use App\Models\DokumenLamaran;
 use App\Models\Training;
+use App\Models\Interview;
 use App\Models\Medical;
 
 class DashboardController extends Controller
@@ -48,12 +48,10 @@ class DashboardController extends Controller
             ->get();
             
         // Get upcoming interviews
-        $upcomingInterviews = JadwalInterview::whereHas('lamaran', function($query) use ($user) {
-                $query->where('user_id', $user->id);
-            })
-            ->with(['lamaran.lowongan', 'pewawancara'])
+        $upcomingInterviews = Interview::with(['lamaran.lowongan', 'pewawancara'])
             ->where('tanggal', '>=', now())
             ->where('status', 'dijadwalkan')
+            ->where('user_id', $user->id)
             ->orderBy('tanggal', 'asc')
             ->limit(3)
             ->get();
@@ -109,15 +107,13 @@ class DashboardController extends Controller
     {
         $user = auth()->guard('web')->user();
 
-        $interviews = JadwalInterview::whereHas('lamaran', function($query) use ($user) {
-                $query->where('user_id', $user->id);
-            })
-            ->with([
+        $interviews = Interview::with([
                 'lamaran.lowongan',
                 'pewawancara',
                 'pembuat',
                 'hasil'
             ])
+            ->where('user_id', $user->id)
             ->orderBy('tanggal', 'desc')
             ->get();
 
@@ -160,15 +156,11 @@ class DashboardController extends Controller
                 })->approved()->count(),
             ],
             'interviews' => [
-                'total' => JadwalInterview::whereHas('lamaran', function($q) use ($user) {
-                    $q->where('user_id', $user->id);
-                })->count(),
-                'upcoming' => JadwalInterview::whereHas('lamaran', function($q) use ($user) {
-                    $q->where('user_id', $user->id);
-                })->where('tanggal', '>=', now())->where('status', 'dijadwalkan')->count(),
-                'completed' => JadwalInterview::whereHas('lamaran', function($q) use ($user) {
-                    $q->where('user_id', $user->id);
-                })->where('status', 'selesai')->count(),
+                'total' => Interview::where('user_id', $user->id)->count(),
+                'upcoming' => Interview::where('user_id', $user->id)
+                ->where('tanggal', '>=', now())->where('status', 'dijadwalkan')->count(),
+                'completed' => Interview::where('user_id', $user->id)
+                ->where('status', 'selesai')->count(),
             ]
         ];
         
