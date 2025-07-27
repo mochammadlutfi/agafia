@@ -11,18 +11,22 @@ class MenuHelper
     public static function get()
     {
         $menuData = collect([]);
+
+        $user = auth()->guard('admin')->user();
     
         $menuData->push([
             "icon" => "fa fa-home",
             "name" => "Beranda",
             "to" => "admin.dashboard",
         ]);
-    
-        $menuData->push([
-            "icon" => "fa fa-users",
-            "name" => "Staff",
-            "to" => "admin.staff.index",
-        ]);
+        
+        if(in_array($user->level, ['operational_manager', 'owner'])){
+            $menuData->push([
+                "icon" => "fa fa-users",
+                "name" => "Staff",
+                "to" => "admin.staff.index",
+            ]);
+        }
     
         $menuData->push([
             "icon" => "fa fa-id-badge",
@@ -30,34 +34,20 @@ class MenuHelper
             "to" => "admin.talent.index",
         ]);
     
-        $menuData->push([
-            "icon" => "fa fa-plane-departure",
-            "name" => "Lamaran",
-            "to" => "admin.lamaran.index",
-        ]);
+        if(in_array($user->level, ['operational_manager', 'owner'])){
+            $menuData->push([
+                "icon" => "fa fa-plane-departure",
+                "name" => "Lamaran",
+                "to" => "admin.lamaran.index",
+            ]);
+        }
     
         $menuData->push([
             "icon" => "fa fa-file-medical",
             "name" => "Interview",
             "to" => "admin.interview.index",
         ]);
-    
-        // $menuData->push([
-        //     "name" => 'Interview',
-        //     "icon" => 'fa fa-calendar-alt',
-        //     "subActivePaths" => 'admin.interview.*',
-        //     "sub" => [
-        //         [
-        //             "name" => 'Jadwal',
-        //             "to" => 'admin.interview.jadwal.index',
-        //         ],
-        //         [
-        //             "name" => 'Hasil',
-        //             "to" => 'admin.interview.hasil.index',
-        //         ],
-        //     ]
-        // ]);
-    
+
         $menuData->push([
             "name" => 'Training',
             "icon" => 'fa fa-chalkboard-teacher',
@@ -73,11 +63,6 @@ class MenuHelper
                 ],
             ]
         ]);
-        // $menuData->push([
-        //     "icon" => "fa fa-chalkboard-teacher",
-        //     "name" => "Training",
-        //     "to" => "admin.training.index",
-        // ]);
     
         $menuData->push([
             "icon" => "fa fa-stethoscope",
@@ -90,17 +75,6 @@ class MenuHelper
             "name" => "Lowongan Kerja",
             "to" => "admin.lowongan.index",
         ]);
-        // $menuData->push([
-        //     "icon" => "fa fa-chart-bar",
-        //     "name" => "Laporan",
-        //     "to" => "admin.reports.index",
-        // ]);
-    
-        // $menuData->push([
-        //     "icon" => "fa fa-cogs",
-        //     "name" => "Pengaturan",
-        //     "to" => "admin.settings.index",
-        // ]);
     
         return $menuData->all();
     }

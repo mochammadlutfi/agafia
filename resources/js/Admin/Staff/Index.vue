@@ -38,12 +38,9 @@
                     <div class="block-content p-0">
                         <el-table :data="data" class="w-100" v-loading="isLoading" header-cell-class-name="bg-body text-dark">
                             <el-table-column prop="nama" label="Nama" width="220" header-align="center"/>
-                            <el-table-column prop="alamat" label="Alamat" width="400" header-align="center">
-                                <template #default="scope">
-                                    <div>{{ scope.row.alamat }}</div>
-                                </template>
-                            </el-table-column>
-                            <el-table-column prop="level" label="Level"/>
+                            <el-table-column prop="email" label="Email" width="220" header-align="center"/>
+                            <el-table-column prop="username" label="Username" width="220" header-align="center"/>
+                            <el-table-column prop="level_label" label="Level"/>
                             <el-table-column label="Aksi" align="center" width="180">
                                 <template #default="scope">
                                     <a :href="route('admin.staff.show', { id :scope.row.id})" class="ep-button ep-button--primary">

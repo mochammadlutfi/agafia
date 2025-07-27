@@ -51,9 +51,10 @@ class HandleInertiaRequests extends Middleware
         ];
         
         if(Req::segment(1) == 'admin'){
-            $data['menu'] = MenuHelper::get();
             
             if(Auth::guard('admin')->check()){
+                $data['menu'] = MenuHelper::get();
+                
                 $data['user'] = $request->user('admin')->only('nama', 'email', 'username');
             }
         }

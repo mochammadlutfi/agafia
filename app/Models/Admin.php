@@ -38,6 +38,10 @@ class Admin extends Authenticatable implements MustVerifyEmail
         'password', 'remember_token',
     ];
 
+    protected $appends = [
+        'level_label'
+    ];
+
     /**
      * Custom password reset notification.
      * 

@@ -30,7 +30,7 @@
                                 </a>
                             </li>
                             <li class="nav-main-item">
-                                <Link :href="route('admin.logout')" method="post" as="button" type="button" class="btn btn-logout nav-main-link w-100">
+                                <Link :href="route('logout')" method="post" as="button" type="button" class="btn btn-logout nav-main-link w-100">
                                     <i class="fa fa-sign-out nav-main-link-icon"></i>
                                     <span class="nav-main-link-name text-start">Keluar</span>
                                 </Link>

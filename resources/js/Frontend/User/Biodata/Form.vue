@@ -283,48 +283,6 @@
                                 </el-form-item>
                             </div>
                             
-                            <!-- <div class="mt-4 border-bottom border-2 mb-4">
-                                <h3 class="fs-5 mb-2">5. Dokumen</h3>
-                            </div> -->
-                            <!-- <el-row :gutter="20">
-                                <el-col :span="12">
-                                    <el-form-item label="KTP" :error="errors.ktp" label-position="top">
-                                        <single-file-upload v-model="form.ktp"/>
-                                    </el-form-item>
-                                    <el-form-item label="Kartu Keluarga" :error="errors.kk" label-position="top">
-                                        <single-file-upload v-model="form.kk"/>
-                                    </el-form-item>
-                                    <el-form-item label="Akte Lahir" :error="errors.akte_lahir" label-position="top">
-                                        <single-file-upload v-model="form.akte_lahir"/>
-                                    </el-form-item>
-                                    <el-form-item label="Buku Nikah" :error="errors.buku_nikah" label-position="top">
-                                        <single-file-upload v-model="form.buku_nikah"/>
-                                    </el-form-item>
-                                    <el-form-item label="Surat Keterangan Sehat" :error="errors.keterangan_sehat" label-position="top">
-                                        <single-file-upload v-model="form.keterangan_sehat"/>
-                                    </el-form-item>
-                                    <el-form-item label="Surat Izin Keluarga" :error="errors.izin_keluarga" label-position="top">
-                                        <single-file-upload v-model="form.izin_keluarga"/>
-                                    </el-form-item>
-                                </el-col>
-                                <el-col :span="12">
-                                    <el-form-item label="Ijazah Terakhir" :error="errors.ijazah" label-position="top">
-                                        <single-file-upload v-model="form.ijazah"/>
-                                    </el-form-item>
-                                    <el-form-item label="Sertifikat Keahlian/Kompetensi" :error="errors.komptensi" label-position="top">
-                                        <single-file-upload v-model="form.komptensi"/>
-                                    </el-form-item>
-                                    <el-form-item label="Paspor" :error="errors.paspor" label-position="top">
-                                        <single-file-upload v-model="form.paspor"/>
-                                    </el-form-item>
-                                    <el-form-item label="Surat Keterangan Pengalaman Kerja" :error="errors.pengalaman_kerja" label-position="top">
-                                        <single-file-upload v-model="form.pengalaman_kerja"/>
-                                    </el-form-item>
-                                    <el-form-item label="SKCK" :error="errors.skck" label-position="top">
-                                        <single-file-upload v-model="form.skck"/>
-                                    </el-form-item>
-                                </el-col>
-                            </el-row> -->
 
                             <el-button type="primary" class="w-100" @click="submit" :loading="form.processing">
                                 <i class="fa fa-check me-2"></i>

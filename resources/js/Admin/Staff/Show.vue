@@ -16,22 +16,12 @@
             </div>
             <div class="block block-rounded block-bordered">
                 <div class="block-content p-3">
-                    <div class="border-bottom border-2 mb-4">
-                        <h3 class="h5 mb-2">1. Informasi Personal</h3>
-                    </div>
                     <el-descriptions :column="2" border>
                         <el-descriptions-item label="Nama Lengkap">{{ data.nama }}</el-descriptions-item>
-                        <el-descriptions-item label="Jenis Kelamin">{{ data.jk }}</el-descriptions-item>
-                        <el-descriptions-item label="Tempat / Tanggal Lahir">{{ data.tmp_lahir }} / {{  format_date(data.tgl_lahir) }}</el-descriptions-item>
-                        <el-descriptions-item label="No Handphone">{{ data.phone }}</el-descriptions-item>
                         <el-descriptions-item label="Email">{{ data.email }}</el-descriptions-item>
-                        <el-descriptions-item label="Alamat Lengkap">
-                            {{ data.alamat }}
-                        </el-descriptions-item>
-                        <el-descriptions-item label="Agama">{{ data.agama }}</el-descriptions-item>
-                        <el-descriptions-item label="Pendidikan Terakhir">{{ data.pendidikan_terakhir }}</el-descriptions-item>
-                        <el-descriptions-item label="Mulai Bekerja">{{ data.tgl_mulai }}</el-descriptions-item>
-                        <el-descriptions-item label="Tanggal Masuk">{{ format_date(data.tgl_masuk) }}</el-descriptions-item>
+                        <el-descriptions-item label="Username">{{ data.username }}</el-descriptions-item>
+                        <el-descriptions-item label="level">{{ data.level_label }}</el-descriptions-item>
+                        <el-descriptions-item label="Dibuat">{{ format_date(data.created_at) }}</el-descriptions-item>
                     </el-descriptions>
                 </div>
             </div>

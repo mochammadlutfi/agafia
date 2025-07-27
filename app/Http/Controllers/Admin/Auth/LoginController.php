@@ -38,7 +38,7 @@ class LoginController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('guest:admin')->except('admin.logout');
+        $this->middleware('guest:admin')->except('logout');
     }
 
     /**
@@ -101,10 +101,13 @@ class LoginController extends Controller
 
      }
 
-    public function logout()
+    public function logout(Request $request)
     {
-        // dd('sa');
         Auth::guard('admin')->logout();
+        
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        
         return redirect()->route('admin.login');
     }
 

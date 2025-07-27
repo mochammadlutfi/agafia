@@ -4,14 +4,16 @@
             <div class="content-heading d-flex justify-content-between align-items-center">
                 <span>Detail Interview</span>
                 <div class="space-x-1">
-                    <el-button type="success" @click.prevent="openModalSelesai" v-if="data.status === 'dijadwalkan'">
-                        <i class="si si-check me-2"></i>
-                        Selesai
-                    </el-button>
-                    <el-button type="danger" @click.prevent="cancel(data.id)" v-if="data.status === 'dijadwalkan'">
-                        <i class="si si-close me-2"></i>
-                        Batalkan
-                    </el-button>
+                    <template v-if="['operationa_manager', 'owner'].includes($page.props.user.level)">
+                        <el-button type="success" @click.prevent="openModalSelesai" v-if="data.status === 'dijadwalkan'">
+                            <i class="si si-check me-2"></i>
+                            Selesai
+                        </el-button>
+                        <el-button type="danger" @click.prevent="cancel(data.id)" v-if="data.status === 'dijadwalkan'">
+                            <i class="si si-close me-2"></i>
+                            Batalkan
+                        </el-button>
+                    </template>
                     <el-button v-if="data.status === 'selesai'">
                         <i class="si si-eye me-2"></i>
                         Lihat Hasil

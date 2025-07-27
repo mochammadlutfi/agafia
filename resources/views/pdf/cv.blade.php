@@ -357,12 +357,6 @@
                     <div class="cv-section">
                         <div class="cv-section-title">Data Pribadi</div>
                         <div class="personal-info">
-                            @if($data->detail->nik)
-                            <div class="info-row">
-                                <span class="info-label">NIK:</span>
-                                <span class="info-value">{{ $data->detail->nik }}</span>
-                            </div>
-                            @endif
                             
                             @if($data->detail->jenis_kelamin)
                             <div class="info-row">

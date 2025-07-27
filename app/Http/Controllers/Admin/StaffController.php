@@ -60,7 +60,6 @@ class StaffController extends Controller
                 $data = new Admin();
                 $data->nama = $request->nama;
                 $data->email = $request->email;
-                $data->phone = $request->phone;
                 $data->username = $request->username;
                 $data->level = $request->level;
                 $data->password = Hash::make($request->password);

@@ -149,6 +149,7 @@ Route::prefix('admin')->namespace('Admin')->name('admin.')->group(function(){
             Route::get('/','LoginController@showLoginForm')->name('login');
             Route::post('/','LoginController@login');
         });
+        
         Route::middleware('auth:admin')->group(function () {
             Route::post('/logout','LoginController@logout')->name('logout');
         });
