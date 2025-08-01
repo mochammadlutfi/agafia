@@ -5,7 +5,7 @@
             <el-button 
                 @click="showTrainingModal = true"
                 type="primary"
-                v-if="canSchedule"
+                v-if="canSchedule  && ['owner', 'talent_divission'].includes($page.props.user.level)"
             >
                 Daftarkan Training
             </el-button>

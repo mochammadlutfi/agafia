@@ -4,8 +4,7 @@
             <div class="content-heading d-flex justify-content-between align-items-center">
                 <span>Interview</span>
                 <div class="space-x-1">
-                    <el-button type="primary"
-                                        @click="openModal">
+                    <el-button type="primary" @click="openModal" v-if="['owner', 'admin'].includes($page.props.user.level)">
                         <i class="si si-plus me-1"></i>
                         Tambah Jadwal
                     </el-button>

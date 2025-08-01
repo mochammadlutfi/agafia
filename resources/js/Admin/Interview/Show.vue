@@ -4,7 +4,7 @@
             <div class="content-heading d-flex justify-content-between align-items-center">
                 <span>Detail Interview</span>
                 <div class="space-x-1">
-                    <template v-if="['operationa_manager', 'owner'].includes($page.props.user.level)">
+                    <template v-if="['operational_manager', 'owner'].includes($page.props.user.level)">
                         <el-button type="success" @click.prevent="openModalSelesai" v-if="data.status === 'dijadwalkan'">
                             <i class="si si-check me-2"></i>
                             Selesai

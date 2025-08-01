@@ -8,11 +8,21 @@
                     <small class="text-muted">{{ lamaran?.user?.detail?.nama || lamaran?.user?.nama }}</small>
                 </div>
                 <div class="space-x-1">
-                    <el-button :tag="Link" :href="route('admin.lamaran.index')" type="default">
+                    <!-- <el-button :tag="Link" :href="route('admin.lamaran.index')" type="default">
                         <i class="fa fa-arrow-left me-1"></i>
                         Kembali
-                    </el-button>
-                    <el-dropdown trigger="click" v-if="lamaran?.status !== 'selesai'">
+                    </el-button> -->
+                    <template v-if="lamaran.status == 'pending' && ['owner', 'talent_divission'].includes($page.props.user.level)">
+                        <el-button @click.prevent="updateStatus('diterima')" type="primary">
+                            <i class="fa fa-check me-1"></i>
+                            Diterima
+                        </el-button>
+                        <el-button @click.prevent="updateStatus('ditolak')" type="danger">
+                            <i class="fa fa-times me-1"></i>
+                            Ditolak
+                        </el-button>
+                    </template>
+                    <!-- <el-dropdown trigger="click" v-if="lamaran?.status !== 'selesai'">
                         <el-button type="warning">
                             <i class="fa fa-exchange me-1"></i>
                             Ubah Status
@@ -30,7 +40,7 @@
                                 </el-dropdown-item>
                             </el-dropdown-menu>
                         </template>
-                    </el-dropdown>
+                    </el-dropdown> -->
                 </div>
             </div>
 

@@ -7,7 +7,7 @@
                     <small class="text-muted">{{ data?.user?.nama }}</small>
                 </div>
                 <div class="space-x-1">
-                    <el-button type="danger" @click.prevent="openHasilModal">
+                    <el-button type="danger" @click.prevent="openHasilModal" v-if="['owner', 'talent_divission'].includes($page.props.user.level)">
                         <i class="fa fa-certificate me-1"></i>
                         Hasil Training
                     </el-button>

@@ -4,7 +4,7 @@
             <div class="content-heading d-flex justify-content-between align-items-center">
                 <span>Program Training</span>
                 <div class="space-x-1">
-                    <el-button type="primary" :tag="Link" :href="route('admin.training.program.create')">
+                    <el-button type="primary" :tag="Link" :href="route('admin.training.program.create')" v-if="['owner', 'talent_divission'].includes($page.props.user.level)">
                         <i class="si si-plus me-1"></i>
                         Tambah Program
                     </el-button>

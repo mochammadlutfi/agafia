@@ -3,12 +3,12 @@
         <div class="align-middle border-bottom d-flex justify-content-between mb-4 py-2">
             <div class="fs-6 fw-semibold">Data Interview</div>
             <div>
-                <el-button v-if="interview"
+                <el-button v-if="interview && ['owner', 'admin'].includes($page.props.user.level)"
                     @click="openInterviewModal"
                     type="primary">
                     Ubah Jadwal Interview
                 </el-button>
-                <el-button v-if="interview"
+                <el-button v-if="interview && ['owner', 'operational_manager'].includes($page.props.user.level)"
                     @click="openHasilModal"
                     type="primary">
                     Hasil Interview
@@ -66,7 +66,7 @@
             <el-button 
                 @click="showInterviewModal = true"
                 type="primary"
-                v-if="canSchedule"
+                v-if="canSchedule && ['owner', 'admin'].includes($page.props.user.level)"
             >
                 Jadwalkan Interview
             </el-button>

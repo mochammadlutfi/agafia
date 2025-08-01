@@ -68,7 +68,7 @@ class Admin extends Authenticatable implements MustVerifyEmail
     {
         $labels = [
             'operational_manager' => 'Manajer Operasional',
-            'talent_manager' => 'Manajer Talent',
+            'talent_divission' => 'Talent Divission',
             'admin' => 'Admin',
             'owner' => 'Owner'
         ];

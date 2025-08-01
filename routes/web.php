@@ -158,6 +158,16 @@ Route::prefix('admin')->namespace('Admin')->name('admin.')->group(function(){
     Route::middleware('auth:admin')->group(function () {
 
         Route::get('/beranda','DashboardController@index')->name('dashboard');
+        
+        Route::prefix('/password')->group(function () {
+            Route::get('/', 'UserController@password')->name('password');
+            Route::post('/','UserController@passwordUpdate');
+        });
+
+        Route::prefix('/profile')->group(function () {
+            Route::get('/', 'UserController@profile')->name('profile');
+            Route::post('/','UserController@updateProfil');
+        });
 
         // Route::prefix('/pendaftaran')->name('register.')->group(function () {
         //     Route::get('/', 'PendaftaranController@index')->name('index');

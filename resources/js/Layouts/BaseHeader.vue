@@ -13,26 +13,35 @@
             <div class="space-x-1">
                 <!-- User Dropdown -->
                 <el-dropdown trigger="click" popper-class="dropdown-user">
-                    <button type="button" class="btn btn-sm btn-alt-secondary" id="page-header-user-dropdown"
+                    <!-- <button type="button" class="btn btn-sm btn-alt-secondary" id="page-header-user-dropdown"
                         data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fa fa-user d-sm-none"></i>
-                        <span class="d-none d-sm-inline-block ms-2">{{ $page.props.user.nama }}</span>
                         <i class="fa fa-angle-down opacity-50 ms-1"></i>
+                    </button> -->
+                    
+                    <button data-fc-type="dropdown" data-fc-placement="bottom-end" class="btn btn-link">
+                        <div class="align-middle d-flex">
+                            <div class="ml-2 text-start my-auto">
+                                <div class="fs-base fw-semibold">{{ $page.props.user.nama }}</div>
+                                <div class="fs-xs">{{ $page.props.user.level_label }}</div>
+                            </div>
+                            <i class="fa fa-angle-down ms-3 my-auto opacity-50"></i>
+                        </div>
                     </button>
                     <template #dropdown>
                     <el-dropdown-menu>
-                        <!-- <el-dropdown-item>
-                            <a class="dropdown-item d-flex align-items-center justify-content-between space-x-1" href="#">
+                        <el-dropdown-item>
+                            <Link :href="route('admin.profile')"  class="dropdown-item d-flex align-items-center justify-content-between space-x-1">
                                 <span class="fs-sm fw-500">Profil</span>
                                 <i class="fa fa-fw fa-user opacity-25"></i>
-                            </a>
+                            </Link>
                         </el-dropdown-item>
                         <el-dropdown-item>
-                            <a class="dropdown-item d-flex align-items-center justify-content-between space-x-1" href="#">
+                            <Link :href="route('admin.password')"  class="dropdown-item d-flex align-items-center justify-content-between space-x-1">
                                 <span class="fs-sm fw-500">Password</span>
                                 <i class="fa fa-fw fa-lock opacity-25"></i>
-                            </a>
-                        </el-dropdown-item> -->
+                            </Link>
+                        </el-dropdown-item>
                             <el-dropdown-item>
                                 <Link :href="route('admin.logout')" method="post" as="button" type="button" class="btn-logout dropdown-item d-flex align-items-center justify-content-between space-x-1">
                                     <span class="fs-sm fw-500">Keluar</span>

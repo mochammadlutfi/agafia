@@ -3,22 +3,24 @@
         <div class="align-middle border-bottom d-flex justify-content-between mb-4 py-2">
             <div class="fs-6 fw-semibold">Data Dokumen</div>
             <div>
-                <el-button 
-                    @click="openDocumentModal"
-                    type="primary"
-                    size="small">
-                    <i class="fa fa-plus me-1"></i>
-                    Upload Dokumen
-                </el-button>
-                <el-button 
-                    @click="showDocumentStatusModalFunc"
-                    type="warning" 
-                    size="small"
-                    v-if="dokumen"
-                >
-                    <i class="fa fa-check me-1"></i>
-                    Review Dokumen
-                </el-button>
+                <template v-if="['owner', 'admin'].includes($page.props.user.level)">
+                    <el-button 
+                        @click="openDocumentModal"
+                        type="primary"
+                        size="small">
+                        <i class="fa fa-plus me-1"></i>
+                        Upload Dokumen
+                    </el-button>
+                    <el-button 
+                        @click="showDocumentStatusModalFunc"
+                        type="warning" 
+                        size="small"
+                        v-if="dokumen"
+                    >
+                        <i class="fa fa-check me-1"></i>
+                        Review Dokumen
+                    </el-button>
+                </template>
             </div>
         </div>
         

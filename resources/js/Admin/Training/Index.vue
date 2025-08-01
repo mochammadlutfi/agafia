@@ -19,7 +19,7 @@
                             </el-dropdown-menu>
                         </template>
                     </el-dropdown>
-                    <el-button @click="onOpenForm" type="primary">
+                    <el-button @click="onOpenForm" type="primary" v-if="['owner', 'talent_divission'].includes($page.props.user.level)">
                       <i class="si si-plus me-1"></i>
                         Tambah Peserta
                     </el-button>

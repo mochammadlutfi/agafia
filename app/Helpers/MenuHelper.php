@@ -28,53 +28,63 @@ class MenuHelper
             ]);
         }
     
-        $menuData->push([
-            "icon" => "fa fa-id-badge",
-            "name" => "Talent",
-            "to" => "admin.talent.index",
-        ]);
+        if(in_array($user->level, ['talent_divission', 'owner'])){
+            $menuData->push([
+                "icon" => "fa fa-id-badge",
+                "name" => "Talent",
+                "to" => "admin.talent.index",
+            ]);
+        }
     
-        if(in_array($user->level, ['operational_manager', 'owner'])){
+        if(in_array($user->level, ['talent_divission', 'admin', 'operational_manager', 'owner'])){
             $menuData->push([
                 "icon" => "fa fa-plane-departure",
                 "name" => "Lamaran",
                 "to" => "admin.lamaran.index",
             ]);
         }
-    
-        $menuData->push([
-            "icon" => "fa fa-file-medical",
-            "name" => "Interview",
-            "to" => "admin.interview.index",
-        ]);
 
-        $menuData->push([
-            "name" => 'Training',
-            "icon" => 'fa fa-chalkboard-teacher',
-            "subActivePaths" => 'admin.training.*',
-            "sub" => [
-                [
-                    "name" => 'Peserta',
-                    "to" => 'admin.training.index',
-                ],
-                [
-                    "name" => 'Program',
-                    "to" => 'admin.training.program.index',
-                ],
-            ]
-        ]);
+        if(in_array($user->level, ['operational_manager', 'owner', 'talent_divission'])){
+            $menuData->push([
+                "icon" => "fa fa-file-medical",
+                "name" => "Interview",
+                "to" => "admin.interview.index",
+            ]);
+        }
+
+        if(in_array($user->level, ['admin', 'owner', 'talent_divission'])){
+            $menuData->push([
+                "name" => 'Training',
+                "icon" => 'fa fa-chalkboard-teacher',
+                "subActivePaths" => 'admin.training.*',
+                "sub" => [
+                    [
+                        "name" => 'Peserta',
+                        "to" => 'admin.training.index',
+                    ],
+                    [
+                        "name" => 'Program',
+                        "to" => 'admin.training.program.index',
+                    ],
+                ]
+            ]);
+        }
     
-        $menuData->push([
-            "icon" => "fa fa-stethoscope",
-            "name" => "Medical Checkup",
-            "to" => "admin.medical.index",
-        ]);
+        if(in_array($user->level, ['admin', 'owner'])){
+            $menuData->push([
+                "icon" => "fa fa-stethoscope",
+                "name" => "Medical Checkup",
+                "to" => "admin.medical.index",
+            ]);
+        }
         
-        $menuData->push([
-            "icon" => "fa fa-suitcase",
-            "name" => "Lowongan Kerja",
-            "to" => "admin.lowongan.index",
-        ]);
+        if(in_array($user->level, ['admin', 'owner'])){
+            $menuData->push([
+                "icon" => "fa fa-suitcase",
+                "name" => "Lowongan Kerja",
+                "to" => "admin.lowongan.index",
+            ]);
+        }
     
         return $menuData->all();
     }

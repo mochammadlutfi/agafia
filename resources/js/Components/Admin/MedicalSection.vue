@@ -3,7 +3,7 @@
         <div class="align-middle border-bottom d-flex justify-content-between mb-4 py-2">
             <div class="fs-6 fw-semibold">Data Medical Checkup</div>
             
-            <div v-if="medical.status == 'pending'">
+            <div v-if="medical.status == 'pending' && ['owner', 'admin'].includes($page.props.user.level)">
                 <el-button type="success" @click.prevent="onConfirm">
                     <i class="si si-check me-1"></i>
                     Terima

@@ -4,7 +4,7 @@
             <div class="content-heading d-flex justify-content-between align-items-center">
                 <span>Detail Medical Checkup</span>
                 <div class="space-x-1">
-                    <template v-if="data.status == 'pending'">
+                    <template v-if="data.status == 'pending' && ['owner', 'admin'].includes($page.props.user.level)">
                     <el-button type="success" @click.prevent="onConfirm">
                         <i class="si si-check me-1"></i>
                         Terima

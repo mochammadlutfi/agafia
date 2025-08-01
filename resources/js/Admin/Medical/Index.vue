@@ -4,7 +4,7 @@
             <div class="content-heading d-flex justify-content-between align-items-center">
                 <span>Medical Checkup</span>
                 <div class="space-x-1">
-                    <el-button type="primary" @click="openAddModal">
+                    <el-button type="primary" @click="openAddModal" v-if="['owner', 'admin'].includes($page.props.user.level)">
                         <i class="fa fa-plus me-2"></i>
                         Tambah Medical Checkup
                     </el-button>

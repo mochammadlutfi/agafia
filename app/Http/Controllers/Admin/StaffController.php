@@ -124,7 +124,7 @@ class StaffController extends Controller
                 $data = Admin::where('id', $id)->first();
                 $data->nama = $request->nama;
                 $data->email = $request->email;
-                $data->phone = $request->phone;
+                $data->username = $request->username;
                 if ($request->password) {
                     $data->password = Hash::make($request->password);
                 }
