@@ -217,12 +217,8 @@ class TrainingController extends Controller
                 'message' => 'Gagal menghapus data training'
             ], 500);
         }
-
         DB::commit();
-        return response()->json([
-            'success' => true,
-            'message' => 'Data training berhasil dihapus'
-        ]);
+        return redirect()->route('admin.training.index');
     }
 
     public function data(Request $request)

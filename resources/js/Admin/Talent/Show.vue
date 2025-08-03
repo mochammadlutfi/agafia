@@ -4,14 +4,9 @@
             <div class="content-heading d-flex justify-content-between align-items-center">
                 <span>Detail Talent</span>
                 <div class="space-x-1">
-                    <el-button 
-                        type="primary" 
-                        :tag="Link" 
-                        :href="route('admin.talent.edit', talent?.id)"
-                        size="small"
-                    >
-                        <i class="fa fa-edit me-1"></i>
-                        Edit Profile
+                    <el-button type="danger" @click.prevent="hapus(talent.id)">
+                        <i class="fa fa-trash me-1"></i>
+                        Hapus
                     </el-button>
                 </div>
             </div>
@@ -186,6 +181,7 @@
 import { ref, computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import moment from 'moment';
+import { router } from '@inertiajs/vue3';
 
 const props = defineProps({
     talent: {
@@ -247,6 +243,28 @@ const statusTypes = {
 
 const getStatusLabel = (status) => statusLabels[status] || status;
 const getStatusType = (status) => statusTypes[status] || '';
+
+
+const hapus = (id) => {
+  ElMessageBox.alert('Data yang dihapus tidak bisa dikembalikan!', 'Peringatan', {
+    showCancelButton: true,
+    confirmButtonText: 'Ya!',
+    cancelButtonText: 'Tidak!',
+    type: 'warning',
+  }).then(() => {
+    router.delete(`/admin/talent/${id}/delete`, {
+      preserveScroll: true,
+      onSuccess: () => {
+        fetchData();
+        ElMessage({
+          type: 'success',
+          message: 'Data Berhasil Dihapus!',
+        });
+      },
+    });
+  });
+};
+
 </script>
 
 <style scoped>

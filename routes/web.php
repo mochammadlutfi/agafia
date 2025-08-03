@@ -189,7 +189,7 @@ Route::prefix('admin')->namespace('Admin')->name('admin.')->group(function(){
             Route::get('/{id}/edit','TalentController@edit')->name('edit');
             Route::post('/{id}/update','TalentController@update')->name('update');
             Route::post('/{id}/update-application-status','TalentController@updateApplicationStatus')->name('update-application-status');
-            Route::delete('/{id}/hapus','TalentController@destroy')->name('delete');
+            Route::delete('/{id}/delete','TalentController@destroy')->name('delete');
         });
 
         Route::prefix('/staff')->name('staff.')->group(function () {

@@ -558,8 +558,8 @@ const deleteApplication = async (id) => {
             ElMessage.success('Lamaran berhasil dihapus')
             loadData()
         } catch (error) {
-            console.error('Error deleting:', error)
-            ElMessage.error('Gagal menghapus lamaran')
+            // console.error('Error deleting:', error.response.data.message)
+            ElMessage.error(error.response.data.message)
         } finally {
             loading.close()
         }

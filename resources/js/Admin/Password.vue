@@ -8,21 +8,18 @@
                 
                 <div class="block rounded">
                     <div class="block-content p-4" v-loading="loading">
-                        
-                        <el-row :gutter="40">
-                            <el-col :span="12">
-                                <el-form-item label="Password" :error="errors.password">
-                                    <el-input v-model="form.password" type="password" placeholder="Masukan password"
-                                        show-password />
-                                </el-form-item>
-                            </el-col>
-                            <el-col :span="12">
-                                <el-form-item label="Konfirmasi Password" :error="errors.password">
-                                    <el-input v-model="form.password_confirmation" type="password" placeholder="Masukan konfirmasi password"
-                                        show-password />
-                                </el-form-item>
-                            </el-col>
-                        </el-row>
+                        <el-col :span="12">
+                            <el-form-item label="Password Baru" :error="errors.password">
+                                <el-input v-model="form.password" type="password" placeholder="Masukan password baru"
+                                    show-password />
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="Konfirmasi Password Baru" :error="errors.password">
+                                <el-input v-model="form.password_confirmation" type="password" placeholder="Masukan konfirmasi password baru"
+                                    show-password />
+                            </el-form-item>
+                        </el-col>
                         <el-button native-type="submit" type="primary" :loading="loading">
                             <i class="fa fa-check me-2"></i>
                             Simpan
@@ -33,51 +30,39 @@
         </div>
     </base-layout>
 </template>
-<script>
-export default {
-    components :{
-    },
-    props :{
-        data : {
-            type : Object,
-        },
-        editMode : {
-            type : Boolean,
-            default : false,
-        },
-        errors : {
-            type : Object,
-        }
-    },
-    data(){
-        return {
-            form : {
-                password : null,
-                password_confirmation : null,
-            },
-            loading : false,
-        }
-    },
-    methods : {
-        submit() {
-            this.loading = true;
-            let form = this.$inertia.form(this.form);
-            form.post(this.route('admin.password'), {
-                preserveScroll: true,
-                onFinish:() => {
-                    this.loading = false;
-                },
-                onSuccess: () => {
-                    return this.$swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil',
-                        text: `Password Berhasil Diperbaharui!`,
-                        showCancelButton: false,
-                        showConfirmButton: false,
-                    });
-                },
-            });
-        }
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useForm, router } from '@inertiajs/vue3';
+
+
+const props = defineProps({
+    errors: {
+        type: Object,
+        default: () => ({})
     }
-}
+});
+const loading = ref(false);
+const form = useForm({
+    password: null,
+    password_confirmation: null,
+});
+
+const submit = () => {
+    loading.value = true;
+
+    form.post(route('admin.password'), {
+        preserveScroll: true,
+        onFinish: () => {
+            loading.value = false;
+        },
+        onSuccess: () => {
+            form.password = null;
+            form.password_confirmation = null;
+            return ElMessage({
+            type: 'success',
+            message: 'Password Berhasil Diperbaharui!',
+            });
+        },
+    });
+};
 </script>

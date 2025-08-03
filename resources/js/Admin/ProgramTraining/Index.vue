@@ -175,7 +175,7 @@ const hapus = (id) => {
     cancelButtonText: 'Tidak!',
     type: 'warning',
   }).then(() => {
-    router.delete(`/admin/training/program/${id}/delete`, {
+    router.delete(`/admin/training/program/${id}/hapus`, {
       preserveScroll: true,
       onSuccess: () => {
         fetchData();
