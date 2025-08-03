@@ -262,12 +262,12 @@ const formatDate = (date) => {
 
 const getProgressPercentage = (status) => {
     const percentages = {
-        'pending': 15,
-        'diterima': 30,
-        'interview': 50,
-        'medical': 70,
+        'pending': 17,
+        'diterima': 34,
+        'interview': 51,
+        'medical': 68,
         'pelatihan': 85,
-        'siap': 95,
+        'siap': 98,
         'selesai': 100,
         'ditolak': 0
     }

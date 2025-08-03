@@ -394,12 +394,12 @@ class LamaranController extends Controller
     private function calculateProgress($lamaran)
     {
         $steps = [
-            'pending' => ['step' => 1, 'label' => 'Lamaran Dikirim', 'percentage' => 15],
-            'diterima' => ['step' => 2, 'label' => 'Lamaran Diterima', 'percentage' => 30],
-            'interview' => ['step' => 3, 'label' => 'Tahap Interview', 'percentage' => 50],
-            'medical' => ['step' => 4, 'label' => 'Medical Check Up', 'percentage' => 70],
+            'pending' => ['step' => 1, 'label' => 'Lamaran Dikirim', 'percentage' => 17],
+            'diterima' => ['step' => 2, 'label' => 'Lamaran Diterima', 'percentage' => 34],
+            'interview' => ['step' => 3, 'label' => 'Tahap Interview', 'percentage' => 51],
+            'medical' => ['step' => 4, 'label' => 'Medical Check Up', 'percentage' => 68],
             'pelatihan' => ['step' => 5, 'label' => 'Pelatihan', 'percentage' => 85],
-            'siap' => ['step' => 6, 'label' => 'Siap Berangkat', 'percentage' => 95],
+            'siap' => ['step' => 6, 'label' => 'Siap Berangkat', 'percentage' => 98],
             'selesai' => ['step' => 7, 'label' => 'Selesai', 'percentage' => 100],
             'ditolak' => ['step' => 0, 'label' => 'Ditolak', 'percentage' => 0],
         ];
