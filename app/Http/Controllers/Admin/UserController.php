@@ -98,12 +98,10 @@ class UserController extends Controller
         if ($validator->fails()){
             return back()->withErrors($validator->errors());
         }else{
-            $user = Admin::where('email', auth()->guard('admin')->user()->email)->first();
-
-            if (!Hash::check($request->password, $user->password)) {
-                $error['password'] = array('Password salah!');
-                return back()->withErrors($validator->errors());
-             }
+            $data = auth()->guard('admin')->user();
+            $data->password = Hash::make($request->password);
+            $data->save();
+            
              return redirect()->route('admin.password');
         }
     }
