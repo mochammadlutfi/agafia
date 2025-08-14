@@ -114,8 +114,7 @@ class ProgramTrainingController extends Controller
     public function edit($id)
     {
 
-        $data = ProgramTraining::with(['detail'])
-        ->where('id', $id)->first();
+        $data = ProgramTraining::where('id', $id)->first();
 
         return Inertia::render('ProgramTraining/Form',[
             'editMode' => true,

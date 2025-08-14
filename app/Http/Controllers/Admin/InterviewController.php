@@ -54,8 +54,7 @@ class InterviewController extends Controller
         $rules = [
             'tanggal' => 'required',
             'waktu' => 'required',
-            'lokasi' => 'required',
-            'pewawancara_id' => 'required',
+            'lokasi' => 'required'
         ];
 
         $pesan = [
@@ -81,7 +80,7 @@ class InterviewController extends Controller
                 $data->lokasi = $request->lokasi;
                 $data->tanggal = $request->tanggal;
                 $data->waktu = $request->waktu;
-                $data->pewawancara_id = $request->pewawancara_id;
+                $data->pewawancara_id = 2;
                 $data->catatan = $request->catatan;
                 $data->status = 'dijadwalkan';
                 $data->save();
@@ -132,7 +131,6 @@ class InterviewController extends Controller
             'tanggal' => 'required',
             'waktu' => 'required',
             'lokasi' => 'required',
-            'pewawancara_id' => 'required',
         ];
 
         $pesan = [
@@ -159,7 +157,7 @@ class InterviewController extends Controller
                 $data->lokasi = $request->lokasi;
                 $data->tanggal = $request->tanggal;
                 $data->waktu = $request->waktu;
-                $data->pewawancara_id = $request->pewawancara_id;
+                $data->pewawancara_id = 2;
                 $data->catatan = $request->catatan;
                 $data->status = $request->status;
                 $data->save();

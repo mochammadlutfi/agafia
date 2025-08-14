@@ -68,4 +68,11 @@ class HomeController extends Controller
             'relatedJobs' => $relatedJobs
         ]);
     }
+
+    
+    public function panduan()
+    {
+        return Inertia::render('Panduan');
+    }
+
 }

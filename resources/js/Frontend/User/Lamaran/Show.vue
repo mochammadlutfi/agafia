@@ -35,7 +35,7 @@
                             </div>
                             <div class="meta-item">
                                 <i class="fa fa-calendar text-info me-2"></i>
-                                <span>Dilamar pada {{ formatDate(lamaran.tanggal_lamaran) }}</span>
+                                <span>Dilamar pada {{ format_date(lamaran.tanggal_lamaran) }}</span>
                             </div>
                         </div>
                     </div>
@@ -130,7 +130,7 @@
                         #{{ lamaran.id }}
                     </el-descriptions-item>
                     <el-descriptions-item label="Tanggal Lamaran">
-                        {{ formatDate(lamaran.tanggal_lamaran) }}
+                        {{ format_date(lamaran.tanggal_lamaran) }}
                     </el-descriptions-item>
                     <el-descriptions-item label="Status">
                         <el-tag :type="getStatusType(lamaran.status)">
@@ -138,7 +138,7 @@
                         </el-tag>
                     </el-descriptions-item>
                     <el-descriptions-item label="Terakhir Diperbarui">
-                        {{ formatDateTime(lamaran.updated_at) }}
+                        {{ format_date(lamaran.updated_at) }}
                     </el-descriptions-item>
                     <el-descriptions-item label="CV" v-if="lamaran.cv_file">
                         <el-button 
@@ -179,7 +179,8 @@
                             </el-tag>
                         </div>
                         <div class="interview-details">
-                            <p><strong>Tanggal:</strong> {{ formatDateTime(lamaran.interview.tanggal) }}</p>
+                            <p><strong>Tanggal:</strong> {{ format_date(lamaran.interview.tanggal) }}</p>
+                            <p><strong>Waktu:</strong> {{ format_time(lamaran.interview.waktu) }}</p>
                             <p><strong>Lokasi:</strong> {{ lamaran.interview.lokasi || 'Online' }}</p>
                             <p v-if="lamaran.interview.catatan"><strong>Catatan:</strong> {{ lamaran.interview.catatan }}</p>
                         </div>
@@ -272,7 +273,7 @@
                     <el-table-column prop="program.nama" label="Program" />
                     <el-table-column prop="tanggal_daftar" label="Tanggal Daftar" width="120">
                         <template #default="{ row }">
-                            {{ formatDate(row.tanggal_daftar) }}
+                            {{ format_date(row.tanggal_daftar) }}
                         </template>
                     </el-table-column>
                     <el-table-column prop="status" label="Status" width="150">
@@ -719,24 +720,6 @@ const documentTableData = computed(() => {
     ]
 })
 
-const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    })
-}
-
-const formatDateTime = (datetime) => {
-    return new Date(datetime).toLocaleString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    })
-}
-
 const formatCurrency = (amount) => {
     if (!amount) return '-'
     return new Intl.NumberFormat('id-ID', {
@@ -790,7 +773,7 @@ const format_date = (value) => {
 
 const format_time = (value) => {
   if (value) {
-    return moment(String(value)).format('HH:mm');
+    return moment(value, "HH:mm:ss").format('HH:mm')
   }
 }
 

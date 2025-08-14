@@ -15,7 +15,6 @@ class Interview extends Model
 
       protected $casts = [
           'tanggal' => 'date',
-          'waktu' => 'datetime'
       ];
 
       protected $appends = [

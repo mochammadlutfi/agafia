@@ -14,10 +14,15 @@ Route::namespace('Frontend')->group(function(){
         Route::get('/tentang-kami', function (Request $request) {
             return Inertia::render('Tentang');
         });
+        
         Route::get('/layanan', function (Request $request) {
             return Inertia::render('Layanan');
         });
         
+        Route::get('/panduan', function (Request $request) {
+            return Inertia::render('Panduan');
+        });
+
         Route::get('/lowongan','HomeController@lowongan')->name('lowongan');
         Route::get('/lowongan/{id}','HomeController@lowonganDetail')->name('lowongan.detail');
         

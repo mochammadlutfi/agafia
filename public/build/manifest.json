@@ -771,7 +771,7 @@
     ]
   },
   "resources/js/Admin/Lamaran/Index.vue": {
-    "file": "assets/Index-DicifHhO.js",
+    "file": "assets/Index-C4z_2zm8.js",
     "name": "Index",
     "src": "resources/js/Admin/Lamaran/Index.vue",
     "isDynamicEntry": true,
@@ -809,18 +809,17 @@
       "_validator-t2BV5MU7.js"
     ],
     "css": [
-      "assets/Index-BGDJuFIL.css"
+      "assets/Index-DCS9K7pZ.css"
     ]
   },
   "resources/js/Admin/Lamaran/Show.vue": {
-    "file": "assets/Show-BWgzR-VN.js",
+    "file": "assets/Show-Df0VLmfK.js",
     "name": "Show",
     "src": "resources/js/Admin/Lamaran/Show.vue",
     "isDynamicEntry": true,
     "imports": [
       "_id-DHtwcswK.js",
       "_moment-D15uM1gO.js",
-      "_SelectStaff-y4oFZp4T.js",
       "_index-BPClTzbR.js",
       "_index-CBHpw14L.js",
       "_index-DnNnnLts.js",
@@ -1446,7 +1445,7 @@
     ]
   },
   "resources/js/Frontend/Home.vue": {
-    "file": "assets/Home-Boldi3lJ.js",
+    "file": "assets/Home-eI1mpKLP.js",
     "name": "Home",
     "src": "resources/js/Frontend/Home.vue",
     "isDynamicEntry": true,
@@ -1461,7 +1460,7 @@
       "_typescript-Bp3YSIOJ.js"
     ],
     "css": [
-      "assets/Home-CFaBTPhY.css"
+      "assets/Home-CfBJ_ZDd.css"
     ]
   },
   "resources/js/Frontend/Layanan.vue": {
@@ -1489,7 +1488,7 @@
     ]
   },
   "resources/js/Frontend/Lowongan.vue": {
-    "file": "assets/Lowongan-DaRy2140.js",
+    "file": "assets/Lowongan-fKc9uFgu.js",
     "name": "Lowongan",
     "src": "resources/js/Frontend/Lowongan.vue",
     "isDynamicEntry": true,
@@ -1517,7 +1516,7 @@
     ]
   },
   "resources/js/Frontend/LowonganDetail.vue": {
-    "file": "assets/LowonganDetail-DOudic-b.js",
+    "file": "assets/LowonganDetail-tFylvlYq.js",
     "name": "LowonganDetail",
     "src": "resources/js/Frontend/LowonganDetail.vue",
     "isDynamicEntry": true,
@@ -1541,6 +1540,15 @@
     ],
     "css": [
       "assets/LowonganDetail-DQnXbR5n.css"
+    ]
+  },
+  "resources/js/Frontend/Panduan.vue": {
+    "file": "assets/Panduan-CmA_c7VA.js",
+    "name": "Panduan",
+    "src": "resources/js/Frontend/Panduan.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_id-DHtwcswK.js"
     ]
   },
   "resources/js/Frontend/Tentang.vue": {
@@ -1684,7 +1692,7 @@
     ]
   },
   "resources/js/Frontend/User/Lamaran/Show.vue": {
-    "file": "assets/Show-DK69T35j.js",
+    "file": "assets/Show-DsxRsUoF.js",
     "name": "Show",
     "src": "resources/js/Frontend/User/Lamaran/Show.vue",
     "isDynamicEntry": true,
@@ -1726,7 +1734,7 @@
       "_validator-t2BV5MU7.js"
     ],
     "css": [
-      "assets/Show-CMBdWGaM.css"
+      "assets/Show-CeWFx6QX.css"
     ]
   },
   "resources/js/Frontend/User/Medical.vue": {
@@ -1791,7 +1799,7 @@
     ]
   },
   "resources/js/admin.js": {
-    "file": "assets/admin-D2Vv1nFv.js",
+    "file": "assets/admin-B0zdKdIP.js",
     "name": "admin",
     "src": "resources/js/admin.js",
     "isEntry": true,
@@ -1836,7 +1844,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-D5NskVdx.js",
+    "file": "assets/app-BV8g4EcI.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -1857,6 +1865,7 @@
       "resources/js/Frontend/Layouts/Banner.vue",
       "resources/js/Frontend/Lowongan.vue",
       "resources/js/Frontend/LowonganDetail.vue",
+      "resources/js/Frontend/Panduan.vue",
       "resources/js/Frontend/Tentang.vue",
       "resources/js/Frontend/User/Biodata/Form.vue",
       "resources/js/Frontend/User/Biodata/Index.vue",

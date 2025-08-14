@@ -187,27 +187,6 @@
                                     >
                                         Detail
                                     </el-button>
-                                    <el-dropdown trigger="click">
-                                        <el-button type="warning" size="small">
-                                            <i class="fa fa-cog"></i>
-                                        </el-button>
-                                        <template #dropdown>
-                                            <el-dropdown-menu>
-                                                <el-dropdown-item @click="updateSingleStatus(row.id, 'diterima')">
-                                                    Terima
-                                                </el-dropdown-item>
-                                                <el-dropdown-item @click="updateSingleStatus(row.id, 'ditolak')">
-                                                    Tolak
-                                                </el-dropdown-item>
-                                                <el-dropdown-item @click="updateSingleStatus(row.id, 'interview')">
-                                                    Set Interview
-                                                </el-dropdown-item>
-                                                <el-dropdown-item divided @click="deleteApplication(row.id)" class="text-danger">
-                                                    Hapus
-                                                </el-dropdown-item>
-                                            </el-dropdown-menu>
-                                        </template>
-                                    </el-dropdown>
                                 </div>
                             </template>
                         </el-table-column>

@@ -8,7 +8,7 @@
         
          <div class="bg-white">
             <div class="content content-full">
-                <el-row>
+                <el-row class="mb-4">
                     <el-col :md="12">
                         <img src="/images/profile-PT-Agafia-Adda-Mandiri.png" class="w-100"/>
                     </el-col>
@@ -31,6 +31,10 @@
                         </div>
                     </el-col>
                 </el-row>
+
+                <div class="text-center">
+                    <img src="/images/panduan.png" class="w-50"/>
+                </div>
             </div>
          </div>
     </base-layout>

@@ -108,9 +108,6 @@
                 <el-form-item label="Lokasi" prop="lokasi">
                     <el-input v-model="interviewForm.lokasi" placeholder="Masukkan lokasi interview (misal: Kantor Pusat, Online via Zoom, dll)" />
                 </el-form-item>
-                <el-form-item label="Pewawancara" prop="pewawancara_id">
-                    <select-staff v-model="interviewForm.pewawancara_id" />
-                </el-form-item>
                 <el-form-item label="Status" prop="status">
                     <el-select v-model="interviewForm.status" placeholder="Pilih status" style="width: 100%">
                         <el-option label="Dijadwalkan" value="dijadwalkan" />
@@ -257,7 +254,6 @@ const interviewRules = {
     tanggal: [{ required: true, message: 'Tanggal interview wajib diisi', trigger: 'blur' }],
     waktu: [{ required: true, message: 'Waktu interview wajib diisi', trigger: 'blur' }],
     lokasi: [{ required: true, message: 'Lokasi interview wajib diisi', trigger: 'blur' }],
-    pewawancara_id: [{ required: true, message: 'Pewawancara wajib dipilih', trigger: 'change' }],
     status: [{ required: true, message: 'Status wajib dipilih', trigger: 'change' }]
 }
 
@@ -277,9 +273,6 @@ const openInterviewModal = () => {
     interviewForm.tanggal = props.interview?.tanggal ? moment(props.interview.tanggal).format('YYYY-MM-DD') : ''
     interviewForm.waktu = props.interview?.waktu ? moment(props.interview.waktu).format('HH:mm:ss') : moment().format('HH:mm:ss')
     interviewForm.lokasi = props.interview?.lokasi || ''
-    interviewForm.pewawancara_id = props.interview?.pewawancara_id || ''
-    interviewForm.lokasi = props.interview?.lokasi || ''
-    interviewForm.pewawancara_id = props.interview?.pewawancara_id || ''
     interviewForm.status = props.interview?.status || 'dijadwalkan'
     interviewForm.catatan = props.interview?.catatan || ''
     interviewLoading.value = false
@@ -382,7 +375,7 @@ const formatDate = (value) => {
 
 const formatTime = (value) => {
     if (value) {
-        return moment(String(value)).format('HH:mm')
+        return moment(value, "HH:mm:ss").format('HH:mm')
     }
 }
 
