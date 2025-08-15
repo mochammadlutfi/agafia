@@ -89,56 +89,6 @@
                     </div>
                 </div>
 
-                <!-- Active Applications Progress -->
-                <div class="dashboard-card full-width">
-                    <div class="card-header">
-                        <h3>Progress Lamaran Aktif</h3>
-                    </div>
-                    <div class="card-content">
-                        <div v-if="activeApplications && activeApplications.length > 0" class="progress-list">
-                            <div v-for="app in activeApplications" :key="app.lamaran.id" class="progress-item">
-                                <div class="progress-header">
-                                    <div class="progress-info">
-                                        <h4>{{ app.lamaran.lowongan?.posisi }}</h4>
-                                        <p>{{ app.lamaran.lowongan?.perusahaan }}</p>
-                                    </div>
-                                    <el-tag :type="getStatusType(app.lamaran.status)" size="small">
-                                        {{ getStatusLabel(app.lamaran.status) }}
-                                    </el-tag>
-                                </div>
-                                <div class="progress-details">
-                                    <div class="document-progress">
-                                        <span class="progress-label">Kelengkapan Dokumen:</span>
-                                        <div class="progress-bar-container">
-                                            <el-progress 
-                                                :percentage="app.documents.completion_percentage" 
-                                                :color="getProgressColor(app.documents.completion_percentage)"
-                                                :stroke-width="8">
-                                                <template #default="{ percentage }">
-                                                    <span class="progress-text">{{ app.documents.uploaded }}/{{ app.documents.required }}</span>
-                                                </template>
-                                            </el-progress>
-                                        </div>
-                                    </div>
-                                    <div class="progress-actions">
-                                        <el-button :tag="Link" :href="route('user.lamaran.show', app.lamaran.id)" type="primary" size="small">
-                                            Lihat Detail
-                                        </el-button>
-                                        <el-button :tag="Link" :href="route('user.dokumen.index', app.lamaran.id)" type="success" size="small">
-                                            Kelola Dokumen
-                                        </el-button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <el-empty v-else description="Tidak ada lamaran aktif" :image-size="60">
-                            <el-button :tag="Link" :href="route('lowongan')" type="primary">
-                                Cari Lowongan
-                            </el-button>
-                        </el-empty>
-                    </div>
-                </div>
-
                 <!-- Job Opportunities -->
                 <div class="dashboard-card full-width">
                     <div class="card-header">

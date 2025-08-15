@@ -11,7 +11,6 @@ use Carbon\Carbon;
 
 use App\Models\Lamaran;
 use App\Models\Lowongan;
-use App\Models\DokumenLamaran;
 use App\Models\Training;
 use App\Models\Interview;
 use App\Models\Medical;
@@ -74,18 +73,11 @@ class DashboardController extends Controller
             ->with(['lowongan', 'dokumen'])
             ->get()
             ->map(function($lamaran) {
-                $requiredDocs = $this->getRequiredDocumentsCount($lamaran->status);
                 $uploadedDocs = $lamaran->dokumen()->count();
                 $approvedDocs = $lamaran->dokumen()->where('status', 'approved')->count();
                 
                 return [
-                    'lamaran' => $lamaran,
-                    'documents' => [
-                        'required' => $requiredDocs,
-                        'uploaded' => $uploadedDocs,
-                        'approved' => $approvedDocs,
-                        'completion_percentage' => $requiredDocs > 0 ? ($uploadedDocs / $requiredDocs) * 100 : 0
-                    ]
+                    'lamaran' => $lamaran
                 ];
             });
 
@@ -143,17 +135,6 @@ class DashboardController extends Controller
                 'rejected' => $user->lamaran()->ditolak()->count(),
                 'in_progress' => $user->lamaran()->whereIn('status', ['interview', 'medical', 'pelatihan'])->count(),
                 'completed' => $user->lamaran()->whereIn('status', ['siap', 'selesai'])->count(),
-            ],
-            'documents' => [
-                'total' => DokumenLamaran::whereHas('lamaran', function($q) use ($user) {
-                    $q->where('user_id', $user->id);
-                })->count(),
-                'pending' => DokumenLamaran::whereHas('lamaran', function($q) use ($user) {
-                    $q->where('user_id', $user->id);
-                })->pending()->count(),
-                'approved' => DokumenLamaran::whereHas('lamaran', function($q) use ($user) {
-                    $q->where('user_id', $user->id);
-                })->approved()->count(),
             ],
             'interviews' => [
                 'total' => Interview::where('user_id', $user->id)->count(),
