@@ -343,6 +343,9 @@ class TrainingController extends Controller
             $data->status = 'selesai';
             $data->save();
 
+            $lamaran = Lamaran::where('id', $data->lamaran_id)->first();
+            $lamaran->status = 'siap';
+            $lamaran->save();
 
         }catch(\QueryException $e){
             dd($e);

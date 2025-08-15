@@ -504,6 +504,9 @@ class LamaranController extends Controller
 
             $data->save();
 
+            $lamaran->status = 'selesai';
+            $lamaran->save();
+
             DB::commit();
             
             return response()->json([
