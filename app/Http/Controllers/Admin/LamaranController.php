@@ -97,6 +97,12 @@ class LamaranController extends Controller
                       ->orWhere('perusahaan', 'LIKE', '%' . $search . '%');
                 });
             })
+            ->when(!empty($request->status) && $request->status == 'ditolak', function($query, $status){
+                $query->where('status', 'ditolak');
+            })
+            ->when(!empty($request->status) && $request->status == 'pending', function($query, $status){
+                $query->where('status', 'pending');
+            })
             ->when(!empty($request->status) && $request->status == 'diterima', function($query, $status){
                 $query->where('status', 'diterima');
             })
