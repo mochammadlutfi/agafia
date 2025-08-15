@@ -98,17 +98,34 @@ class LamaranController extends Controller
                 });
             })
             ->when(!empty($request->status) && $request->status == 'diterima', function($query, $status){
-                $query->where('status', 'diterima')
-                ->orWhere('status', 'interview');
+                $query->where('status', 'diterima');
             })
             ->when(!empty($request->status) && $request->status == 'interview', function($query, $status){
-                $query->where('status', 'interview')
-                ->orWhere('status', 'medical');
+                $query->where('status', 'interview');
             })
-            ->when(!empty($request->status) && $request->status == 'training', function($query, $status){
-                $query->where('status', 'medical')
-                ->orWhere('status', 'training');
+            ->when(!empty($request->status) && $request->status == 'medical', function($query, $status){
+                $query->where('status', 'medical');
             })
+            ->when(!empty($request->status) && $request->status == 'pelatihan', function($query, $status){
+                $query->where('status', 'pelatihan');
+            })
+            ->when(!empty($request->status) && $request->status == 'siap', function($query, $status){
+                $query->where('status', 'siap');
+            })
+            ->when(!empty($request->status) && $request->status == 'selesai', function($query, $status){
+                $query->where('status', 'selesai');
+            })
+            // ->when(!empty($request->status) && $request->status == 'interview', function($query, $status){
+            //     $query->where('status', 'interview')
+            //     ->orWhere('status', 'medical');
+            // })
+            // ->when(!empty($request->status) && $request->status == 'training', function($query, $status){
+            //     $query->where('status', 'medical')
+            //     ->orWhere('status', 'training');
+            // })
+            // ->when(!empty($request->status), function($query, $status){
+            //     $query->where('status', $status);
+            // })
             ->when($request->lowongan_id, function($query, $lowonganId){
                 $query->where('lowongan_id', $lowonganId);
             })

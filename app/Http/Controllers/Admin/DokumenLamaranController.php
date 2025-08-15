@@ -280,6 +280,10 @@ class DokumenLamaranController extends Controller
             $data->catatan = $request->catatan;
             $data->save();
 
+            $lamaran = Lamaran::findOrFail($data->lamaran_id);
+            $lamaran->status = 'selesai';
+            $lamaran->save();
+
             DB::commit();
             
             return response()->json([
