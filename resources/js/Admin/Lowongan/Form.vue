@@ -44,7 +44,7 @@
                                 </el-form-item>
                             </el-col>
                             <el-col :md="8">
-                                <el-form-item label="Status" :error="errors.status">
+                                <el-form-item label="Status" :error="errors.status" v-if="editMode">
                                     <el-select v-model="form.status" placeholder="Pilih Status">
                                         <el-option label="Buka" value="buka"/>
                                         <el-option label="Tutup" value="tutup"/>

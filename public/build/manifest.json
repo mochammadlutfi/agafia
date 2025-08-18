@@ -866,7 +866,7 @@
     ]
   },
   "resources/js/Admin/Lowongan/Form.vue": {
-    "file": "assets/Form-7NW0qvE4.js",
+    "file": "assets/Form-C-TJlVJ7.js",
     "name": "Form",
     "src": "resources/js/Admin/Lowongan/Form.vue",
     "isDynamicEntry": true,
@@ -1241,7 +1241,7 @@
     ]
   },
   "resources/js/Admin/Talent/Index.vue": {
-    "file": "assets/Index-4cRwSmSK.js",
+    "file": "assets/Index-DlyuhxBA.js",
     "name": "Index",
     "src": "resources/js/Admin/Talent/Index.vue",
     "isDynamicEntry": true,
@@ -1253,10 +1253,10 @@
       "_index-BXlaOKci.js",
       "_index-CWjKe6mA.js",
       "_index-iguJieQY.js",
-      "_index-CBHpw14L.js",
       "_index-BT-ykxcG.js",
       "_directive-C83UGWeb.js",
       "_typescript-Bp3YSIOJ.js",
+      "_index-CBHpw14L.js",
       "_isEqual-oxLJKdJ4.js",
       "__Uint8Array-Dcw4E0uF.js",
       "_event-BB_Ol6Sd.js",
@@ -1270,7 +1270,7 @@
       "_index-CYt3MSlq.js"
     ],
     "css": [
-      "assets/Index-BzZmDvpB.css"
+      "assets/Index-DGw4TSeq.css"
     ]
   },
   "resources/js/Admin/Talent/Show.vue": {
@@ -1798,7 +1798,7 @@
     ]
   },
   "resources/js/admin.js": {
-    "file": "assets/admin-B0zdKdIP.js",
+    "file": "assets/admin-Bk06Z4w3.js",
     "name": "admin",
     "src": "resources/js/admin.js",
     "isEntry": true,

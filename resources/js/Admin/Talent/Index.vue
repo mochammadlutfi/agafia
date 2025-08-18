@@ -59,8 +59,17 @@
                             <template #default="scope">
                                 <div>
                                     <div class="fw-medium">{{ scope.row.nama }}</div>
-                                    <small class="text-muted">{{ scope.row.email }}</small>
                                 </div>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="NIK" prop="nik" sortable width="120">
+                            <template #default="scope">
+                                <div>{{ scope.row.nik || '-' }}</div>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="email" sortable>
+                            <template #default="scope">
+                              <div>{{ scope.row.email || '-' }}</div>
                             </template>
                         </el-table-column>
                         <el-table-column label="Lamaran Aktif" width="200">
@@ -70,13 +79,6 @@
                                     <small class="text-muted">{{ scope.row.active_application.lowongan?.perusahaan || '-' }}</small>
                                 </div>
                                 <span v-else class="text-muted">Tidak ada lamaran aktif</span>
-                            </template>
-                        </el-table-column>
-                        <el-table-column label="Status" prop="status" align="center" width="150">
-                            <template #default="scope">
-                                <el-tag :type="getTypeStatus(scope.row.status)" size="small">
-                                    {{ scope.row.status_label }}
-                                </el-tag>
                             </template>
                         </el-table-column>
                         <el-table-column label="Aksi" align="center" width="120">

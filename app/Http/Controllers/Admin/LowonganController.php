@@ -82,7 +82,7 @@ class LowonganController extends Controller
                 $data->deskripsi = $request->deskripsi;
                 $data->kuota = $request->kuota;
                 $data->lokasi = $request->lokasi;
-                $data->status = $request->status;
+                $data->status = 'buka';
 
                 if (is_file($request->foto)) {
                     $fotoDir = 'lowongan/'. Str::random(32) . '.' . $request->file('foto')->getClientOriginalExtension();
